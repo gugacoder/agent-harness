@@ -1,0 +1,299 @@
+# ==============================================================================
+# Servicos removidos de docker-compose.platform.yml
+# ==============================================================================
+# Motivo: nao fazem parte do design de infraestrutura (draft-design-infraestrutura.md)
+# Data: 2026-02-28
+#
+# Para restaurar, copie o bloco desejado de volta para docker-compose.platform.yml
+# e ajuste o servico `init` (pastas) e dependencias conforme necessario.
+# ==============================================================================
+
+# --- REDIS ---
+# Motivo: nao consta no design. Era dependencia de evolution e n8n (tambem removidos).
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    command: redis-server --appendonly yes
+    volumes:
+      - ./data/redis:/data
+    networks:
+      internal:
+        aliases:
+          - redis.internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# --- POSTGRES-INIT ---
+# Motivo: criava databases para evolution e n8n (ambos removidos).
+# Se precisar de init scripts para o postgres base, crie um novo.
+
+  postgres-init:
+    build:
+      context: .
+      dockerfile: docker/postgres-init/Dockerfile
+    image: postgres-init:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres.internal
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - internal
+    restart: "no"
+
+# --- POSTGREST ---
+# Motivo: design diz "PostgREST | Nao | A API e Hono. PostgREST seria caminho duplicado."
+# ATENCAO: Supabase Storage depende internamente do PostgREST.
+#          Se Storage estiver ativo, PostgREST PRECISA estar ativo tambem.
+#          Removido daqui apenas como referencia — na pratica PERMANECE no compose.
+
+# --- REALTIME ---
+# Motivo: explicitamente excluido no design. "WebSocket-based. O sistema usa SSE."
+
+  realtime:
+    image: supabase/realtime:v2.33.59
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_NAME: realtime
+      DB_HOST: postgres.internal
+      DB_PORT: 5432
+      DB_USER: supabase_admin
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: postgres
+      DB_AFTER_CONNECT_QUERY: 'SET search_path TO _realtime'
+      DB_ENC_KEY: supabaserealtime
+      API_JWT_SECRET: ${JWT_SECRET}
+      SECRET_KEY_BASE: ${JWT_SECRET}
+      FLY_APP_NAME: realtime
+      FLY_ALLOC_ID: realtime
+      SEED_SELF_HOST: "true"
+      PORT: 4000
+      RLIMIT_NOFILE: 1000000
+      ERL_AFLAGS: "-proto_dist inet_tcp"
+    networks:
+      internal:
+        aliases:
+          - realtime.internal
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'printf \"GET /api/tenants/_self/health HTTP/1.1\r\nHost: localhost\r\n\r\n\" > /dev/tcp/127.0.0.1/4000 || exit 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+# --- EDGE RUNTIME ---
+# Motivo: nao consta no design. API e Hono, nao Edge Functions.
+
+  edge-runtime:
+    image: supabase/edge-runtime:v1.70.0
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      SUPABASE_URL: http://kong.internal:8000
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      SUPABASE_DB_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres.internal:5432/postgres
+      VERIFY_JWT: "false"
+      EDGE_RUNTIME_PORT: "9000"
+      DENO_DIR: /var/cache/deno
+    volumes:
+      - ./supabase/functions:/home/deno/functions:ro
+      - ./docker/edge-functions-router:/home/deno/router:ro
+      - ./docker/edge-functions-bundles:/home/deno/bundles:ro
+      - edge-runtime-cache:/var/cache/deno
+    command: ["start", "--main-service", "/home/deno/router", "--ip", "0.0.0.0", "--port", "9000"]
+    networks:
+      default:
+      internal:
+        aliases:
+          - edge-runtime.internal
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/9000' 2>/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+# --- EVOLUTION + EVOLUTION-INIT ---
+# Motivo: WhatsApp API nao consta no design de infraestrutura.
+
+  evolution:
+    image: evoapicloud/evolution-api:v2.3.7
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres.internal:5432/evolution
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis.internal:6379
+      RABBITMQ_ENABLED: "false"
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
+    volumes:
+      - ./data/evolution/instances:/evolution/instances
+      - ./data/evolution/store:/evolution/store
+    networks:
+      internal:
+        aliases:
+          - evolution.internal
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  evolution-init:
+    build:
+      context: .
+      dockerfile: docker/evolution-init/Dockerfile
+    image: evolution-init:latest
+    depends_on:
+      evolution:
+        condition: service_healthy
+    environment:
+      EVOLUTION_HOST: evolution.internal
+      EVOLUTION_PORT: 8080
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
+      EVOLUTION_INSTANCE_NAME: ${EVOLUTION_INSTANCE_NAME}
+      EVOLUTION_INSTANCE_TOKEN: ${EVOLUTION_INSTANCE_TOKEN}
+      BACKBONE_WEBHOOK_URL: ${BACKBONE_WEBHOOK_URL}
+    networks:
+      - internal
+    restart: "no"
+
+# --- MONGODB ---
+# Motivo: nao consta no design. Banco e PostgreSQL.
+
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - ./data/mongo:/data/db
+    networks:
+      internal:
+        aliases:
+          - mongo.internal
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+# --- N8N ---
+# Motivo: workflow automation nao consta no design de infraestrutura.
+
+  n8n:
+    image: n8nio/n8n:1.76.1
+    restart: unless-stopped
+    depends_on:
+      postgres-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    environment:
+      N8N_HOST: 0.0.0.0
+      N8N_PORT: 5678
+      N8N_PROTOCOL: http
+      GENERIC_TIMEZONE: ${TIMEZONE}
+      TZ: ${TIMEZONE}
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres.internal
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: n8n
+      DB_POSTGRESDB_USER: ${POSTGRES_USER}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+      N8N_TEMPLATES_ENABLED: "true"
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: 168
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      WEBHOOK_URL: ${PUBLIC_N8N_URL}
+      N8N_CUSTOM_EXTENSIONS: /home/node/custom-nodes
+    volumes:
+      - ./data/n8n:/home/node/.n8n
+      - ./docker/n8n/custom-nodes:/home/node/custom-nodes:ro
+    networks:
+      internal:
+        aliases:
+          - n8n.internal
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:5678/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+# --- WHISPER ---
+# Motivo: transcricao de audio nao consta no design de infraestrutura.
+
+  whisper:
+    image: fedirz/faster-whisper-server:latest-cpu
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    environment:
+      - WHISPER__MODEL=${WHISPER_MODEL:-small}
+      - WHISPER__DEVICE=cpu
+      - WHISPER__COMPUTE_TYPE=${WHISPER_COMPUTE_TYPE:-int8}
+    volumes:
+      - ./data/whisper:/root/.cache/huggingface
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    networks:
+      internal:
+        aliases:
+          - whisper.internal
+
+# --- VOLUMES REMOVIDOS ---
+
+  # edge-runtime-cache: (named volume do edge-runtime)
+
+# --- PASTAS DO INIT REMOVIDAS ---
+# Estas linhas foram removidas do servico init:
+#   mkdir -p /data/redis
+#   mkdir -p /data/evolution/instances
+#   mkdir -p /data/evolution/store
+#   mkdir -p /data/meilisearch
+#   mkdir -p /data/mongo
+#   mkdir -p /data/n8n
+#   chmod -R 777 /data/redis
+#   chmod -R 777 /data/evolution/instances
+#   chmod -R 777 /data/evolution/store
+#   chmod -R 777 /data/meilisearch
+#   chmod -R 777 /data/mongo
