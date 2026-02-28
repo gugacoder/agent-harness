@@ -1,0 +1,22 @@
+# Secrets (plaintext)
+.env
+.enc.key
+
+# Dados persistentes dos containers
+data/
+
+# Node
+node_modules/
+
+# Supabase edge functions (montadas como volume)
+supabase/
+
+# Harness: runs e worktrees sao efemeros
+.harness/runs/*
+!.harness/runs/.gitkeep
+.harness/worktrees/*
+!.harness/worktrees/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db

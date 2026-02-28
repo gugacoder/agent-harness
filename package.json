@@ -1,0 +1,14 @@
+{
+  "name": "coletivos-harness",
+  "private": true,
+  "scripts": {
+    "secrets:encrypt": "bash scripts/secrets.sh encrypt",
+    "secrets:decrypt": "bash scripts/secrets.sh decrypt",
+    "platform:up": "docker compose -f docker-compose.platform.yml -f docker-compose.platform.dev-ports.yml up -d",
+    "platform:down": "docker compose -f docker-compose.platform.yml -f docker-compose.platform.dev-ports.yml down",
+    "platform:logs": "docker compose -f docker-compose.platform.yml -f docker-compose.platform.dev-ports.yml logs -f",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  }
+}

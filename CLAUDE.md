@@ -1,0 +1,1 @@
+- **Não crie arquivos e testes temporarios na estrutura do projeto. Use a pasta `.tmp` para isso.**
