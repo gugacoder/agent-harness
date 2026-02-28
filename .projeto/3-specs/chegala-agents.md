@@ -189,7 +189,7 @@ Fluxo por wave:
 - `progress.txt` inicializado (DC004)
 
 **Autoridade de decisao:**
-- Pode: criar toda a estrutura inicial, decompos EXPERIMENTO em features, selecionar agent profiles por feature
+- Pode: criar toda a estrutura inicial, decompor EXPERIMENTO em features, selecionar agent profiles por feature
 - Nao pode: executar features (delega para loop.mjs + agentes)
 
 ---

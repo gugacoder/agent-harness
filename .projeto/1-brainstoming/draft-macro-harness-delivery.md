@@ -255,7 +255,6 @@ Arquivo persistente com todas as dores/ganhos descobertas, classificadas e recla
       "last_reclassified_at": 3
     }
   ],
-  "threshold": 3,
   "decision": "go"
 }
 ```
