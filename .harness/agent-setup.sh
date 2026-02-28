@@ -1,49 +1,67 @@
 #!/usr/bin/env bash
-# agent-setup.sh — Bootstrap para worktree chat-history-mongodb
-# Executar da raiz da worktree: bash agent-setup.sh
+# =============================================================================
+# Agent Setup — PRP-001-data-contract-schemas
+# Bootstrap para o agente de desenvolvimento na worktree isolada.
+# Executar da raiz da worktree: bash .harness/agent-setup.sh
+# =============================================================================
+set -euo pipefail
 
-set -e
+WT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+echo "=== Agent Setup: PRP-001-data-contract-schemas ==="
+echo ""
 
-WT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-echo "[setup] Worktree: $WT_DIR"
-
-# Carregar .env
+# --- Carregar .env ---
 if [ -f "$WT_DIR/.env" ]; then
   set -a; source "$WT_DIR/.env"; set +a
-  echo "[setup] .env carregado (CIA_API_PORT=$CIA_API_PORT, CIA_APP_PORT=$CIA_APP_PORT)"
-fi
-
-# Instalar dependencias
-echo "[setup] Instalando dependencias..."
-cd "$WT_DIR"
-npm install --silent 2>/dev/null || echo "[setup] WARN: npm install falhou — verifique manualmente"
-
-# Verificar variaveis MongoDB
-if [ -z "${MONGODB_URI}" ]; then
-  echo "[setup] WARN: MONGODB_URI nao definida — chat history nao sera persistido"
+  echo "[1/4] .env carregado (PREFIX=${PREFIX:-N/A})"
 else
-  echo "[setup] MONGODB_URI: definida"
+  echo "[1/4] WARN: .env nao encontrado"
 fi
 
-# TypeScript check cia-api
-echo "[setup] Verificando TypeScript em cia-api..."
-cd "$WT_DIR/apps/cia-api"
-npx tsc --noEmit 2>&1 | tail -5 || echo "[setup] WARN: TypeScript com erros em cia-api"
-
-# TypeScript check cia-app
-echo "[setup] Verificando TypeScript em cia-app..."
-cd "$WT_DIR/apps/cia-app"
-npx tsc --noEmit 2>&1 | tail -5 || echo "[setup] WARN: TypeScript com erros em cia-app"
-
+# --- Detectar package manager e instalar ---
 cd "$WT_DIR"
+if [ -f "bun.lockb" ] || [ -f "bun.lock" ]; then
+  PKG_MGR="bun"
+elif [ -f "pnpm-lock.yaml" ]; then
+  PKG_MGR="pnpm"
+elif [ -f "yarn.lock" ]; then
+  PKG_MGR="yarn"
+else
+  PKG_MGR="npm"
+fi
+echo "[2/4] Package manager: $PKG_MGR"
+echo "  Instalando dependencias..."
+$PKG_MGR install 2>&1 || echo "WARN: falha ao instalar dependencias"
+
+# --- Docker (skip se nao houver docker-compose) ---
+echo "[3/4] Verificando Docker..."
+if [ -f "$WT_DIR/docker-compose.yml" ] || [ -f "$WT_DIR/docker-compose.yaml" ]; then
+  if command -v docker &>/dev/null; then
+    echo "  Docker compose encontrado — skip (schemas nao dependem de docker)"
+  else
+    echo "  Docker nao disponivel — skip"
+  fi
+else
+  echo "  Sem docker-compose — skip"
+fi
+
+# --- Smoke test ---
+echo "[4/4] Smoke test..."
+node -e "console.log('  Node OK:', process.version)" 2>&1 || echo "  WARN: Node.js nao disponivel"
+
+# Verificar zod
+if node -e "import('zod').then(z => console.log('  Zod OK:', typeof z.z.string))" 2>/dev/null; then
+  :
+else
+  echo "  Zod nao instalado (esperado antes de F-001)"
+fi
+
 echo ""
-echo "=== Resumo do Estado ==="
-echo "  Worktree:      $WT_DIR"
-echo "  Branch:        $(git branch --show-current)"
-echo "  CIA_API_PORT:  ${CIA_API_PORT:-NAO_DEFINIDO}"
-echo "  CIA_APP_PORT:  ${CIA_APP_PORT:-NAO_DEFINIDO}"
-echo "  MONGODB_URI:   ${MONGODB_URI:-NAO_DEFINIDA}"
+echo "=== Resumo ==="
+echo "  Worktree:  $WT_DIR"
+echo "  Branch:    $(git branch --show-current)"
+echo "  Node:      $(node --version 2>/dev/null || echo 'N/A')"
+echo "  Pkg mgr:   $PKG_MGR"
+echo "  PREFIX:    ${PREFIX:-N/A}"
 echo ""
-echo "  Para iniciar o backend:  npm run dev:cia-app:backend"
-echo "  Para iniciar o frontend: npm run dev:cia-app:frontend"
-echo "  Para rodar e2e:          npx playwright test -w cia-frontend"
+echo "  Testes: node --test .harness/schemas/validate.test.mjs"
