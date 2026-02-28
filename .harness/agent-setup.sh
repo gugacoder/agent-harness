@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Agent Setup — PRP-experimento-chegala (Wave 1 — Harness A Research)
+# Agent Setup — PRP-005-app-motoboy (Wave 1 — App do Motoboy PWA)
 # Bootstrap para o agente na worktree isolada.
 # Executar da raiz da worktree: bash .harness/agent-setup.sh
 # =============================================================================
 set -euo pipefail
 
 WT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-echo "=== Agent Setup: PRP-experimento-chegala ==="
+echo "=== Agent Setup: PRP-005-app-motoboy ==="
 echo ""
 
 # --- Carregar .env ---
@@ -65,10 +65,17 @@ echo "[4/4] Smoke test..."
 node -e "console.log('  Node OK:', process.version)" 2>&1 || echo "  WARN: Node.js nao disponivel"
 
 # Health check Kong (Supabase gateway) se portas configuradas
-KONG="${KONG_HTTP_PORT:-2130}"
+KONG="${KONG_HTTP_PORT:-3530}"
 if command -v curl &>/dev/null; then
   HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 3 "http://localhost:$KONG" 2>/dev/null || echo "000")
   echo "  Kong (port $KONG): HTTP $HTTP_CODE"
+fi
+
+# Verificar se apps/motoboy existe
+if [ -d "$WT_DIR/apps/motoboy" ]; then
+  echo "  apps/motoboy/ encontrado"
+else
+  echo "  WARN: apps/motoboy/ nao encontrado — sera criado durante F-001"
 fi
 
 echo ""
@@ -78,7 +85,9 @@ echo "  Branch:    $(git branch --show-current)"
 echo "  Node:      $(node --version 2>/dev/null || echo 'N/A')"
 echo "  Pkg mgr:   $PKG_MGR"
 echo "  PREFIX:    ${PREFIX:-N/A}"
-echo "  Session:   PRP-experimento-chegala--cc"
-echo "  Runs dir:  .harness/runs/PRP-experimento-chegala--cc/ (ROOT)"
+echo "  Session:   PRP-005-app-motoboy--cc"
+echo "  Runs dir:  .harness/runs/PRP-005-app-motoboy--cc/ (ROOT)"
+echo "  App dir:   apps/motoboy/"
+echo "  Dev port:  \${PREFIX}04 (motoboy)"
 echo ""
 echo "=== Setup completo ==="
