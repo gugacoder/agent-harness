@@ -1,6 +1,13 @@
 {
-  "name": "coletivos-harness",
+  "name": "chegala",
   "private": true,
+  "workspaces": [
+    "packages/shared/schemas",
+    "apps/backbone",
+    "apps/central",
+    "apps/lojista",
+    "apps/motoboy"
+  ],
   "scripts": {
     "secrets:encrypt": "bash scripts/secrets.sh encrypt",
     "secrets:decrypt": "bash scripts/secrets.sh decrypt",
@@ -11,7 +18,7 @@
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f"
   },
-  "dependencies": {
-    "zod": "^3.25.76"
+  "devDependencies": {
+    "typescript": "^5.8.3"
   }
 }
