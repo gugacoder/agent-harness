@@ -1,3 +1,7 @@
+---
+status: current
+---
+
 # Macro Experiment Bootstrap — Inicializacao e templateamento de waves para o macro harness
 
 ## Objetivo
