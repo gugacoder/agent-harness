@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Agent Setup — PRP-001-data-contract-schemas
-# Bootstrap para o agente de desenvolvimento na worktree isolada.
+# Agent Setup — PRP-experimento-chegala (Wave 1 — Harness A Research)
+# Bootstrap para o agente na worktree isolada.
 # Executar da raiz da worktree: bash .harness/agent-setup.sh
 # =============================================================================
 set -euo pipefail
 
 WT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-echo "=== Agent Setup: PRP-001-data-contract-schemas ==="
+echo "=== Agent Setup: PRP-experimento-chegala ==="
 echo ""
 
 # --- Carregar .env ---
@@ -30,14 +30,29 @@ else
   PKG_MGR="npm"
 fi
 echo "[2/4] Package manager: $PKG_MGR"
-echo "  Instalando dependencias..."
-$PKG_MGR install 2>&1 || echo "WARN: falha ao instalar dependencias"
+if [ -f "package.json" ]; then
+  echo "  Instalando dependencias..."
+  $PKG_MGR install 2>&1 | tail -5 || echo "WARN: falha ao instalar dependencias"
+else
+  echo "  Sem package.json — pulando instalacao"
+fi
 
-# --- Docker (skip se nao houver docker-compose) ---
+# --- Docker (platform) ---
 echo "[3/4] Verificando Docker..."
-if [ -f "$WT_DIR/docker-compose.yml" ] || [ -f "$WT_DIR/docker-compose.yaml" ]; then
+if [ -f "$WT_DIR/docker-compose.platform.yml" ]; then
   if command -v docker &>/dev/null; then
-    echo "  Docker compose encontrado — skip (schemas nao dependem de docker)"
+    echo "  Docker compose encontrado — subindo platform..."
+    docker compose -f docker-compose.platform.yml -f docker-compose.platform.dev-ports.yml up -d 2>&1 | tail -5
+    echo "  Aguardando servicos (10s)..."
+    sleep 10
+  else
+    echo "  Docker nao disponivel — skip"
+  fi
+elif [ -f "$WT_DIR/docker-compose.yml" ]; then
+  if command -v docker &>/dev/null; then
+    echo "  docker-compose.yml encontrado — subindo..."
+    docker compose up -d 2>&1 | tail -5
+    sleep 10
   else
     echo "  Docker nao disponivel — skip"
   fi
@@ -49,11 +64,11 @@ fi
 echo "[4/4] Smoke test..."
 node -e "console.log('  Node OK:', process.version)" 2>&1 || echo "  WARN: Node.js nao disponivel"
 
-# Verificar zod
-if node -e "import('zod').then(z => console.log('  Zod OK:', typeof z.z.string))" 2>/dev/null; then
-  :
-else
-  echo "  Zod nao instalado (esperado antes de F-001)"
+# Health check Kong (Supabase gateway) se portas configuradas
+KONG="${KONG_HTTP_PORT:-2130}"
+if command -v curl &>/dev/null; then
+  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 3 "http://localhost:$KONG" 2>/dev/null || echo "000")
+  echo "  Kong (port $KONG): HTTP $HTTP_CODE"
 fi
 
 echo ""
@@ -63,5 +78,7 @@ echo "  Branch:    $(git branch --show-current)"
 echo "  Node:      $(node --version 2>/dev/null || echo 'N/A')"
 echo "  Pkg mgr:   $PKG_MGR"
 echo "  PREFIX:    ${PREFIX:-N/A}"
+echo "  Session:   PRP-experimento-chegala--cc"
+echo "  Runs dir:  .harness/runs/PRP-experimento-chegala--cc/ (ROOT)"
 echo ""
-echo "  Testes: node --test .harness/schemas/validate.test.mjs"
+echo "=== Setup completo ==="
