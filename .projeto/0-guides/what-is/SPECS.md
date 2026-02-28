@@ -443,6 +443,312 @@ Crie uma feature spec quando a feature:
 
 ---
 
+## Categorias de Spec
+
+Nem todo projeto especifica um app. A categoria determina QUAIS tipos de spec devem ser gerados.
+
+| Categoria | Tipos | Quando usar |
+|-----------|-------|-------------|
+| `app` | Tipo 1-6 (OSD, US, ER, Design, UI, Feature) | O brainstorming descreve um produto de software com usuarios, telas, dados |
+| `experiment` | Tipo E1-E4 (Protocol, Data Contracts, Agents, Success Criteria) | O brainstorming descreve um processo/experimento que constroi ou valida algo |
+| `infra` | Tipo I1-I4 (em desenvolvimento) | O brainstorming descreve infraestrutura, pipelines, plataforma |
+
+### Regra Critica de Classificacao
+
+> **Se o brainstorming descreve um PROCESSO que constroi um PRODUTO, especifique o PROCESSO — nao o PRODUTO.**
+> O produto sera especificado pelo processo quando rodar.
+
+Indicadores por categoria:
+
+| Indicador | app | experiment | infra |
+|-----------|-----|------------|-------|
+| Menciona telas, formularios, CRUD | ✅ | - | - |
+| Menciona usuarios finais e roles | ✅ | - | - |
+| Menciona waves, ciclos, iteracoes | - | ✅ | - |
+| Menciona agentes autonomos | - | ✅ | - |
+| Menciona artefatos intermediarios (rankings, configs) | - | ✅ | - |
+| Menciona pipelines, deploy, networking | - | - | ✅ |
+| Menciona monitoramento de infra | - | - | ✅ |
+
+---
+
+## Tipo E1: Protocol
+
+**Arquivo**: `{projeto}-protocol.md`
+
+Especifica o protocolo de execucao do experimento — a sequencia de passos, decisoes e criterios de parada.
+
+### Formato
+
+```markdown
+# {Projeto} - Protocolo de Execucao
+
+{Uma frase descrevendo o protocolo.}
+
+## Visao Geral do Ciclo
+
+{Diagrama ASCII do fluxo macro: wave → steps → gates → proximo ciclo ou parada}
+
+## Waves
+
+### Wave {N}: {Nome}
+
+**Objetivo:** {O que esta wave produz}
+**Pre-condicao:** {O que precisa existir antes}
+**Pos-condicao:** {O que existe depois}
+
+#### Steps
+
+| # | Step | Agente | Pre-condicao | Pos-condicao | Error Handling |
+|---|------|--------|--------------|--------------|----------------|
+| 1 | Gerar features | feature-gen | config.json existe | features.json criado | Retry 1x, abort wave |
+| 2 | Rankear features | ranker | features.json existe | ranking.json criado | Fallback: ordem original |
+
+#### Decision Gate
+
+| Condicao | GO | STOP |
+|----------|----|------|
+| ranking.json tem >= 3 features viaveis | Prosseguir para step 3 | Abortar wave, log motivo |
+| Score medio > threshold | Prosseguir | Re-gerar com parametros ajustados |
+
+## Criterio de Parada Global
+
+| Condicao | Acao |
+|----------|------|
+| MVP validado com score > X | Encerrar experimento com sucesso |
+| N waves sem melhoria | Encerrar com falha, gerar relatorio |
+
+## Rastreabilidade
+
+| Step | Agente | Gate |
+|------|--------|------|
+| 1 | feature-gen | Gate 1.1 |
+| 2 | ranker | Gate 1.2 |
+```
+
+### Regras de Escrita
+
+- Prefixo `PROT` com IDs sequenciais (PROT001, PROT002...)
+- Diagrama ASCII obrigatorio para visao macro do ciclo
+- Cada step: nome, pre-condicao, pos-condicao, agente responsavel, error handling
+- Decision gates como tabela (condicao | GO | STOP)
+- Criterio de parada global formal — nunca deixar aberto
+- Rastreabilidade: step → agente → gate
+
+---
+
+## Tipo E2: Data Contracts
+
+**Arquivo**: `{projeto}-data-contracts.md`
+
+Define os schemas de todos os artefatos intermediarios trocados entre agentes.
+
+### Formato
+
+```markdown
+# {Projeto} - Data Contracts
+
+{Uma frase descrevendo o proposito dos contratos de dados.}
+
+## Artefatos
+
+### {nome-do-artefato}.json
+
+**Criado por:** {agente}
+**Lido por:** {agente(s)}
+**Atualizado por:** {agente | nunca}
+
+**Schema:**
+
+\`\`\`typescript
+import { z } from "zod";
+
+export const FeatureSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  priority: z.enum(["must", "should", "could"]),
+  complexity: z.number().min(1).max(5),
+});
+
+export type Feature = z.infer<typeof FeatureSchema>;
+\`\`\`
+
+**Exemplo:**
+
+\`\`\`json
+{
+  "id": "feat-001",
+  "name": "Rastreamento em tempo real",
+  "description": "Motoboy compartilha localizacao GPS durante entrega",
+  "priority": "must",
+  "complexity": 3
+}
+\`\`\`
+
+## Lifecycle
+
+| Artefato | Criado em | Criado por | Lido por | Atualizado por |
+|----------|-----------|------------|----------|----------------|
+| features.json | Wave 1, Step 1 | feature-gen | ranker, architect | nunca |
+| ranking.json | Wave 1, Step 2 | ranker | architect | nunca |
+
+## Rastreabilidade
+
+| Artefato | Protocolo (Step) | Agente |
+|----------|-----------------|--------|
+| features.json | PROT001 Step 1 | feature-gen |
+```
+
+### Regras de Escrita
+
+- Prefixo `DC` com IDs sequenciais (DC001, DC002...)
+- Schema em TypeScript/Zod — validavel, nao apenas descritivo
+- Exemplo concreto para cada artefato
+- Lifecycle obrigatorio: quem cria, quem le, quem atualiza
+- Rastreabilidade cruzada com Protocol (PROT → DC)
+
+---
+
+## Tipo E3: Agent Specifications
+
+**Arquivo**: `{projeto}-agents.md`
+
+Especifica cada agente autonomo que participa do experimento.
+
+### Formato
+
+```markdown
+# {Projeto} - Agent Specifications
+
+{Uma frase descrevendo o conjunto de agentes.}
+
+## Diagrama de Handoff
+
+{Diagrama ASCII mostrando sequencia de execucao e handoffs entre agentes}
+
+## Agentes
+
+### {nome-do-agente}
+
+**Ordem de execucao:** {N}
+**Tipo:** {gerador | avaliador | executor | orquestrador}
+
+| Param | Valor |
+|-------|-------|
+| Tools | Read, Write, Bash |
+| Max turns | 15 |
+| Rollback | Deletar artefatos gerados neste step |
+| Timeout | 5 min |
+
+**Inputs:**
+- `config.json` — configuracao do experimento
+- `features.json` — lista de features (se existir)
+
+**Outputs:**
+- `ranking.json` — features rankeadas com score
+
+**Autoridade de decisao:**
+- Pode: reordenar features, atribuir scores, descartar features com score < threshold
+- Nao pode: modificar features.json, alterar config, criar novos artefatos
+
+**Limites:**
+- Maximo 50 features por execucao
+- Score deve ser numerico 0-100
+
+## Matriz de Autoridade
+
+| Acao | feature-gen | ranker | architect | executor |
+|------|-------------|--------|-----------|----------|
+| Criar artefato | ✅ features.json | ✅ ranking.json | ✅ arch.md | ✅ codigo |
+| Modificar artefato alheio | ❌ | ❌ | ❌ | ❌ |
+| Abortar wave | ❌ | ❌ | ✅ | ❌ |
+| Solicitar re-execucao | ❌ | ✅ | ✅ | ❌ |
+
+## Rastreabilidade
+
+| Agente | Steps (PROT) | Artefatos (DC) |
+|--------|-------------|----------------|
+| feature-gen | PROT001 Step 1 | DC001 |
+| ranker | PROT001 Step 2 | DC002 |
+```
+
+### Regras de Escrita
+
+- Prefixo `AGT` com IDs sequenciais (AGT001, AGT002...)
+- Subsecao por agente na ordem de execucao
+- Params obrigatorios: tools, max_turns, rollback, timeout
+- Inputs e outputs como lista com nome do artefato e descricao
+- Autoridade de decisao: o que pode e o que nao pode
+- Limites quantitativos
+- Diagrama de handoff entre agentes
+- Matriz de autoridade como tabela cruzada
+
+---
+
+## Tipo E4: Success Criteria
+
+**Arquivo**: `{projeto}-success-criteria.md`
+
+Define criterios de sucesso mensuráveis por nivel do experimento.
+
+### Formato
+
+```markdown
+# {Projeto} - Success Criteria
+
+{Uma frase descrevendo os criterios de sucesso.}
+
+## Criterios por Nivel
+
+### Nivel: Processo
+
+| ID | Criterio | Metrica | Threshold | Medicao | Consequencia |
+|----|----------|---------|-----------|---------|--------------|
+| SC001 | Experimento completa sem intervencao humana | taxa de automacao | 100% | logs de execucao | Sucesso total |
+| SC002 | Tempo total < budget | horas | < 8h | timestamp inicio/fim | Se exceder, abortar |
+
+### Nivel: Wave
+
+| ID | Criterio | Metrica | Threshold | Medicao | Consequencia |
+|----|----------|---------|-----------|---------|--------------|
+| SC003 | Wave produz artefatos validos | artefatos gerados vs esperados | 100% | file check | Retry wave |
+| SC004 | Nenhum agente excede max_turns | turns usados | <= max_turns por agente | log de turns | Abort agente, fallback |
+
+### Nivel: Agente
+
+| ID | Criterio | Metrica | Threshold | Medicao | Consequencia |
+|----|----------|---------|-----------|---------|--------------|
+| SC005 | Output passa validacao de schema | erros Zod | 0 | parse do output | Retry agente |
+| SC006 | Agente nao modifica artefatos alheios | arquivos tocados | apenas outputs declarados | git diff | Abort + rollback |
+
+## Cenarios de Falha
+
+| Falha | Deteccao | Acao |
+|-------|----------|------|
+| Agente produz output invalido | Validacao Zod pos-step | Retry 1x, se falhar abort wave |
+| Wave sem progresso | Diff de artefatos pre/pos wave | Encerrar experimento |
+| Timeout de agente | Timer por step | Abort agente, log, prosseguir sem |
+| Todas as waves falharam | Contador de falhas | Gerar relatorio de falha |
+
+## Rastreabilidade
+
+| Criterio | Protocolo | Agente | Artefato |
+|----------|-----------|--------|----------|
+| SC001 | PROT001 (global) | todos | — |
+| SC005 | PROT001 Step N | {agente} | {artefato}.json |
+```
+
+### Regras de Escrita
+
+- Prefixo `SC` com IDs sequenciais (SC001, SC002...)
+- Criterios por nivel: processo, wave, agente
+- Cada criterio: metrica, threshold, forma de medicao, consequencia de falha
+- Cenarios de falha: falha | deteccao | acao
+- Rastreabilidade cruzada com Protocol, Agents e Data Contracts
+
+---
+
 ## Checklist de Qualidade
 
 Antes de finalizar qualquer spec, verifique:
@@ -455,4 +761,5 @@ Antes de finalizar qualquer spec, verifique:
 - [ ] ✅/❌ para regras de estilo
 - [ ] Secao de Rastreabilidade no final
 - [ ] Sem duplicacao com outros specs (cores so no ui-guide, tabelas so no er, stack so no design)
+- [ ] Categoria correta (app/experiment/infra) para a natureza do input
 - [ ] Portugues no texto, ingles no codigo
