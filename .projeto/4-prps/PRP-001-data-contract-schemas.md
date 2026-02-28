@@ -1,3 +1,8 @@
+---
+status: finished
+finished_at: 2026-02-28T19:41:02Z
+---
+
 # Data Contract Schemas — Schemas Zod executaveis para artefatos do macro harness
 
 ## Objetivo
