@@ -1,0 +1,25 @@
+{
+  "name": "n8n-nodes-coletivos",
+  "version": "1.0.0",
+  "description": "n8n community nodes for Coletivos App integration",
+  "license": "MIT",
+  "n8n": {
+    "credentials": [
+      "dist/credentials/ColetivosApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/ColetivosTrigger/ColetivosTrigger.node.js",
+      "dist/nodes/ColetivosAction/ColetivosAction.node.js"
+    ]
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "n8n-workflow": "^1.0.0",
+    "typescript": "^5.0.0"
+  }
+}

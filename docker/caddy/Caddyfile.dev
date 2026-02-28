@@ -1,0 +1,46 @@
+:3000 {
+    # Backbone API
+    handle /api/* {
+        reverse_proxy localhost:2070
+    }
+
+    # Supabase Auth API
+    handle /auth/* {
+        reverse_proxy localhost:3008
+    }
+
+    # Supabase REST API (PostgREST)
+    handle /rest/* {
+        reverse_proxy localhost:3008
+    }
+
+    # Supabase Storage API
+    handle /storage/* {
+        reverse_proxy localhost:3008
+    }
+
+    # Supabase Edge Functions
+    handle /functions/* {
+        reverse_proxy localhost:3008
+    }
+
+    # Supabase Realtime (WebSocket)
+    handle /realtime/* {
+        reverse_proxy localhost:3008
+    }
+
+    # Hub app (Vite dev server)
+    handle /hub/* {
+        reverse_proxy localhost:5173
+    }
+
+    # Portal app (Vite dev server)
+    handle /portal/* {
+        reverse_proxy localhost:5174
+    }
+
+    # Landing pages (Next.js dev server) — tudo mais
+    handle {
+        reverse_proxy localhost:5170
+    }
+}

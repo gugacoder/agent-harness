@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "https://esm.sh/@supabase/supabase-js@2": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm",
+    "https://esm.sh/@supabase/supabase-js@2.95.0": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.0/+esm",
+    "https://esm.sh/expo-server-sdk": "https://cdn.jsdelivr.net/npm/expo-server-sdk/+esm",
+    "@supabase/supabase-js": "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
+  }
+}

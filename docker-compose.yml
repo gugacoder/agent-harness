@@ -1,0 +1,59 @@
+# ==============================================================================
+# Full Stack (Platform + Web)
+# ==============================================================================
+# Uso:
+#   npm run docker:up     - Subir toda a stack
+#   npm run docker:logs   - Ver logs
+#   npm run docker:down   - Derrubar a stack
+# ==============================================================================
+
+name: chegala-${ENVIRONMENT}
+
+include:
+  - docker-compose.platform.yml
+
+services:
+
+  # ============================================================================
+  # CADDY - Reverse Proxy
+  # ============================================================================
+  # Unifica todas as rotas em uma única porta:
+  # - /auth/*, /rest/*, /storage/*, /functions/*, /realtime/* -> Kong (Supabase)
+  # - /* -> App (Vite)
+  caddy:
+    image: caddy:alpine
+    restart: unless-stopped
+    depends_on:
+      kong:
+        condition: service_healthy
+    ports:
+      - "${PUBLIC_PORT}:${PUBLIC_PORT}"
+    environment:
+      PUBLIC_PORT: ${PUBLIC_PORT}
+      BACKBONE_HOST: ${BACKBONE_HOST}
+      BACKBONE_PORT: ${BACKBONE_PORT}
+      LANDING_HOST: ${LANDING_HOST}
+      LANDING_PORT: ${LANDING_PORT}
+      HUB_HOST: ${HUB_HOST}
+      HUB_PORT: ${HUB_PORT}
+      ROTA_HOST: ${ROTA_HOST}
+      ROTA_PORT: ${ROTA_PORT}
+      PORTAL_HOST: ${PORTAL_HOST}
+      PORTAL_PORT: ${PORTAL_PORT}
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+    networks:
+      internal:
+        aliases:
+          - caddy.internal
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:${PUBLIC_PORT}"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  internal:
+    driver: bridge
+  shared-net:
+    external: true

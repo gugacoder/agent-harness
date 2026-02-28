@@ -1,0 +1,46 @@
+:{$PUBLIC_PORT} {
+    # Backbone API
+    handle /api/* {
+        reverse_proxy {$BACKBONE_HOST}:{$BACKBONE_PORT}
+    }
+
+    # Supabase Auth API
+    handle /auth/* {
+        reverse_proxy kong.internal:8000
+    }
+
+    # Supabase REST API (PostgREST)
+    handle /rest/* {
+        reverse_proxy kong.internal:8000
+    }
+
+    # Supabase Storage API
+    handle /storage/* {
+        reverse_proxy kong.internal:8000
+    }
+
+    # Supabase Edge Functions
+    handle /functions/* {
+        reverse_proxy kong.internal:8000
+    }
+
+    # Supabase Realtime (WebSocket)
+    handle /realtime/* {
+        reverse_proxy kong.internal:8000
+    }
+
+    # Hub app (Vite PWA - Coletivos brand)
+    handle /hub/* {
+        reverse_proxy {$HUB_HOST}:{$HUB_PORT}
+    }
+
+    # Portal app (Vite PWA - Processa brand)
+    handle /portal/* {
+        reverse_proxy {$PORTAL_HOST}:{$PORTAL_PORT}
+    }
+
+    # Landing pages (Next.js) — tudo mais inclui / e /landing/*
+    handle {
+        reverse_proxy {$LANDING_HOST}:{$LANDING_PORT}
+    }
+}

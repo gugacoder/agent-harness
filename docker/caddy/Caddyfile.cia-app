@@ -1,0 +1,46 @@
+:{$CADDY_PORT} {
+
+    # --- APIs ---
+
+    handle /api/v2/agents/* {
+        reverse_proxy ab-backbone.internal:{$BACKBONE_PORT}
+    }
+
+    handle /api/v2/* {
+        reverse_proxy cia-api.internal:{$CIA_API_PORT}
+    }
+
+    handle /api/* {
+        reverse_proxy laravel.internal:8000
+    }
+
+    # --- Health -> cia-api ---
+    handle /health {
+        reverse_proxy cia-api.internal:{$CIA_API_PORT}
+    }
+
+    # --- WebSocket -> cia-api ---
+    handle /ws/* {
+        reverse_proxy cia-api.internal:{$CIA_API_PORT}
+    }
+
+    # --- Hub SPA (static from volume) ---
+    @hub path /hub /hub/*
+    handle @hub {
+        root * /srv/hub
+        try_files {path} /hub/index.html
+        file_server
+    }
+
+    # --- Raiz redireciona pra /app ---
+    handle / {
+        redir * /app
+    }
+
+    # --- Cia App SPA (static from volume, default) ---
+    handle {
+        root * /srv/app
+        try_files {path} /app/index.html
+        file_server
+    }
+}
