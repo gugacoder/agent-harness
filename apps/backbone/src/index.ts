@@ -4,11 +4,32 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
 import type { AppType } from "./types.js";
+import { errorHandler } from "./middleware/error-handler.js";
 
 // Re-export for convenience
 export type { AppType };
 
-const app = new OpenAPIHono<AppType>().basePath("/api");
+const app = new OpenAPIHono<AppType>({
+  defaultHook: (result, c) => {
+    if (!result.success) {
+      return c.json(
+        {
+          error: "Bad Request",
+          message: "Validation failed",
+          statusCode: 400,
+          details: result.error.errors.map((e) => ({
+            path: e.path.join("."),
+            message: e.message,
+          })),
+        },
+        400
+      );
+    }
+  },
+}).basePath("/api");
+
+// Global error handler
+app.onError(errorHandler);
 
 // Global middleware
 app.use("*", logger());
