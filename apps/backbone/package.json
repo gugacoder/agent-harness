@@ -1,0 +1,29 @@
+{
+  "name": "@chegala/backbone",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "@chegala/schemas": "*",
+    "@hono/node-server": "^1.19.9",
+    "@hono/zod-openapi": "^0.19.6",
+    "drizzle-orm": "^0.44.1",
+    "drizzle-zod": "^0.7.0",
+    "hono": "^4.7.6",
+    "postgres": "^3.4.5",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "drizzle-kit": "^0.31.1",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}
