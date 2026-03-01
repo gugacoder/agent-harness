@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Agent Setup - PRP-wave-2-close (Wave 2 - Harness B Implementation)
+# Agent Setup - wave-3-research (Wave 3 - Harness A Research)
 # Bootstrap para o agente na worktree isolada.
 # Executar da raiz da worktree: bash .harness/agent-setup.sh
 # =============================================================================
 set -euo pipefail
 
 WT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-echo "=== Agent Setup: PRP-wave-2-close ==="
+echo "=== Agent Setup: wave-3-research ==="
 echo ""
 
 # --- Carregar .env ---
@@ -78,7 +78,7 @@ echo "  Branch:    $(git branch --show-current)"
 echo "  Node:      $(node --version 2>/dev/null || echo 'N/A')"
 echo "  Pkg mgr:   $PKG_MGR"
 echo "  PREFIX:    ${PREFIX:-N/A}"
-echo "  Session:   PRP-wave-2-close--cc"
-echo "  Runs dir:  .harness/runs/PRP-wave-2-close--cc/ (ROOT)"
+echo "  Session:   wave-3-research--cc"
+echo "  Runs dir:  .harness/runs/wave-3-research--cc/ (ROOT)"
 echo ""
 echo "=== Setup completo ==="
