@@ -82,6 +82,17 @@ export interface Delivery {
   updated_at: string;
 }
 
+export interface DeliveryProof {
+  id: string;
+  delivery_id: string;
+  photo_url: string;
+  signature_url: string;
+  lat: string;
+  lng: string;
+  captured_at: string;
+  created_at: string;
+}
+
 export interface DeliveryEvent {
   id: string;
   delivery_id: string;
