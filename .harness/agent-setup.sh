@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Agent Setup — PRP-experimento-chegala (Wave 1 — Harness A Research)
+# Agent Setup — PRP-experimento-chegala (Wave 2 — Harness A Research)
 # Bootstrap para o agente na worktree isolada.
 # Executar da raiz da worktree: bash .harness/agent-setup.sh
 # =============================================================================
@@ -78,7 +78,7 @@ echo "  Branch:    $(git branch --show-current)"
 echo "  Node:      $(node --version 2>/dev/null || echo 'N/A')"
 echo "  Pkg mgr:   $PKG_MGR"
 echo "  PREFIX:    ${PREFIX:-N/A}"
-echo "  Session:   PRP-experimento-chegala--cc"
-echo "  Runs dir:  .harness/runs/PRP-experimento-chegala--cc/ (ROOT)"
+echo "  Session:   wave-2-research--cc"
+echo "  Runs dir:  .harness/runs/wave-2-research--cc/ (ROOT)"
 echo ""
 echo "=== Setup completo ==="
