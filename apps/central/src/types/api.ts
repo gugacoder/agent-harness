@@ -105,3 +105,55 @@ export interface DeliveryEvent {
   lng: string | null;
   created_at: string;
 }
+
+// --- Pricing ---
+
+export type RuleType =
+  | "per_km"
+  | "distance_range"
+  | "neighborhood"
+  | "flat_rate"
+  | "surcharge";
+
+export type SurchargeType = "rain" | "night" | "weekend";
+export type SurchargeMode = "percentage" | "fixed";
+
+export interface PricingTable {
+  id: string;
+  company_id: string;
+  name: string;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PricingRule {
+  id: string;
+  pricing_table_id: string;
+  rule_type: RuleType;
+  base_value: string;
+  per_km_value: string | null;
+  min_distance_km: string | null;
+  max_distance_km: string | null;
+  neighborhood: string | null;
+  surcharge_type: SurchargeType | null;
+  surcharge_mode: SurchargeMode | null;
+  surcharge_value: string | null;
+  priority: number;
+  created_at: string;
+}
+
+export interface SimulationResult {
+  basePrice: string;
+  surchargeAmount: string;
+  totalPrice: string;
+  appliedRuleId: string;
+}
+
+export interface ShopPricingOverride {
+  id: string;
+  shop_id: string;
+  pricing_table_id: string;
+  company_id: string;
+  created_at: string;
+}
