@@ -11,6 +11,7 @@ import { companiesRouter } from "./routes/companies.js";
 import { shopsRouter } from "./routes/shops.js";
 import { ordersRouter } from "./routes/orders.js";
 import { deliveriesRouter } from "./routes/deliveries.js";
+import { couriersRouter } from "./routes/couriers.js";
 
 // Re-export for convenience
 export type { AppType };
@@ -57,9 +58,9 @@ app.route("/", companiesRouter);
 app.route("/", shopsRouter);
 app.route("/", ordersRouter);
 app.route("/", deliveriesRouter);
+app.route("/", couriersRouter);
 
 // Route mounts will be added by subsequent features:
-// - F-010: couriers routes
 // - F-011: SSE event routes
 // - F-012: OpenAPI doc endpoint
 
