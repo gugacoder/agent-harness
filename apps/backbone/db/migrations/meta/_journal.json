@@ -8,6 +8,13 @@
       "when": 1772324582043,
       "tag": "0000_material_big_bertha",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1772378937098,
+      "tag": "0001_fearless_hitman",
+      "breakpoints": true
     }
   ]
 }

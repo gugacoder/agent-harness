@@ -58,18 +58,44 @@ export function useCompanyEvents() {
     queryClient.invalidateQueries({ queryKey: ["couriers"] });
   }, [queryClient]);
 
+  const handleClosingCreated: SSEEventHandler = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["closings"] });
+  }, [queryClient]);
+
+  const handleClosingPaid: SSEEventHandler = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["closings"] });
+    queryClient.invalidateQueries({ queryKey: ["closing"] });
+  }, [queryClient]);
+
+  const handleInvoiceCreated: SSEEventHandler = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["invoices"] });
+  }, [queryClient]);
+
+  const handleInvoiceSent: SSEEventHandler = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["invoices"] });
+    queryClient.invalidateQueries({ queryKey: ["invoice"] });
+  }, [queryClient]);
+
   const handlers = useMemo(
     () => ({
       order_created: handleOrderCreated,
       order_status: handleOrderStatus,
       courier_location: handleCourierLocation,
       courier_status: handleCourierStatus,
+      closing_created: handleClosingCreated,
+      closing_paid: handleClosingPaid,
+      invoice_created: handleInvoiceCreated,
+      invoice_sent: handleInvoiceSent,
     }),
     [
       handleOrderCreated,
       handleOrderStatus,
       handleCourierLocation,
       handleCourierStatus,
+      handleClosingCreated,
+      handleClosingPaid,
+      handleInvoiceCreated,
+      handleInvoiceSent,
     ],
   );
 
