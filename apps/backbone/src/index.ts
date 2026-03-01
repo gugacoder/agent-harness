@@ -9,6 +9,7 @@ import { healthRouter } from "./routes/health.js";
 import { authRouter } from "./routes/auth.js";
 import { companiesRouter } from "./routes/companies.js";
 import { shopsRouter } from "./routes/shops.js";
+import { ordersRouter } from "./routes/orders.js";
 
 // Re-export for convenience
 export type { AppType };
@@ -53,9 +54,9 @@ app.route("/", healthRouter);
 app.route("/", authRouter);
 app.route("/", companiesRouter);
 app.route("/", shopsRouter);
+app.route("/", ordersRouter);
 
 // Route mounts will be added by subsequent features:
-// - F-008: orders routes
 // - F-009: deliveries routes
 // - F-010: couriers routes
 // - F-011: SSE event routes
