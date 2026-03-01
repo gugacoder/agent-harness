@@ -1,7 +1,7 @@
 import { pgTable, uuid, text, numeric, timestamp } from "drizzle-orm/pg-core";
-import { deliveryEventTypeEnum } from "./_enums.js";
-import { deliveries } from "./deliveries.js";
-import { profiles } from "./profiles.js";
+import { deliveryEventTypeEnum } from "./_enums";
+import { deliveries } from "./deliveries";
+import { profiles } from "./profiles";
 
 export const deliveryEvents = pgTable("delivery_events", {
   id: uuid("id").primaryKey().defaultRandom(),

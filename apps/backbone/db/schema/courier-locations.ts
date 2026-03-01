@@ -1,7 +1,7 @@
 import { pgTable, uuid, numeric, timestamp } from "drizzle-orm/pg-core";
-import { couriers } from "./couriers.js";
-import { companies } from "./companies.js";
-import { deliveries } from "./deliveries.js";
+import { couriers } from "./couriers";
+import { companies } from "./companies";
+import { deliveries } from "./deliveries";
 
 export const courierLocations = pgTable("courier_locations", {
   id: uuid("id").primaryKey().defaultRandom(),

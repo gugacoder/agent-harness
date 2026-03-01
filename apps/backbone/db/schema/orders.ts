@@ -6,10 +6,10 @@ import {
   numeric,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { orderStatusEnum } from "./_enums.js";
-import { companies } from "./companies.js";
-import { shops } from "./shops.js";
-import { profiles } from "./profiles.js";
+import { orderStatusEnum } from "./_enums";
+import { companies } from "./companies";
+import { shops } from "./shops";
+import { profiles } from "./profiles";
 
 export const orders = pgTable("orders", {
   id: uuid("id").primaryKey().defaultRandom(),

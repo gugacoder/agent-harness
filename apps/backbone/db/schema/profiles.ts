@@ -5,8 +5,8 @@ import {
   boolean,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { userRoleEnum } from "./_enums.js";
-import { companies } from "./companies.js";
+import { userRoleEnum } from "./_enums";
+import { companies } from "./companies";
 
 export const profiles = pgTable("profiles", {
   // Same id as auth.users — FK to auth.users added via raw SQL in migrations

@@ -5,13 +5,13 @@ export {
   orderStatusEnum,
   deliveryStatusEnum,
   deliveryEventTypeEnum,
-} from "./_enums.js";
+} from "./_enums";
 
-export { companies } from "./companies.js";
-export { profiles } from "./profiles.js";
-export { shops } from "./shops.js";
-export { couriers } from "./couriers.js";
-export { orders } from "./orders.js";
-export { deliveries } from "./deliveries.js";
-export { deliveryEvents } from "./delivery-events.js";
-export { courierLocations } from "./courier-locations.js";
+export { companies } from "./companies";
+export { profiles } from "./profiles";
+export { shops } from "./shops";
+export { couriers } from "./couriers";
+export { orders } from "./orders";
+export { deliveries } from "./deliveries";
+export { deliveryEvents } from "./delivery-events";
+export { courierLocations } from "./courier-locations";

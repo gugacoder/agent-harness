@@ -1,5 +1,5 @@
 import { pgTable, uuid, text, numeric, timestamp } from "drizzle-orm/pg-core";
-import { companyStatusEnum } from "./_enums.js";
+import { companyStatusEnum } from "./_enums";
 
 export const companies = pgTable("companies", {
   id: uuid("id").primaryKey().defaultRandom(),

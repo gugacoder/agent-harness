@@ -6,8 +6,8 @@ import {
   boolean,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { companies } from "./companies.js";
-import { profiles } from "./profiles.js";
+import { companies } from "./companies";
+import { profiles } from "./profiles";
 
 export const shops = pgTable("shops", {
   id: uuid("id").primaryKey().defaultRandom(),

@@ -5,10 +5,10 @@ import {
   integer,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { deliveryStatusEnum } from "./_enums.js";
-import { orders } from "./orders.js";
-import { couriers } from "./couriers.js";
-import { companies } from "./companies.js";
+import { deliveryStatusEnum } from "./_enums";
+import { orders } from "./orders";
+import { couriers } from "./couriers";
+import { companies } from "./companies";
 
 export const deliveries = pgTable("deliveries", {
   id: uuid("id").primaryKey().defaultRandom(),
