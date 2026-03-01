@@ -7,6 +7,7 @@ import type { AppType } from "./types.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { healthRouter } from "./routes/health.js";
 import { authRouter } from "./routes/auth.js";
+import { companiesRouter } from "./routes/companies.js";
 
 // Re-export for convenience
 export type { AppType };
@@ -49,9 +50,9 @@ app.route("/", healthRouter);
 
 // Routes — authenticated
 app.route("/", authRouter);
+app.route("/", companiesRouter);
 
 // Route mounts will be added by subsequent features:
-// - F-006: companies routes
 // - F-007: shops routes
 // - F-008: orders routes
 // - F-009: deliveries routes
