@@ -10,6 +10,10 @@ import {
 } from "../../db/schema/index.js";
 import { sseManager } from "../sse/manager.js";
 import { companyChannel, orderChannel } from "../sse/channels.js";
+import {
+  InvoiceCreatedEventSchema,
+  InvoiceSentEventSchema,
+} from "@chegala/schemas";
 
 /**
  * Valid invoice status transitions.
@@ -147,17 +151,18 @@ export async function generateInvoice(params: {
     )
     .returning();
 
-  // Emit SSE invoice_created on company channel
+  // Emit SSE invoice_created on company channel (validated against Zod schema)
+  const invoiceCreatedPayload = InvoiceCreatedEventSchema.parse({
+    type: "invoice_created",
+    invoiceId: invoice.id,
+    shopId: shopId,
+    shopName: shop.trade_name,
+    totalAmount: invoice.total_amount,
+    periodStart: new Date(invoice.period_start).toISOString(),
+    periodEnd: new Date(invoice.period_end).toISOString(),
+  });
   sseManager
-    .broadcast(companyChannel(companyId), {
-      type: "invoice_created",
-      invoiceId: invoice.id,
-      shopId: shopId,
-      shopName: shop.trade_name,
-      totalAmount: invoice.total_amount,
-      periodStart: invoice.period_start,
-      periodEnd: invoice.period_end,
-    })
+    .broadcast(companyChannel(companyId), invoiceCreatedPayload)
     .catch(() => {});
 
   return { ...invoice, items: createdItems };
@@ -213,14 +218,15 @@ export async function sendInvoice(params: {
 
   const shopName = shop?.trade_name ?? "Unknown";
 
-  // Emit SSE invoice_sent on company channel
+  // Emit SSE invoice_sent on company and order channels (validated against Zod schema)
+  const invoiceSentPayload = InvoiceSentEventSchema.parse({
+    type: "invoice_sent",
+    invoiceId: invoice.id,
+    shopId: invoice.shop_id,
+    shopName,
+  });
   sseManager
-    .broadcast(companyChannel(companyId), {
-      type: "invoice_sent",
-      invoiceId: invoice.id,
-      shopId: invoice.shop_id,
-      shopName,
-    })
+    .broadcast(companyChannel(companyId), invoiceSentPayload)
     .catch(() => {});
 
   // Emit SSE invoice_sent on order channel for the shop's orders
@@ -238,11 +244,7 @@ export async function sendInvoice(params: {
 
     if (delivery) {
       sseManager
-        .broadcast(orderChannel(delivery.order_id), {
-          type: "invoice_sent",
-          invoiceId: invoice.id,
-          shopName,
-        })
+        .broadcast(orderChannel(delivery.order_id), invoiceSentPayload)
         .catch(() => {});
     }
   }

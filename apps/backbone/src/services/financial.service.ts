@@ -9,6 +9,10 @@ import {
 } from "../../db/schema/index.js";
 import { sseManager } from "../sse/manager.js";
 import { companyChannel, courierChannel } from "../sse/channels.js";
+import {
+  ClosingCreatedEventSchema,
+  ClosingPaidEventSchema,
+} from "@chegala/schemas";
 
 /**
  * Valid closing status transitions.
@@ -136,17 +140,18 @@ export async function generateClosing(params: {
     )
     .returning();
 
-  // Emit SSE closing_created on company channel
+  // Emit SSE closing_created on company channel (validated against Zod schema)
+  const closingCreatedPayload = ClosingCreatedEventSchema.parse({
+    type: "closing_created",
+    closingId: closing.id,
+    courierId: courierId,
+    courierName: courier.full_name,
+    totalAmount: closing.total_amount,
+    periodStart: new Date(closing.period_start).toISOString(),
+    periodEnd: new Date(closing.period_end).toISOString(),
+  });
   sseManager
-    .broadcast(companyChannel(companyId), {
-      type: "closing_created",
-      closingId: closing.id,
-      courierId: courierId,
-      courierName: courier.full_name,
-      totalAmount: closing.total_amount,
-      periodStart: closing.period_start,
-      periodEnd: closing.period_end,
-    })
+    .broadcast(companyChannel(companyId), closingCreatedPayload)
     .catch(() => {});
 
   return { ...closing, items: closingItems };
@@ -246,26 +251,19 @@ export async function payClosing(params: {
 
   const courierName = courier?.full_name ?? "Unknown";
 
-  // Emit SSE closing_paid on company channel
+  // Emit SSE closing_paid on company and courier channels (validated against Zod schema)
+  const closingPaidPayload = ClosingPaidEventSchema.parse({
+    type: "closing_paid",
+    closingId: closing.id,
+    courierId: closing.courier_id,
+    courierName,
+    totalAmount: closing.total_amount,
+  });
   sseManager
-    .broadcast(companyChannel(companyId), {
-      type: "closing_paid",
-      closingId: closing.id,
-      courierId: closing.courier_id,
-      courierName,
-      totalAmount: closing.total_amount,
-    })
+    .broadcast(companyChannel(companyId), closingPaidPayload)
     .catch(() => {});
-
-  // Emit SSE closing_paid on courier channel
   sseManager
-    .broadcast(courierChannel(closing.courier_id), {
-      type: "closing_paid",
-      closingId: closing.id,
-      courierId: closing.courier_id,
-      courierName,
-      totalAmount: closing.total_amount,
-    })
+    .broadcast(courierChannel(closing.courier_id), closingPaidPayload)
     .catch(() => {});
 
   return updated;
