@@ -18,6 +18,7 @@ import { financialRouter } from "./routes/financial.js";
 import { earningsRouter } from "./routes/earnings.js";
 import { deliveryProofRouter } from "./routes/delivery-proof.js";
 import { invoicesRouter } from "./routes/invoices.js";
+import { analyticsRouter } from "./routes/analytics.js";
 import { eventsRouter } from "./routes/events.js";
 
 // Re-export for convenience
@@ -90,6 +91,7 @@ app.route("/", financialRouter);
 app.route("/", earningsRouter);
 app.route("/", deliveryProofRouter);
 app.route("/", invoicesRouter);
+app.route("/", analyticsRouter);
 
 const port = parseInt(process.env.BACKBONE_PORT || "3205", 10);
 
