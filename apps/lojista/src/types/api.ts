@@ -1,5 +1,19 @@
 // API response types matching backbone schema
 
+export interface Shop {
+  id: string;
+  company_id: string;
+  profile_id: string;
+  trade_name: string;
+  phone: string;
+  address: string;
+  lat: string;
+  lng: string;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export type OrderStatus =
   | "pending"
   | "assigned"

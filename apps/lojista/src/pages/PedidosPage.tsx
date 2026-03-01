@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { useLocation } from "react-router";
 import {
   Package,
   ChevronLeft,
@@ -13,6 +14,7 @@ import {
   Loader2,
   Wifi,
   WifiOff,
+  Check,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
@@ -404,10 +406,24 @@ type View = { type: "list" } | { type: "detail"; orderId: string };
 export function PedidosPage() {
   const [view, setView] = useState<View>({ type: "list" });
   const [cancelling, setCancelling] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { data: orders, isLoading } = useOrders();
   const { connected, courierLocations } = useCompanyEvents();
+
+  // Show toast from navigation state (e.g. after creating an order)
+  useEffect(() => {
+    const state = location.state as { toast?: string } | null;
+    if (state?.toast) {
+      setToast(state.toast);
+      // Clear the state so toast doesn't re-appear on refresh
+      window.history.replaceState({}, "");
+      const timer = setTimeout(() => setToast(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   // Filter to active orders only
   const activeOrders = useMemo(() => {
@@ -469,6 +485,14 @@ export function PedidosPage() {
   // --- Render Order List ---
   return (
     <div className="space-y-4">
+      {/* Toast notification */}
+      {toast && (
+        <div className="flex items-center gap-2 rounded-md bg-green-50 p-3 text-sm font-medium text-green-700">
+          <Check className="h-4 w-4 shrink-0" />
+          {toast}
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Pedidos Ativos</h1>
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
