@@ -57,3 +57,40 @@ export interface Shop {
   created_at: string;
   updated_at: string;
 }
+
+export type DeliveryStatus =
+  | "assigned"
+  | "accepted"
+  | "picked_up"
+  | "in_transit"
+  | "delivered"
+  | "failed";
+
+export interface Delivery {
+  id: string;
+  order_id: string;
+  courier_id: string;
+  company_id: string;
+  status: DeliveryStatus;
+  assigned_at: string;
+  accepted_at: string | null;
+  picked_up_at: string | null;
+  delivered_at: string | null;
+  actual_distance_km: string | null;
+  actual_duration_min: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DeliveryEvent {
+  id: string;
+  delivery_id: string;
+  event_type: "status_change" | "location_update" | "note";
+  old_status: string | null;
+  new_status: string | null;
+  description: string;
+  actor_id: string;
+  lat: string | null;
+  lng: string | null;
+  created_at: string;
+}
