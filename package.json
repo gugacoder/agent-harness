@@ -16,7 +16,14 @@
     "platform:logs": "docker compose -f docker-compose.platform.yml -f docker-compose.platform.dev-ports.yml logs -f",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f"
+    "docker:logs": "docker compose logs -f",
+    "dev:backbone": "npm -w apps/backbone run dev",
+    "dev:central": "npm -w apps/central run dev",
+    "dev:lojista": "npm -w apps/lojista run dev",
+    "dev:motoboy": "npm -w apps/motoboy run dev",
+    "db:generate": "npm -w apps/backbone run db:generate",
+    "db:migrate": "npm -w apps/backbone run db:migrate",
+    "build": "npm -w packages/shared/schemas run build && npm -w apps/backbone run build && npm -w apps/central run build && npm -w apps/lojista run build && npm -w apps/motoboy run build"
   },
   "devDependencies": {
     "typescript": "^5.8.3"
