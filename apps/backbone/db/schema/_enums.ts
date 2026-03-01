@@ -40,3 +40,40 @@ export const deliveryEventTypeEnum = pgEnum("delivery_event_type", [
   "location_update",
   "note",
 ]);
+
+export const pricingRuleTypeEnum = pgEnum("pricing_rule_type", [
+  "per_km",
+  "distance_range",
+  "neighborhood",
+  "flat_rate",
+  "surcharge",
+]);
+
+export const surchargeTypeEnum = pgEnum("surcharge_type", [
+  "rain",
+  "night",
+  "weekend",
+]);
+
+export const surchargeModeEnum = pgEnum("surcharge_mode", [
+  "percentage",
+  "fixed",
+]);
+
+export const closingStatusEnum = pgEnum("closing_status", [
+  "draft",
+  "confirmed",
+  "paid",
+]);
+
+export const invoiceStatusEnum = pgEnum("invoice_status", [
+  "draft",
+  "sent",
+  "paid",
+]);
+
+export const closingPeriodEnum = pgEnum("closing_period", [
+  "daily",
+  "weekly",
+  "monthly",
+]);

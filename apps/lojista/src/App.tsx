@@ -7,6 +7,7 @@ import { PedidosPage } from "@/pages/PedidosPage";
 import { NovaEntregaPage } from "@/pages/NovaEntregaPage";
 import { HistoricoPage } from "@/pages/HistoricoPage";
 import { LoginPage } from "@/pages/LoginPage";
+import { FaturasPage } from "@/pages/faturas/FaturasPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,6 +28,7 @@ export function App() {
             <Route element={<RequireAuth />}>
               <Route element={<AppShell />}>
                 <Route index element={<PedidosPage />} />
+                <Route path="faturas" element={<FaturasPage />} />
                 <Route path="nova" element={<NovaEntregaPage />} />
                 <Route path="historico" element={<HistoricoPage />} />
               </Route>

@@ -1,4 +1,4 @@
-import type { OrderStatus, CourierStatus } from "@/types/api";
+import type { OrderStatus, CourierStatus, ClosingStatus, InvoiceStatus } from "@/types/api";
 
 const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   pending: "Pendente",
@@ -50,10 +50,58 @@ export function CourierStatusBadge({ status }: { status: CourierStatus }) {
   );
 }
 
+const CLOSING_STATUS_LABELS: Record<ClosingStatus, string> = {
+  draft: "Rascunho",
+  confirmed: "Confirmado",
+  paid: "Pago",
+};
+
+const CLOSING_STATUS_COLORS: Record<ClosingStatus, string> = {
+  draft: "bg-amber-100 text-amber-800",
+  confirmed: "bg-blue-100 text-blue-800",
+  paid: "bg-green-100 text-green-800",
+};
+
+export function ClosingStatusBadge({ status }: { status: ClosingStatus }) {
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${CLOSING_STATUS_COLORS[status]}`}
+    >
+      {CLOSING_STATUS_LABELS[status]}
+    </span>
+  );
+}
+
+const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
+  draft: "Rascunho",
+  sent: "Enviada",
+  paid: "Paga",
+};
+
+const INVOICE_STATUS_COLORS: Record<InvoiceStatus, string> = {
+  draft: "bg-amber-100 text-amber-800",
+  sent: "bg-blue-100 text-blue-800",
+  paid: "bg-green-100 text-green-800",
+};
+
+export function InvoiceStatusBadge({ status }: { status: InvoiceStatus }) {
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${INVOICE_STATUS_COLORS[status]}`}
+    >
+      {INVOICE_STATUS_LABELS[status]}
+    </span>
+  );
+}
+
 /** Re-export the label/color maps for pages that need direct access */
 export {
   ORDER_STATUS_LABELS,
   ORDER_STATUS_COLORS,
   COURIER_STATUS_LABELS,
   COURIER_STATUS_COLORS,
+  CLOSING_STATUS_LABELS,
+  CLOSING_STATUS_COLORS,
+  INVOICE_STATUS_LABELS,
+  INVOICE_STATUS_COLORS,
 };
