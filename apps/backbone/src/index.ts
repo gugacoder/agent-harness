@@ -5,6 +5,8 @@ import { logger } from "hono/logger";
 
 import type { AppType } from "./types.js";
 import { errorHandler } from "./middleware/error-handler.js";
+import { healthRouter } from "./routes/health.js";
+import { authRouter } from "./routes/auth.js";
 
 // Re-export for convenience
 export type { AppType };
@@ -42,16 +44,13 @@ app.use(
   })
 );
 
-// Health check (no auth required)
-app.get("/health", (c) =>
-  c.json({ status: "ok", timestamp: new Date().toISOString() })
-);
+// Routes — public
+app.route("/", healthRouter);
+
+// Routes — authenticated
+app.route("/", authRouter);
 
 // Route mounts will be added by subsequent features:
-// - F-002: auth middleware
-// - F-003: company middleware
-// - F-004: error handler middleware
-// - F-005: health routes (enhanced), auth routes
 // - F-006: companies routes
 // - F-007: shops routes
 // - F-008: orders routes
