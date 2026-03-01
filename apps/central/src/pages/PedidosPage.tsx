@@ -19,27 +19,14 @@ import { useOrders } from "@/hooks/useOrders";
 import { useShops } from "@/hooks/useShops";
 import { useCouriers } from "@/hooks/useCouriers";
 import { api } from "@/lib/api";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import {
+  OrderStatusBadge,
+  ORDER_STATUS_LABELS,
+  ORDER_STATUS_COLORS,
+} from "@/components/ui/StatusBadge";
 import type { Order, OrderStatus, Courier, Delivery } from "@/types/api";
-
-// --- Constants ---
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: "Pendente",
-  assigned: "Atribuído",
-  picked_up: "Coletado",
-  in_transit: "Em Trânsito",
-  delivered: "Entregue",
-  cancelled: "Cancelado",
-};
-
-const STATUS_COLORS: Record<OrderStatus, string> = {
-  pending: "bg-muted text-muted-foreground",
-  assigned: "bg-secondary text-secondary-foreground",
-  picked_up: "bg-accent text-accent-foreground",
-  in_transit: "bg-secondary text-secondary-foreground",
-  delivered: "bg-primary text-primary-foreground",
-  cancelled: "bg-destructive text-white",
-};
 
 const ALL_STATUSES: OrderStatus[] = [
   "pending",
@@ -49,28 +36,6 @@ const ALL_STATUSES: OrderStatus[] = [
   "delivered",
   "cancelled",
 ];
-
-// --- Status Badge ---
-
-function StatusBadge({ status }: { status: OrderStatus }) {
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[status]}`}
-    >
-      {STATUS_LABELS[status]}
-    </span>
-  );
-}
-
-// --- Skeleton ---
-
-function Skeleton({ className }: { className?: string }) {
-  return (
-    <div
-      className={`animate-pulse rounded-md bg-muted ${className ?? ""}`}
-    />
-  );
-}
 
 // --- Timeline Event ---
 
@@ -373,15 +338,11 @@ function AssignCourierPanel({ order, onClose, onSuccess }: AssignCourierProps) {
             ))}
           </div>
         ) : !couriers || couriers.length === 0 ? (
-          <div className="py-8 text-center">
-            <Bike className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
-            <p className="text-sm font-medium text-muted-foreground">
-              Nenhum motoboy disponível
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground/70">
-              Não há motoboys com status disponível no momento
-            </p>
-          </div>
+          <EmptyState
+            icon={Bike}
+            title="Nenhum motoboy disponível"
+            description="Não há motoboys com status disponível no momento"
+          />
         ) : (
           <ul className="divide-y">
             {couriers.map((courier) => (
@@ -531,7 +492,7 @@ function OrderDetail({
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold">Pedido #{order.order_number}</h2>
-            <StatusBadge status={order.status} />
+            <OrderStatusBadge status={order.status} />
           </div>
         </div>
       </div>
@@ -855,11 +816,11 @@ export function PedidosPage() {
             }
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               statusFilter === status
-                ? STATUS_COLORS[status]
+                ? ORDER_STATUS_COLORS[status]
                 : "bg-muted text-muted-foreground hover:bg-muted/80"
             }`}
           >
-            {STATUS_LABELS[status]} ({statusCounts[status] ?? 0})
+            {ORDER_STATUS_LABELS[status]} ({statusCounts[status] ?? 0})
           </button>
         ))}
       </div>
@@ -873,19 +834,19 @@ export function PedidosPage() {
             ))}
           </div>
         ) : filteredOrders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Package className="mb-3 h-10 w-10 text-muted-foreground/50" />
-            <p className="text-sm font-medium text-muted-foreground">
-              {statusFilter
-                ? `Nenhum pedido com status "${STATUS_LABELS[statusFilter]}"`
-                : "Nenhum pedido encontrado"}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground/70">
-              {statusFilter
+          <EmptyState
+            icon={Package}
+            title={
+              statusFilter
+                ? `Nenhum pedido com status "${ORDER_STATUS_LABELS[statusFilter]}"`
+                : "Nenhum pedido encontrado"
+            }
+            description={
+              statusFilter
                 ? "Tente outro filtro ou crie um novo pedido"
-                : "Crie o primeiro pedido clicando em 'Novo Pedido'"}
-            </p>
-          </div>
+                : "Crie o primeiro pedido clicando em 'Novo Pedido'"
+            }
+          />
         ) : (
           <>
             {/* Table header - desktop only */}
@@ -912,7 +873,7 @@ export function PedidosPage() {
                         <span className="font-medium">
                           #{order.order_number}
                         </span>
-                        <StatusBadge status={order.status} />
+                        <OrderStatusBadge status={order.status} />
                       </div>
                       <span className="text-xs text-muted-foreground">
                         {new Date(order.created_at).toLocaleTimeString(
@@ -937,7 +898,7 @@ export function PedidosPage() {
                     <span className="font-medium">#{order.order_number}</span>
                   </div>
                   <div className="col-span-2 hidden sm:block">
-                    <StatusBadge status={order.status} />
+                    <OrderStatusBadge status={order.status} />
                   </div>
                   <div className="col-span-3 hidden truncate text-sm sm:block">
                     {order.shop_id

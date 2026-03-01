@@ -11,6 +11,7 @@ import "leaflet/dist/leaflet.css";
 import { Bike, MapPin, Wifi, WifiOff } from "lucide-react";
 import { useCouriers } from "@/hooks/useCouriers";
 import { useCompanyEventsContext } from "@/contexts/CompanyEventsContext";
+import { COURIER_STATUS_LABELS } from "@/components/ui/StatusBadge";
 import type { CourierLocation } from "@/hooks/useCourierLocations";
 import type { Courier, CourierStatus } from "@/types/api";
 
@@ -22,12 +23,6 @@ const MARKER_COLORS: Record<CourierStatus, string> = {
   available: "#1dace7",
   busy: "#fca322",
   offline: "#9ca3af",
-};
-
-const STATUS_LABELS: Record<CourierStatus, string> = {
-  available: "Disponível",
-  busy: "Ocupado",
-  offline: "Offline",
 };
 
 // --- FitBounds: auto-zoom to show all markers ---
@@ -52,7 +47,7 @@ function CourierMarkerItem({
   location: CourierLocation;
 }) {
   const color = MARKER_COLORS[courier.status];
-  const statusLabel = STATUS_LABELS[courier.status];
+  const statusLabel = COURIER_STATUS_LABELS[courier.status];
 
   return (
     <CircleMarker

@@ -19,43 +19,10 @@ import { useOrders } from "@/hooks/useOrders";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { CourierStatusBadge } from "@/components/ui/StatusBadge";
 import type { Courier, CourierStatus } from "@/types/api";
-
-// --- Constants ---
-
-const STATUS_LABELS: Record<CourierStatus, string> = {
-  available: "Disponível",
-  busy: "Ocupado",
-  offline: "Offline",
-};
-
-const STATUS_COLORS: Record<CourierStatus, string> = {
-  available: "bg-green-100 text-green-800",
-  busy: "bg-amber-100 text-amber-800",
-  offline: "bg-gray-100 text-gray-600",
-};
-
-// --- Status Badge ---
-
-function CourierStatusBadge({ status }: { status: CourierStatus }) {
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[status]}`}
-    >
-      {STATUS_LABELS[status]}
-    </span>
-  );
-}
-
-// --- Skeleton ---
-
-function Skeleton({ className }: { className?: string }) {
-  return (
-    <div
-      className={`animate-pulse rounded-md bg-muted ${className ?? ""}`}
-    />
-  );
-}
 
 // --- New Courier Form ---
 
@@ -616,19 +583,19 @@ export function MotoboysPage() {
             ))}
           </div>
         ) : filteredCouriers.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Bike className="mb-3 h-10 w-10 text-muted-foreground/50" />
-            <p className="text-sm font-medium text-muted-foreground">
-              {statusFilter !== "all"
+          <EmptyState
+            icon={Bike}
+            title={
+              statusFilter !== "all"
                 ? `Nenhum motoboy com status "${filterButtons.find((f) => f.key === statusFilter)?.label}"`
-                : "Nenhum motoboy cadastrado"}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground/70">
-              {statusFilter !== "all"
+                : "Nenhum motoboy cadastrado"
+            }
+            description={
+              statusFilter !== "all"
                 ? "Tente outro filtro ou cadastre um novo motoboy"
-                : "Cadastre o primeiro motoboy clicando em 'Novo Motoboy'"}
-            </p>
-          </div>
+                : "Cadastre o primeiro motoboy clicando em 'Novo Motoboy'"
+            }
+          />
         ) : (
           <>
             {/* Table header - desktop only */}

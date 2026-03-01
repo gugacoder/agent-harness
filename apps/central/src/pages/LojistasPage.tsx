@@ -18,17 +18,10 @@ import { useOrders } from "@/hooks/useOrders";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { OrderStatusBadge, ORDER_STATUS_LABELS } from "@/components/ui/StatusBadge";
 import type { Shop, Order } from "@/types/api";
-
-// --- Skeleton ---
-
-function Skeleton({ className }: { className?: string }) {
-  return (
-    <div
-      className={`animate-pulse rounded-md bg-muted ${className ?? ""}`}
-    />
-  );
-}
 
 // --- New Shop Form ---
 
@@ -276,24 +269,6 @@ function ShopDetail({ shop, orders, onBack }: ShopDetailProps) {
       minute: "2-digit",
     });
 
-  const STATUS_LABELS: Record<string, string> = {
-    pending: "Pendente",
-    assigned: "Atribuído",
-    picked_up: "Coletado",
-    in_transit: "Em Trânsito",
-    delivered: "Entregue",
-    cancelled: "Cancelado",
-  };
-
-  const STATUS_COLORS: Record<string, string> = {
-    pending: "bg-gray-100 text-gray-600",
-    assigned: "bg-blue-100 text-blue-800",
-    picked_up: "bg-amber-100 text-amber-800",
-    in_transit: "bg-blue-100 text-blue-800",
-    delivered: "bg-green-100 text-green-800",
-    cancelled: "bg-red-100 text-red-800",
-  };
-
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -400,12 +375,10 @@ function ShopDetail({ shop, orders, onBack }: ShopDetailProps) {
 
             {/* Order List */}
             {shopOrders.length === 0 ? (
-              <div className="py-6 text-center">
-                <Package className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
-                <p className="text-sm text-muted-foreground">
-                  Nenhum pedido associado
-                </p>
-              </div>
+              <EmptyState
+                icon={Package}
+                title="Nenhum pedido associado"
+              />
             ) : (
               <ul className="space-y-2">
                 {shopOrders
@@ -429,13 +402,7 @@ function ShopDetail({ shop, orders, onBack }: ShopDetailProps) {
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                            STATUS_COLORS[order.status] ?? "bg-gray-100 text-gray-600"
-                          }`}
-                        >
-                          {STATUS_LABELS[order.status] ?? order.status}
-                        </span>
+                        <OrderStatusBadge status={order.status} />
                         <span className="text-xs text-muted-foreground">
                           {formatDate(order.created_at)}
                         </span>
@@ -612,19 +579,19 @@ export function LojistasPage() {
             ))}
           </div>
         ) : filteredShops.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Store className="mb-3 h-10 w-10 text-muted-foreground/50" />
-            <p className="text-sm font-medium text-muted-foreground">
-              {statusFilter !== "all"
+          <EmptyState
+            icon={Store}
+            title={
+              statusFilter !== "all"
                 ? `Nenhum lojista ${statusFilter === "active" ? "ativo" : "inativo"}`
-                : "Nenhum lojista cadastrado"}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground/70">
-              {statusFilter !== "all"
+                : "Nenhum lojista cadastrado"
+            }
+            description={
+              statusFilter !== "all"
                 ? "Tente outro filtro ou cadastre um novo lojista"
-                : "Cadastre o primeiro lojista clicando em 'Novo Lojista'"}
-            </p>
-          </div>
+                : "Cadastre o primeiro lojista clicando em 'Novo Lojista'"
+            }
+          />
         ) : (
           <>
             {/* Table header - desktop only */}

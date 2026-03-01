@@ -20,27 +20,10 @@ import { useOrders } from "@/hooks/useOrders";
 import { useCouriers } from "@/hooks/useCouriers";
 import { useShops } from "@/hooks/useShops";
 import { useCompanyEventsContext } from "@/contexts/CompanyEventsContext";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { OrderStatusBadge } from "@/components/ui/StatusBadge";
 import type { Order, OrderStatus, Courier, CourierStatus } from "@/types/api";
-
-// --- Status helpers ---
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: "Pendente",
-  assigned: "Atribuído",
-  picked_up: "Coletado",
-  in_transit: "Em Trânsito",
-  delivered: "Entregue",
-  cancelled: "Cancelado",
-};
-
-const STATUS_COLORS: Record<OrderStatus, string> = {
-  pending: "bg-muted text-muted-foreground",
-  assigned: "bg-secondary text-secondary-foreground",
-  picked_up: "bg-accent text-accent-foreground",
-  in_transit: "bg-secondary text-secondary-foreground",
-  delivered: "bg-primary text-primary-foreground",
-  cancelled: "bg-destructive text-white",
-};
 
 // --- Metric Card ---
 
@@ -67,28 +50,6 @@ function MetricCard({
         </div>
       </div>
     </div>
-  );
-}
-
-// --- Status Badge ---
-
-function StatusBadge({ status }: { status: OrderStatus }) {
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[status]}`}
-    >
-      {STATUS_LABELS[status]}
-    </span>
-  );
-}
-
-// --- Loading Skeleton ---
-
-function Skeleton({ className }: { className?: string }) {
-  return (
-    <div
-      className={`animate-pulse rounded-md bg-muted ${className ?? ""}`}
-    />
   );
 }
 
@@ -237,15 +198,11 @@ export function DashboardPage() {
                 ))}
               </div>
             ) : activeOrders.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <Package className="mb-3 h-10 w-10 text-muted-foreground/50" />
-                <p className="text-sm font-medium text-muted-foreground">
-                  Nenhum pedido ativo
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground/70">
-                  Novos pedidos aparecerão aqui automaticamente
-                </p>
-              </div>
+              <EmptyState
+                icon={Package}
+                title="Nenhum pedido ativo"
+                description="Novos pedidos aparecerão aqui automaticamente"
+              />
             ) : (
               <ul className="divide-y">
                 {activeOrders.map((order) => (
@@ -354,7 +311,7 @@ function OrderRow({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="font-medium">#{order.order_number}</span>
-          <StatusBadge status={order.status} />
+          <OrderStatusBadge status={order.status} />
         </div>
         <p className="mt-0.5 truncate text-sm text-muted-foreground">
           {shopName && (
