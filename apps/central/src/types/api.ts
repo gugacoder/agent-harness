@@ -190,3 +190,40 @@ export interface FinancialClosingItem {
 export interface FinancialClosingWithItems extends FinancialClosing {
   items: FinancialClosingItem[];
 }
+
+// --- Invoices ---
+
+export type InvoiceStatus = "draft" | "sent" | "paid";
+
+export interface Invoice {
+  id: string;
+  company_id: string;
+  shop_id: string;
+  invoice_number: number;
+  period_start: string;
+  period_end: string;
+  total_deliveries: number;
+  total_distance_km: string;
+  total_amount: string;
+  status: InvoiceStatus;
+  sent_at: string | null;
+  paid_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InvoiceItem {
+  id: string;
+  invoice_id: string;
+  delivery_id: string;
+  order_number: number;
+  pickup_address: string;
+  delivery_address: string;
+  distance_km: string;
+  price: string;
+  delivered_at: string;
+}
+
+export interface InvoiceWithItems extends Invoice {
+  items: InvoiceItem[];
+}
