@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Agent Setup - PRP-005-app-motoboy-wave2 (Wave 2 - Harness B Implementation)
+# Agent Setup - PRP-wave-2-close (Wave 2 - Harness B Implementation)
 # Bootstrap para o agente na worktree isolada.
 # Executar da raiz da worktree: bash .harness/agent-setup.sh
 # =============================================================================
 set -euo pipefail
 
 WT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-echo "=== Agent Setup: PRP-005-app-motoboy-wave2 ==="
+echo "=== Agent Setup: PRP-wave-2-close ==="
 echo ""
 
 # --- Carregar .env ---
@@ -65,7 +65,7 @@ echo "[4/4] Smoke test..."
 node -e "console.log('  Node OK:', process.version)" 2>&1 || echo "  WARN: Node.js nao disponivel"
 
 # Health check Kong (Supabase gateway) se portas configuradas
-KONG="${KONG_HTTP_PORT:-4530}"
+KONG="${KONG_HTTP_PORT:-4630}"
 if command -v curl &>/dev/null; then
   HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 3 "http://localhost:$KONG" 2>/dev/null || echo "000")
   echo "  Kong (port $KONG): HTTP $HTTP_CODE"
@@ -78,7 +78,7 @@ echo "  Branch:    $(git branch --show-current)"
 echo "  Node:      $(node --version 2>/dev/null || echo 'N/A')"
 echo "  Pkg mgr:   $PKG_MGR"
 echo "  PREFIX:    ${PREFIX:-N/A}"
-echo "  Session:   PRP-005-app-motoboy-wave2--cc"
-echo "  Runs dir:  .harness/runs/PRP-005-app-motoboy-wave2--cc/ (ROOT)"
+echo "  Session:   PRP-wave-2-close--cc"
+echo "  Runs dir:  .harness/runs/PRP-wave-2-close--cc/ (ROOT)"
 echo ""
 echo "=== Setup completo ==="
