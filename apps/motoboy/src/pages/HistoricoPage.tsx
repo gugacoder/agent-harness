@@ -2,10 +2,13 @@ import { useState, useMemo } from "react";
 import { Clock, ChevronLeft, MapPin, Timer } from "lucide-react";
 import { useDeliveryHistory } from "@/hooks/useDeliveryHistory";
 import type { DeliveryWithOrder } from "@/hooks/useDeliveryHistory";
+import { useDeliveryProof } from "@/hooks/useDeliveryProof";
 import { DeliveryStatusBadge } from "@/components/ui/DeliveryStatusBadge";
 import { DeliveryTimeline } from "@/components/ui/DeliveryTimeline";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
+import { ProofBadge } from "@/components/delivery-proof/ProofBadge";
+import { DeliveryProofViewer } from "@/components/delivery-proof/DeliveryProofViewer";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { DeliveryEvent } from "@/types/delivery";
@@ -48,6 +51,7 @@ function HistoryCard({
   onClick: () => void;
 }) {
   const deliveredDate = item.delivery.delivered_at ?? item.delivery.created_at;
+  const { data: proof } = useDeliveryProof(item.delivery.id);
 
   return (
     <button
@@ -57,6 +61,7 @@ function HistoryCard({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <DeliveryStatusBadge status={item.delivery.status} />
+          {proof && <ProofBadge />}
           {item.delivery.actual_duration_min != null && (
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <Timer className="h-3 w-3" />
@@ -95,6 +100,8 @@ function HistoryDetail({
         .json<DeliveryEvent[]>(),
   });
 
+  const { data: proof } = useDeliveryProof(item.delivery.id);
+
   return (
     <div className="space-y-4 p-4">
       {/* Header */}
@@ -109,6 +116,7 @@ function HistoryDetail({
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-bold">Detalhes</h2>
           <DeliveryStatusBadge status={item.delivery.status} />
+          {proof && <ProofBadge />}
         </div>
       </div>
 
@@ -152,6 +160,9 @@ function HistoryDetail({
           )}
         </div>
       </div>
+
+      {/* Proof of Delivery */}
+      {proof && <DeliveryProofViewer proof={proof} />}
 
       {/* Timeline */}
       {events.length > 0 && (
