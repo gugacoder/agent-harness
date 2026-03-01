@@ -3,10 +3,12 @@ import { Sidebar } from "./Sidebar";
 import { BottomNav } from "./BottomNav";
 import { Header } from "./Header";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function AppShell() {
   const isDesktop = useMediaQuery("(min-width: 1024px)");
   const isTablet = useMediaQuery("(min-width: 768px)");
+  const { user, logout } = useAuth();
 
   return (
     <div className="min-h-screen bg-background">
@@ -23,7 +25,7 @@ export function AppShell() {
               : ""
         }
       >
-        <Header />
+        <Header userName={user?.fullName || "Operador"} onLogout={logout} />
         <main className="p-4 pb-20 md:p-6 md:pb-6">
           <Outlet />
         </main>
