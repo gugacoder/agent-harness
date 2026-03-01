@@ -227,3 +227,39 @@ export interface InvoiceItem {
 export interface InvoiceWithItems extends Invoice {
   items: InvoiceItem[];
 }
+
+// --- Analytics ---
+
+export type AnalyticsPeriod = "day" | "week" | "month" | "custom";
+
+export interface AnalyticsOverview {
+  total_deliveries: number;
+  completed: number;
+  cancelled: number;
+  completion_rate: number;
+  avg_delivery_time_minutes: number;
+}
+
+export interface CourierPerformance {
+  courier_id: string;
+  courier_name: string;
+  total_deliveries: number;
+  avg_delivery_time_minutes: number;
+  avg_distance_km: number;
+}
+
+export interface NeighborhoodVolume {
+  neighborhood: string;
+  total_deliveries: number;
+}
+
+export interface AnalyticsRevenue {
+  total_revenue: string;
+  avg_per_delivery: string;
+  total_deliveries: number;
+}
+
+export interface TrendDataPoint {
+  date: string;
+  total_deliveries: number;
+}
