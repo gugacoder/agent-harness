@@ -12,6 +12,7 @@ import { shopsRouter } from "./routes/shops.js";
 import { ordersRouter } from "./routes/orders.js";
 import { deliveriesRouter } from "./routes/deliveries.js";
 import { couriersRouter } from "./routes/couriers.js";
+import { eventsRouter } from "./routes/events.js";
 
 // Re-export for convenience
 export type { AppType };
@@ -52,6 +53,10 @@ app.use(
 // Routes — public
 app.route("/", healthRouter);
 
+// SSE event streams (F-011) — mounted before authenticated routers
+// so the events router's own auth middleware (supports ?token= query param) runs first
+app.route("/", eventsRouter);
+
 // Routes — authenticated
 app.route("/", authRouter);
 app.route("/", companiesRouter);
@@ -61,7 +66,6 @@ app.route("/", deliveriesRouter);
 app.route("/", couriersRouter);
 
 // Route mounts will be added by subsequent features:
-// - F-011: SSE event routes
 // - F-012: OpenAPI doc endpoint
 
 const port = parseInt(process.env.BACKBONE_PORT || "3205", 10);
