@@ -157,3 +157,36 @@ export interface ShopPricingOverride {
   company_id: string;
   created_at: string;
 }
+
+// --- Financial Closings ---
+
+export type ClosingStatus = "draft" | "confirmed" | "paid";
+
+export interface FinancialClosing {
+  id: string;
+  company_id: string;
+  courier_id: string;
+  period_start: string;
+  period_end: string;
+  total_deliveries: number;
+  total_distance_km: string;
+  total_amount: string;
+  status: ClosingStatus;
+  confirmed_at: string | null;
+  paid_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FinancialClosingItem {
+  id: string;
+  closing_id: string;
+  delivery_id: string;
+  delivery_price: string;
+  distance_km: string;
+  delivered_at: string;
+}
+
+export interface FinancialClosingWithItems extends FinancialClosing {
+  items: FinancialClosingItem[];
+}
