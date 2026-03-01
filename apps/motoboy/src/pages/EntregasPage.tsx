@@ -1,5 +1,5 @@
 import { Package } from "lucide-react";
-import { useActiveDelivery } from "@/hooks/useActiveDelivery";
+import { useActiveDeliveryContext } from "@/contexts/ActiveDeliveryContext";
 import { DeliveryNotification } from "@/components/ui/DeliveryNotification";
 import { DeliveryCard } from "@/components/ui/DeliveryCard";
 import { DeliveryTimeline } from "@/components/ui/DeliveryTimeline";
@@ -18,7 +18,7 @@ export function EntregasPage() {
     isAccepting,
     isRejecting,
     isUpdatingStatus,
-  } = useActiveDelivery();
+  } = useActiveDeliveryContext();
 
   if (isLoading) {
     return (

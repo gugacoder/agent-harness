@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ActiveDeliveryProvider } from "@/contexts/ActiveDeliveryContext";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { AppShell } from "@/components/layout/AppShell";
 import { EntregasPage } from "@/pages/EntregasPage";
@@ -25,7 +26,13 @@ export function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route element={<RequireAuth />}>
-              <Route element={<AppShell />}>
+              <Route
+                element={
+                  <ActiveDeliveryProvider>
+                    <AppShell />
+                  </ActiveDeliveryProvider>
+                }
+              >
                 <Route index element={<EntregasPage />} />
                 <Route path="historico" element={<HistoricoPage />} />
                 <Route path="status" element={<StatusPage />} />
