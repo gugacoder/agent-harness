@@ -27,6 +27,8 @@ import {
   ORDER_STATUS_COLORS,
 } from "@/components/ui/StatusBadge";
 import type { Order, OrderStatus, Courier, Delivery } from "@/types/api";
+import { OrderProofSection } from "@/components/delivery-proof/OrderProofSection";
+import { OrderProofBadge } from "@/components/delivery-proof/OrderProofBadge";
 
 const ALL_STATUSES: OrderStatus[] = [
   "pending",
@@ -610,6 +612,11 @@ function OrderDetail({
           </div>
         </div>
       </div>
+
+      {/* Proof of Delivery Section — only for delivered orders */}
+      {order.status === "delivered" && (
+        <OrderProofSection orderId={order.id} />
+      )}
     </div>
   );
 }
@@ -874,6 +881,9 @@ export function PedidosPage() {
                           #{order.order_number}
                         </span>
                         <OrderStatusBadge status={order.status} />
+                        {order.status === "delivered" && (
+                          <OrderProofBadge orderId={order.id} />
+                        )}
                       </div>
                       <span className="text-xs text-muted-foreground">
                         {new Date(order.created_at).toLocaleTimeString(
@@ -897,8 +907,11 @@ export function PedidosPage() {
                   <div className="col-span-2 hidden sm:block">
                     <span className="font-medium">#{order.order_number}</span>
                   </div>
-                  <div className="col-span-2 hidden sm:block">
+                  <div className="col-span-2 hidden sm:flex sm:items-center sm:gap-1">
                     <OrderStatusBadge status={order.status} />
+                    {order.status === "delivered" && (
+                      <OrderProofBadge orderId={order.id} />
+                    )}
                   </div>
                   <div className="col-span-3 hidden truncate text-sm sm:block">
                     {order.shop_id

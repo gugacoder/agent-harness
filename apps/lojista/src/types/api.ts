@@ -41,3 +41,66 @@ export interface Order {
   created_at: string;
   updated_at: string;
 }
+
+export interface Delivery {
+  id: string;
+  order_id: string;
+  courier_id: string;
+  company_id: string;
+  status: string;
+  assigned_at: string;
+  accepted_at: string | null;
+  picked_up_at: string | null;
+  delivered_at: string | null;
+  actual_distance_km: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DeliveryProof {
+  id: string;
+  delivery_id: string;
+  photo_url: string;
+  signature_url: string;
+  lat: string;
+  lng: string;
+  captured_at: string;
+  created_at: string;
+}
+
+// --- Invoice types ---
+
+export type InvoiceStatus = "draft" | "sent" | "paid";
+
+export interface Invoice {
+  id: string;
+  company_id: string;
+  shop_id: string;
+  invoice_number: number;
+  period_start: string;
+  period_end: string;
+  total_deliveries: number;
+  total_distance_km: string;
+  total_amount: string;
+  status: InvoiceStatus;
+  sent_at: string | null;
+  paid_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InvoiceItem {
+  id: string;
+  invoice_id: string;
+  delivery_id: string;
+  order_number: number;
+  pickup_address: string;
+  delivery_address: string;
+  distance_km: string;
+  price: string;
+  delivered_at: string;
+}
+
+export interface InvoiceWithItems extends Invoice {
+  items: InvoiceItem[];
+}

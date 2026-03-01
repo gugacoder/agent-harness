@@ -55,6 +55,17 @@ export interface DeliveryEvent {
   created_at: string;
 }
 
+export interface DeliveryProof {
+  id: string;
+  delivery_id: string;
+  photo_url: string;
+  signature_url: string;
+  lat: string;
+  lng: string;
+  captured_at: string;
+  created_at: string;
+}
+
 /** Enriched delivery with order data for display */
 export interface ActiveDeliveryData {
   delivery: Delivery;
