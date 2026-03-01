@@ -9,6 +9,7 @@ import {
   Wallet,
   FileText,
   BarChart3,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +23,7 @@ const navItems = [
   { to: "/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/faturas", label: "Faturas", icon: FileText },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
+  { to: "/configuracao", label: "Configurações", icon: Settings },
 ] as const;
 
 interface SidebarProps {

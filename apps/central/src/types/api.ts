@@ -263,3 +263,15 @@ export interface TrendDataPoint {
   date: string;
   total_deliveries: number;
 }
+
+// --- Company Config ---
+
+export interface CompanyConfig {
+  id: string;
+  company_id: string;
+  pod_required: boolean;
+  default_closing_period: string;
+  default_invoice_period: string;
+  created_at: string;
+  updated_at: string;
+}
