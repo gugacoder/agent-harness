@@ -8,6 +8,10 @@ interface CompanyEventsContextValue {
   connected: boolean;
   courierLocations: Map<string, CourierLocation>;
   orderCourierMap: Map<string, CourierLocation>;
+  invoiceToast: string | null;
+  dismissInvoiceToast: () => void;
+  newInvoiceIds: Set<string>;
+  clearNewInvoiceId: (id: string) => void;
 }
 
 const CompanyEventsContext = createContext<CompanyEventsContextValue | null>(

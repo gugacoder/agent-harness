@@ -38,3 +38,18 @@
     font-family: var(--font-sans);
   }
 }
+
+@layer utilities {
+  .animate-highlight-fade {
+    animation: highlight-fade 3s ease-out forwards;
+  }
+}
+
+@keyframes highlight-fade {
+  0% {
+    background-color: oklch(0.85 0.1 250);
+  }
+  100% {
+    background-color: transparent;
+  }
+}

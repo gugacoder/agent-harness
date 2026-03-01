@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import {
   FileText,
   ChevronLeft,
@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useInvoices } from "@/hooks/useInvoices";
 import { useInvoice } from "@/hooks/useInvoice";
+import { useCompanyEventsContext } from "@/contexts/CompanyEventsContext";
 import {
   InvoiceStatusBadge,
   getDisplayStatus,
@@ -49,14 +50,16 @@ function formatPeriod(start: string, end: string) {
 function InvoiceCard({
   invoice,
   onClick,
+  highlight,
 }: {
   invoice: Invoice;
   onClick: () => void;
+  highlight?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
-      className="w-full px-4 py-3 text-left transition-colors hover:bg-muted/50"
+      className={`w-full px-4 py-3 text-left transition-colors hover:bg-muted/50 ${highlight ? "animate-highlight-fade bg-primary/10" : ""}`}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -419,6 +422,29 @@ export function FaturasPage() {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const { data: invoices, isLoading, error } = useInvoices();
+  const {
+    newInvoiceIds,
+    clearNewInvoiceId,
+    dismissInvoiceToast,
+  } = useCompanyEventsContext();
+
+  // Dismiss any pending toast when user navigates to faturas page
+  const dismissedRef = useRef(false);
+  useEffect(() => {
+    if (!dismissedRef.current) {
+      dismissInvoiceToast();
+      dismissedRef.current = true;
+    }
+  }, [dismissInvoiceToast]);
+
+  // Auto-clear highlight after animation (3 seconds)
+  useEffect(() => {
+    if (newInvoiceIds.size === 0) return;
+    const timer = setTimeout(() => {
+      newInvoiceIds.forEach((id) => clearNewInvoiceId(id));
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [newInvoiceIds, clearNewInvoiceId]);
 
   // Filter and sort invoices
   const filteredInvoices = useMemo(() => {
@@ -503,6 +529,7 @@ export function FaturasPage() {
                 <InvoiceCard
                   key={invoice.id}
                   invoice={invoice}
+                  highlight={newInvoiceIds.has(invoice.id)}
                   onClick={() =>
                     setView({ type: "detail", invoiceId: invoice.id })
                   }
