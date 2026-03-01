@@ -5,6 +5,7 @@ import type { DeliveryWithOrder } from "@/hooks/useDeliveryHistory";
 import { DeliveryStatusBadge } from "@/components/ui/DeliveryStatusBadge";
 import { DeliveryTimeline } from "@/components/ui/DeliveryTimeline";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { DeliveryEvent } from "@/types/delivery";
@@ -229,7 +230,7 @@ export function HistoricoPage() {
         {isLoading ? (
           <div className="space-y-3 p-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-16 animate-pulse rounded-md bg-muted" />
+              <LoadingSkeleton key={i} className="h-16" />
             ))}
           </div>
         ) : !history?.length ? (
