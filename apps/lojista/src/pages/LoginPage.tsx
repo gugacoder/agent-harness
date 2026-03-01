@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Navigate } from "react-router";
 import { useAuth } from "@/contexts/AuthContext";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
 
 export function LoginPage() {
   const { user, loading, login } = useAuth();
@@ -51,11 +52,7 @@ export function LoginPage() {
           </p>
         </div>
 
-        {error && (
-          <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {error}
-          </div>
-        )}
+        {error && <ErrorAlert message={error} />}
 
         <div className="space-y-4">
           <div className="space-y-2">
