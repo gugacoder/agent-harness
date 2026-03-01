@@ -41,3 +41,29 @@ export interface Order {
   created_at: string;
   updated_at: string;
 }
+
+export interface Delivery {
+  id: string;
+  order_id: string;
+  courier_id: string;
+  company_id: string;
+  status: string;
+  assigned_at: string;
+  accepted_at: string | null;
+  picked_up_at: string | null;
+  delivered_at: string | null;
+  actual_distance_km: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DeliveryProof {
+  id: string;
+  delivery_id: string;
+  photo_url: string;
+  signature_url: string;
+  lat: string;
+  lng: string;
+  captured_at: string;
+  created_at: string;
+}

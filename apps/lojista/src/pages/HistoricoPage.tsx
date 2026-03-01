@@ -12,6 +12,8 @@ import { OrderStatusBadge } from "@/components/ui/StatusBadge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { OrderTimeline } from "@/components/ui/OrderTimeline";
+import { OrderProofBadge } from "@/components/delivery-proof/OrderProofBadge";
+import { OrderProofSection } from "@/components/delivery-proof/OrderProofSection";
 import type { Order, OrderStatus } from "@/types/api";
 
 const HISTORY_STATUSES: OrderStatus[] = ["delivered", "cancelled"];
@@ -41,6 +43,9 @@ function HistoryOrderCard({
         <div className="flex items-center gap-2">
           <span className="font-medium">#{order.order_number}</span>
           <OrderStatusBadge status={order.status} />
+          {order.status === "delivered" && (
+            <OrderProofBadge orderId={order.id} />
+          )}
         </div>
         <span className="text-xs text-muted-foreground">{dateStr}</span>
       </div>
@@ -132,6 +137,11 @@ function HistoryOrderDetail({
           <OrderTimeline order={order} />
         </div>
       </div>
+
+      {/* Proof of Delivery */}
+      {order.status === "delivered" && (
+        <OrderProofSection orderId={order.id} />
+      )}
     </div>
   );
 }
