@@ -14,6 +14,7 @@ import { deliveriesRouter } from "./routes/deliveries.js";
 import { couriersRouter } from "./routes/couriers.js";
 import { pricingRouter } from "./routes/pricing.js";
 import { companyConfigRouter } from "./routes/company-config.js";
+import { financialRouter } from "./routes/financial.js";
 import { eventsRouter } from "./routes/events.js";
 
 // Re-export for convenience
@@ -82,6 +83,7 @@ app.route("/", deliveriesRouter);
 app.route("/", couriersRouter);
 app.route("/", pricingRouter);
 app.route("/", companyConfigRouter);
+app.route("/", financialRouter);
 
 const port = parseInt(process.env.BACKBONE_PORT || "3205", 10);
 
