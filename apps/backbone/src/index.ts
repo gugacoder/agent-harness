@@ -3,13 +3,10 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
-// App type used across all route files
-export type AppType = {
-  Variables: {
-    user: { id: string; companyId: string; role: string };
-    companyId: string;
-  };
-};
+import type { AppType } from "./types.js";
+
+// Re-export for convenience
+export type { AppType };
 
 const app = new OpenAPIHono<AppType>().basePath("/api");
 
