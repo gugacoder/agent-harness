@@ -21,7 +21,8 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useOrders } from "@/hooks/useOrders";
-import { useCompanyEvents, type CourierLocation } from "@/hooks/useCompanyEvents";
+import { useCompanyEventsContext } from "@/contexts/CompanyEventsContext";
+import type { CourierLocation } from "@/hooks/useCompanyEvents";
 import { api } from "@/lib/api";
 import { OrderStatusBadge } from "@/components/ui/StatusBadge";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -411,7 +412,7 @@ export function PedidosPage() {
   const location = useLocation();
   const queryClient = useQueryClient();
   const { data: orders, isLoading } = useOrders();
-  const { connected, courierLocations } = useCompanyEvents();
+  const { connected, orderCourierMap } = useCompanyEventsContext();
 
   // Show toast from navigation state (e.g. after creating an order)
   useEffect(() => {
@@ -462,12 +463,9 @@ export function PedidosPage() {
 
   // Find courier location for current order (via SSE courier_location events)
   const currentCourierLocation = useMemo<CourierLocation | undefined>(() => {
-    if (!currentOrder || courierLocations.size === 0) return undefined;
-    // courier_location SSE events include delivery_id but we don't have
-    // the mapping from order_id to courier_id without a delivery fetch.
-    // F-007 SSE integration will enhance this with proper matching.
-    return undefined;
-  }, [currentOrder, courierLocations]);
+    if (!currentOrder) return undefined;
+    return orderCourierMap.get(currentOrder.id);
+  }, [currentOrder, orderCourierMap]);
 
   // --- Render Order Detail ---
   if (view.type === "detail" && currentOrder) {
