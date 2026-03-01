@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 import { AppShell } from "@/components/layout/AppShell";
 import { EntregasPage } from "@/pages/EntregasPage";
 import { HistoricoPage } from "@/pages/HistoricoPage";
@@ -18,16 +20,20 @@ const queryClient = new QueryClient({
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route element={<AppShell />}>
-            <Route index element={<EntregasPage />} />
-            <Route path="historico" element={<HistoricoPage />} />
-            <Route path="status" element={<StatusPage />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route element={<RequireAuth />}>
+              <Route element={<AppShell />}>
+                <Route index element={<EntregasPage />} />
+                <Route path="historico" element={<HistoricoPage />} />
+                <Route path="status" element={<StatusPage />} />
+              </Route>
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
