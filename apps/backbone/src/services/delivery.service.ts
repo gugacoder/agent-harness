@@ -78,7 +78,6 @@ export async function assignCourier(params: {
     actor_id: params.actorId,
   });
 
-  // SSE event emission will be wired in F-012
 
   return delivery;
 }
@@ -126,7 +125,6 @@ export async function acceptDelivery(
     actor_id: actorId,
   });
 
-  // SSE event emission will be wired in F-012
 
   return updated;
 }
@@ -184,7 +182,6 @@ export async function rejectDelivery(
     actor_id: actorId,
   });
 
-  // SSE event emission will be wired in F-012
 
   return updated;
 }
@@ -265,7 +262,6 @@ export async function updateDeliveryStatus(
       .where(eq(orders.id, delivery.order_id));
   }
 
-  // SSE event emission will be wired in F-012
 
   return updated;
 }

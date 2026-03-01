@@ -53,6 +53,20 @@ app.use(
 // Routes — public
 app.route("/", healthRouter);
 
+// OpenAPI doc endpoint (F-012) — public, lazily generates spec from all routes
+app.get("/doc", (c) => {
+  const doc = app.getOpenAPIDocument({
+    openapi: "3.1.0",
+    info: {
+      title: "Chega.la Backbone API",
+      version: "1.0.0",
+      description: "Backend API for the Chega.la delivery platform",
+    },
+    servers: [{ url: "/api" }],
+  });
+  return c.json(doc);
+});
+
 // SSE event streams (F-011) — mounted before authenticated routers
 // so the events router's own auth middleware (supports ?token= query param) runs first
 app.route("/", eventsRouter);
@@ -64,9 +78,6 @@ app.route("/", shopsRouter);
 app.route("/", ordersRouter);
 app.route("/", deliveriesRouter);
 app.route("/", couriersRouter);
-
-// Route mounts will be added by subsequent features:
-// - F-012: OpenAPI doc endpoint
 
 const port = parseInt(process.env.BACKBONE_PORT || "3205", 10);
 

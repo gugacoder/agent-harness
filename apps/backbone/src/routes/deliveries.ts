@@ -10,6 +10,8 @@ import {
   getDeliveryEvents,
   updateDeliveryStatus,
 } from "../services/delivery.service.js";
+import { sseManager } from "../sse/manager.js";
+import { companyChannel, courierChannel, orderChannel } from "../sse/channels.js";
 
 // --- Schemas ---
 
@@ -141,6 +143,24 @@ deliveriesRouter.openapi(assignCourierRoute, async (c) => {
       );
     }
 
+    // SSE: broadcast to company (order_status=assigned) and courier (delivery_assigned)
+    const assignEvent = {
+      type: "order_status",
+      order_id: orderId,
+      status: "assigned",
+      courier_id: courierId,
+      delivery_id: delivery.id,
+      timestamp: delivery.assigned_at,
+    };
+    sseManager.broadcast(companyChannel(companyId), assignEvent).catch(() => {});
+    sseManager.broadcast(orderChannel(orderId), assignEvent).catch(() => {});
+    sseManager.broadcast(courierChannel(courierId), {
+      type: "delivery_assigned",
+      delivery_id: delivery.id,
+      order_id: orderId,
+      timestamp: delivery.assigned_at,
+    }).catch(() => {});
+
     return c.json(
       {
         id: delivery.id,
@@ -222,7 +242,18 @@ deliveriesRouter.openapi(acceptDeliveryRoute, async (c) => {
       );
     }
 
-    // SSE event emission will be wired in F-012
+    // SSE: broadcast delivery accepted to company and order channels
+    const acceptEvent = {
+      type: "order_status",
+      order_id: delivery.order_id,
+      delivery_id: delivery.id,
+      courier_id: delivery.courier_id,
+      status: "accepted",
+      timestamp: delivery.accepted_at,
+    };
+    sseManager.broadcast(companyChannel(companyId), acceptEvent).catch(() => {});
+    sseManager.broadcast(orderChannel(delivery.order_id), acceptEvent).catch(() => {});
+
     return c.json(
       {
         id: delivery.id,
@@ -315,7 +346,23 @@ deliveriesRouter.openapi(rejectDeliveryRoute, async (c) => {
       );
     }
 
-    // SSE event emission will be wired in F-012
+    // SSE: broadcast delivery rejected to company (for reassignment) and courier
+    const rejectEvent = {
+      type: "order_status",
+      order_id: delivery.order_id,
+      delivery_id: delivery.id,
+      status: "pending",
+      timestamp: delivery.updated_at,
+    };
+    sseManager.broadcast(companyChannel(companyId), rejectEvent).catch(() => {});
+    sseManager.broadcast(orderChannel(delivery.order_id), rejectEvent).catch(() => {});
+    sseManager.broadcast(courierChannel(delivery.courier_id), {
+      type: "delivery_cancelled",
+      delivery_id: delivery.id,
+      order_id: delivery.order_id,
+      timestamp: delivery.updated_at,
+    }).catch(() => {});
+
     return c.json(
       {
         id: delivery.id,

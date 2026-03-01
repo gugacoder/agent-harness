@@ -103,7 +103,6 @@ export async function updateCourierStatus(
     )
     .returning();
 
-  // SSE event emission will be wired in F-012
 
   return updated;
 }
@@ -194,7 +193,6 @@ export async function recordLocation(params: {
     })
     .returning();
 
-  // SSE event emission will be wired in F-012
 
   return location;
 }

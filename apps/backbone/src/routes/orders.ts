@@ -9,6 +9,8 @@ import {
   updateOrderStatus,
   cancelOrder,
 } from "../services/order.service.js";
+import { sseManager } from "../sse/manager.js";
+import { companyChannel, orderChannel } from "../sse/channels.js";
 
 // --- Schemas ---
 
@@ -276,7 +278,15 @@ ordersRouter.openapi(createOrderRoute, async (c) => {
     createdBy: user.id,
   });
 
-  // SSE event emission will be wired in F-012
+  // SSE: broadcast order_created to company channel
+  sseManager.broadcast(companyChannel(companyId), {
+    type: "order_created",
+    order_id: created.id,
+    order_number: created.order_number,
+    status: created.status,
+    timestamp: created.created_at,
+  }).catch(() => {});
+
   return c.json(
     {
       id: created.id,
@@ -355,7 +365,17 @@ ordersRouter.openapi(updateOrderStatusRoute, async (c) => {
       );
     }
 
-    // SSE event emission will be wired in F-012
+    // SSE: broadcast order_status to company and order channels
+    const statusEvent = {
+      type: "order_status",
+      order_id: updated.id,
+      order_number: updated.order_number,
+      status: updated.status,
+      timestamp: updated.updated_at,
+    };
+    sseManager.broadcast(companyChannel(companyId), statusEvent).catch(() => {});
+    sseManager.broadcast(orderChannel(id), statusEvent).catch(() => {});
+
     return c.json(
       {
         id: updated.id,
@@ -436,7 +456,17 @@ ordersRouter.openapi(deleteOrderRoute, async (c) => {
       );
     }
 
-    // SSE event emission will be wired in F-012
+    // SSE: broadcast order_status (cancelled) to company and order channels
+    const cancelEvent = {
+      type: "order_status",
+      order_id: cancelled.id,
+      order_number: cancelled.order_number,
+      status: cancelled.status,
+      timestamp: cancelled.updated_at,
+    };
+    sseManager.broadcast(companyChannel(companyId), cancelEvent).catch(() => {});
+    sseManager.broadcast(orderChannel(id), cancelEvent).catch(() => {});
+
     return c.json(
       {
         id: cancelled.id,

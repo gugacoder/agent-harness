@@ -9,6 +9,9 @@ import {
   updateCourierActive,
   recordLocation,
 } from "../services/courier.service.js";
+import { getDeliveryById } from "../services/delivery.service.js";
+import { sseManager } from "../sse/manager.js";
+import { companyChannel, orderChannel } from "../sse/channels.js";
 
 // --- Schemas ---
 
@@ -354,6 +357,29 @@ couriersRouter.openapi(sendLocationRoute, async (c) => {
       },
       404
     );
+  }
+
+  // SSE: broadcast courier_location to company channel
+  const locationEvent = {
+    type: "courier_location" as const,
+    courier_id: id,
+    lat: location.lat,
+    lng: location.lng,
+    accuracy: location.accuracy,
+    delivery_id: location.delivery_id,
+    timestamp: location.recorded_at,
+  };
+  sseManager.broadcast(companyChannel(companyId), locationEvent).catch(() => {});
+
+  // If linked to a delivery, also broadcast to the associated order channel
+  if (location.delivery_id) {
+    const delivery = await getDeliveryById(location.delivery_id, companyId);
+    if (delivery) {
+      sseManager.broadcast(orderChannel(delivery.order_id), {
+        ...locationEvent,
+        order_id: delivery.order_id,
+      }).catch(() => {});
+    }
   }
 
   return c.json(
