@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@chegala/schemas": "*",
+    "@hono/node-server": "^1.19.9",
     "@hono/zod-openapi": "^0.19.6",
     "drizzle-orm": "^0.44.1",
     "drizzle-zod": "^0.7.0",

@@ -52,6 +52,38 @@ services:
       timeout: 5s
       retries: 3
 
+  # ============================================================================
+  # BACKBONE - Hono API
+  # ============================================================================
+  backbone:
+    image: node:22-slim
+    working_dir: /app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${BACKBONE_PORT}:${BACKBONE_PORT}"
+    environment:
+      PORT: ${BACKBONE_PORT}
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres.internal:5432/postgres
+      JWT_SECRET: ${JWT_SECRET}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+    volumes:
+      - .:/app
+    command: ["npm", "run", "-w", "apps/backbone", "dev"]
+    networks:
+      internal:
+        aliases:
+          - backbone.internal
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:${BACKBONE_PORT}/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
 networks:
   internal:
     driver: bridge
