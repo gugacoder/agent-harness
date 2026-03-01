@@ -1,0 +1,36 @@
+import { Outlet } from "react-router";
+import { Sidebar } from "./Sidebar";
+import { BottomNav } from "./BottomNav";
+import { Header } from "./Header";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+
+export function AppShell() {
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const isTablet = useMediaQuery("(min-width: 768px)");
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Sidebar: fixed on desktop, collapsed on tablet, hidden on mobile */}
+      {isTablet && <Sidebar collapsed={!isDesktop} />}
+
+      {/* Main content area */}
+      <div
+        className={
+          isDesktop
+            ? "ml-56"
+            : isTablet
+              ? "ml-16"
+              : ""
+        }
+      >
+        <Header />
+        <main className="p-4 pb-20 md:p-6 md:pb-6">
+          <Outlet />
+        </main>
+      </div>
+
+      {/* BottomNav: mobile only */}
+      {!isTablet && <BottomNav />}
+    </div>
+  );
+}
