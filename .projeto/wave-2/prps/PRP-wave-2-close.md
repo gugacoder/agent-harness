@@ -1,5 +1,5 @@
 ---
-status: current
+status: done
 ---
 
 # PRP-wave-2-close — Fechar wave 2 e disparar proxima
