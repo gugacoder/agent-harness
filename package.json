@@ -21,11 +21,13 @@
     "dev:central": "npm -w apps/central run dev",
     "dev:lojista": "npm -w apps/lojista run dev",
     "dev:motoboy": "npm -w apps/motoboy run dev",
+    "dev:all": "concurrently -n backbone,central,lojista,motoboy -c blue,green,yellow,magenta \"npm:dev:backbone\" \"npm:dev:central\" \"npm:dev:lojista\" \"npm:dev:motoboy\"",
     "db:generate": "npm -w apps/backbone run db:generate",
     "db:migrate": "npm -w apps/backbone run db:migrate",
     "build": "npm -w packages/shared/schemas run build && npm -w apps/backbone run build && npm -w apps/central run build && npm -w apps/lojista run build && npm -w apps/motoboy run build"
   },
   "devDependencies": {
+    "concurrently": "^9.1.2",
     "typescript": "^5.8.3"
   }
 }
