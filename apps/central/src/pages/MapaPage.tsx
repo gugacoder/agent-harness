@@ -10,10 +10,8 @@ import { type LatLngBoundsExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Bike, MapPin, Wifi, WifiOff } from "lucide-react";
 import { useCouriers } from "@/hooks/useCouriers";
-import {
-  useCourierLocations,
-  type CourierLocation,
-} from "@/hooks/useCourierLocations";
+import { useCompanyEventsContext } from "@/contexts/CompanyEventsContext";
+import type { CourierLocation } from "@/hooks/useCourierLocations";
 import type { Courier, CourierStatus } from "@/types/api";
 
 // --- Status colors matching branding ---
@@ -102,7 +100,7 @@ function CourierMarkerItem({
 
 export function MapaPage() {
   const { data: couriers, isLoading: couriersLoading } = useCouriers();
-  const { locations, connected } = useCourierLocations();
+  const { courierLocations: locations, connected } = useCompanyEventsContext();
 
   // Build courier lookup for name/status
   const courierMap = useMemo(() => {

@@ -6,13 +6,21 @@ import {
   CheckCircle2,
   Clock,
   MapPin,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
-import { MapContainer, TileLayer } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  CircleMarker,
+  Popup,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useOrders } from "@/hooks/useOrders";
 import { useCouriers } from "@/hooks/useCouriers";
 import { useShops } from "@/hooks/useShops";
-import type { Order, OrderStatus } from "@/types/api";
+import { useCompanyEventsContext } from "@/contexts/CompanyEventsContext";
+import type { Order, OrderStatus, Courier, CourierStatus } from "@/types/api";
 
 // --- Status helpers ---
 
@@ -86,10 +94,17 @@ function Skeleton({ className }: { className?: string }) {
 
 // --- Main Dashboard ---
 
+const MARKER_COLORS: Record<CourierStatus, string> = {
+  available: "#1dace7",
+  busy: "#fca322",
+  offline: "#9ca3af",
+};
+
 export function DashboardPage() {
   const { data: orders, isLoading: ordersLoading } = useOrders();
   const { data: couriers, isLoading: couriersLoading } = useCouriers();
   const { data: shops } = useShops();
+  const { courierLocations, connected } = useCompanyEventsContext();
 
   const shopMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -139,9 +154,30 @@ export function DashboardPage() {
   const activeCourierCount = useMemo(() => {
     if (!couriers) return 0;
     return couriers.filter(
-      (c) => c.status === "available" || c.status === "busy",
+      (c) => c.active && (c.status === "available" || c.status === "busy"),
     ).length;
   }, [couriers]);
+
+  // Build courier lookup for map markers
+  const courierMap = useMemo(() => {
+    const map = new Map<string, Courier>();
+    if (couriers) {
+      for (const c of couriers) map.set(c.id, c);
+    }
+    return map;
+  }, [couriers]);
+
+  // Map markers from SSE courier locations
+  const mapMarkers = useMemo(() => {
+    const result: { courier: Courier; lat: number; lng: number }[] = [];
+    for (const [courierId, loc] of courierLocations) {
+      const courier = courierMap.get(courierId);
+      if (courier && loc.lat !== 0 && loc.lng !== 0) {
+        result.push({ courier, lat: loc.lat, lng: loc.lng });
+      }
+    }
+    return result;
+  }, [courierLocations, courierMap]);
 
   return (
     <div className="space-y-6">
@@ -233,11 +269,20 @@ export function DashboardPage() {
           <div className="flex items-center gap-2 border-b px-4 py-3">
             <Truck className="h-4 w-4 text-muted-foreground" />
             <h2 className="text-lg font-semibold">Motoboys</h2>
-            {!couriersLoading && (
-              <span className="ml-auto text-xs text-muted-foreground">
-                {activeCourierCount} ativo(s)
+            <div className="ml-auto flex items-center gap-2">
+              {!couriersLoading && (
+                <span className="text-xs text-muted-foreground">
+                  {activeCourierCount} ativo(s)
+                </span>
+              )}
+              <span title={connected ? "SSE conectado" : "SSE desconectado"}>
+                {connected ? (
+                  <Wifi className="h-3.5 w-3.5 text-green-500" />
+                ) : (
+                  <WifiOff className="h-3.5 w-3.5 text-muted-foreground" />
+                )}
               </span>
-            )}
+            </div>
           </div>
           <div className="relative h-[400px]">
             {couriersLoading ? (
@@ -251,9 +296,25 @@ export function DashboardPage() {
                   attributionControl={false}
                 >
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                  {/* Courier markers will be populated via SSE integration (F-009).
-                      The map is ready to display markers — SSE events will push
-                      courier_location updates that can be rendered as Marker components. */}
+                  {mapMarkers.map(({ courier, lat, lng }) => (
+                    <CircleMarker
+                      key={courier.id}
+                      center={[lat, lng]}
+                      radius={8}
+                      pathOptions={{
+                        color: MARKER_COLORS[courier.status],
+                        fillColor: MARKER_COLORS[courier.status],
+                        fillOpacity: 0.8,
+                        weight: 2,
+                      }}
+                    >
+                      <Popup>
+                        <span className="text-sm font-medium">
+                          {courier.full_name}
+                        </span>
+                      </Popup>
+                    </CircleMarker>
+                  ))}
                 </MapContainer>
                 {activeCourierCount === 0 && (
                   <div className="pointer-events-none absolute inset-0 z-[1000] flex items-center justify-center">

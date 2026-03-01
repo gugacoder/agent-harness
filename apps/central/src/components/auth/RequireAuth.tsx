@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router";
 import { useAuth } from "@/contexts/AuthContext";
+import { CompanyEventsProvider } from "@/contexts/CompanyEventsContext";
 
 export function RequireAuth() {
   const { user, loading } = useAuth();
@@ -16,5 +17,9 @@ export function RequireAuth() {
     return <Navigate to="/login" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <CompanyEventsProvider>
+      <Outlet />
+    </CompanyEventsProvider>
+  );
 }
