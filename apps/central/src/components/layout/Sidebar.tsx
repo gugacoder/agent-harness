@@ -5,6 +5,10 @@ import {
   Bike,
   Store,
   Map,
+  DollarSign,
+  Wallet,
+  FileText,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +18,10 @@ const navItems = [
   { to: "/motoboys", label: "Motoboys", icon: Bike },
   { to: "/lojistas", label: "Lojistas", icon: Store },
   { to: "/mapa", label: "Mapa", icon: Map },
+  { to: "/precos", label: "Preços", icon: DollarSign },
+  { to: "/financeiro", label: "Financeiro", icon: Wallet },
+  { to: "/faturas", label: "Faturas", icon: FileText },
+  { to: "/analytics", label: "Analytics", icon: BarChart3 },
 ] as const;
 
 interface SidebarProps {
