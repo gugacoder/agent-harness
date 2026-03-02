@@ -108,3 +108,8 @@ export {
   type CreateCompanyRequest,
   type UpdateCompanyRequest,
 } from "./admin.js";
+
+export {
+  RegistrationRequestSchema,
+  type RegistrationRequest,
+} from "./registration.js";

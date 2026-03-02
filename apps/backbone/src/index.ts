@@ -23,6 +23,10 @@ import { eventsRouter } from "./routes/events.js";
 import { profilesRouter } from "./routes/profiles.js";
 import { usersRouter } from "./routes/users.js";
 import { adminRouter } from "./routes/admin.js";
+import {
+  publicRegistrationRouter,
+  registrationRouter,
+} from "./routes/registration.js";
 
 // Re-export for convenience
 export type { AppType };
@@ -63,6 +67,7 @@ app.use(
 // Routes — public
 app.route("/", healthRouter);
 app.route("/", otpAuthRouter);
+app.route("/", publicRegistrationRouter);
 
 // OpenAPI doc endpoint (F-012) — public, lazily generates spec from all routes
 app.get("/doc", (c) => {
@@ -99,6 +104,7 @@ app.route("/", analyticsRouter);
 app.route("/", profilesRouter);
 app.route("/", usersRouter);
 app.route("/", adminRouter);
+app.route("/", registrationRouter);
 
 const port = parseInt(process.env.BACKBONE_PORT!, 10);
 
