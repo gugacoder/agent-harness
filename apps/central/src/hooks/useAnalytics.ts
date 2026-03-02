@@ -7,6 +7,7 @@ import type {
   NeighborhoodVolume,
   AnalyticsRevenue,
   TrendDataPoint,
+  TodayMetrics,
 } from "@/types/api";
 
 export interface UseAnalyticsOptions {
@@ -102,5 +103,15 @@ export function useAnalyticsTrend(options?: UseAnalyticsOptions) {
         .get("api/analytics/trend", { searchParams: buildParams(options) })
         .json<TrendDataPoint[]>();
     },
+  });
+}
+
+export function useTodayMetrics() {
+  return useQuery<TodayMetrics>({
+    queryKey: ["analytics-today"],
+    queryFn: async () => {
+      return api.get("api/analytics/today").json<TodayMetrics>();
+    },
+    refetchInterval: 30_000,
   });
 }

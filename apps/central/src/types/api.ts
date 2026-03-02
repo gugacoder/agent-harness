@@ -249,6 +249,13 @@ export interface InvoiceWithItems extends Invoice {
 
 // --- Analytics ---
 
+export interface TodayMetrics {
+  deliveries_today: number;
+  deliveries_today_completed: number;
+  couriers_online: number;
+  orders_pending: number;
+}
+
 export type AnalyticsPeriod = "day" | "week" | "month" | "custom";
 
 export interface AnalyticsOverview {
