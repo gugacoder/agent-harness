@@ -6,6 +6,7 @@ import { RequireAuth } from "@/components/auth/RequireAuth";
 import { AppShell } from "@/components/layout/AppShell";
 import { EntregasPage } from "@/pages/EntregasPage";
 import { HistoricoPage } from "@/pages/HistoricoPage";
+import { ExtratoPage } from "@/pages/ExtratoPage";
 import { StatusPage } from "@/pages/StatusPage";
 import { LoginPage } from "@/pages/LoginPage";
 
@@ -35,6 +36,7 @@ export function App() {
               >
                 <Route index element={<EntregasPage />} />
                 <Route path="historico" element={<HistoricoPage />} />
+                <Route path="extrato" element={<ExtratoPage />} />
                 <Route path="status" element={<StatusPage />} />
               </Route>
             </Route>

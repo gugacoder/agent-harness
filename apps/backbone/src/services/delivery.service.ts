@@ -1,6 +1,7 @@
 import { eq, and, desc } from "drizzle-orm";
 import { db } from "../db.js";
 import { deliveries, deliveryEvents, orders } from "../../db/schema/index.js";
+import { calculateDeliveryPrice } from "./pricing.service.js";
 
 /**
  * List deliveries for a company, optionally filtered by courier_id and/or status.
@@ -105,6 +106,13 @@ export async function assignCourier(params: {
     actor_id: params.actorId,
   });
 
+  // Calculate delivery price (OSD207) — before SSE notifications in route handler.
+  // Gracefully handles missing pricing table (returns null without throwing).
+  await calculateDeliveryPrice({
+    deliveryId: delivery.id,
+    orderId: params.orderId,
+    companyId: params.companyId,
+  }).catch(() => {});
 
   return delivery;
 }

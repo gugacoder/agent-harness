@@ -1,10 +1,11 @@
 import { NavLink } from "react-router";
-import { Package, Clock, Circle } from "lucide-react";
+import { Package, Clock, Wallet, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/", label: "Entregas", icon: Package },
   { to: "/historico", label: "Histórico", icon: Clock },
+  { to: "/extrato", label: "Extrato", icon: Wallet },
   { to: "/status", label: "Status", icon: Circle },
 ] as const;
 

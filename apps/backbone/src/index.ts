@@ -12,6 +12,13 @@ import { shopsRouter } from "./routes/shops.js";
 import { ordersRouter } from "./routes/orders.js";
 import { deliveriesRouter } from "./routes/deliveries.js";
 import { couriersRouter } from "./routes/couriers.js";
+import { pricingRouter } from "./routes/pricing.js";
+import { companyConfigRouter } from "./routes/company-config.js";
+import { financialRouter } from "./routes/financial.js";
+import { earningsRouter } from "./routes/earnings.js";
+import { deliveryProofRouter } from "./routes/delivery-proof.js";
+import { invoicesRouter } from "./routes/invoices.js";
+import { analyticsRouter } from "./routes/analytics.js";
 import { eventsRouter } from "./routes/events.js";
 
 // Re-export for convenience
@@ -78,6 +85,13 @@ app.route("/", shopsRouter);
 app.route("/", ordersRouter);
 app.route("/", deliveriesRouter);
 app.route("/", couriersRouter);
+app.route("/", pricingRouter);
+app.route("/", companyConfigRouter);
+app.route("/", financialRouter);
+app.route("/", earningsRouter);
+app.route("/", deliveryProofRouter);
+app.route("/", invoicesRouter);
+app.route("/", analyticsRouter);
 
 const port = parseInt(process.env.BACKBONE_PORT!, 10);
 

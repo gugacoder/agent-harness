@@ -21,6 +21,7 @@ export interface CourierLocation {
  * - order_created    → invalidates ["orders"]
  * - order_status     → invalidates ["orders"], cleans up tracking for completed/cancelled orders
  * - courier_location → updates courier location state, resolves delivery→order mapping
+ * - invoice_sent     → invalidates ["invoices"], ["invoice"], sets toast, tracks new invoice IDs
  */
 export function useCompanyEvents() {
   const { user } = useAuth();
@@ -31,6 +32,12 @@ export function useCompanyEvents() {
   const [orderCourierMap, setOrderCourierMap] = useState<
     Map<string, CourierLocation>
   >(() => new Map());
+
+  // Invoice SSE state
+  const [invoiceToast, setInvoiceToast] = useState<string | null>(null);
+  const [newInvoiceIds, setNewInvoiceIds] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   // Cache: delivery_id → order_id (avoids re-fetching)
   const deliveryOrderCache = useRef<Map<string, string>>(new Map());
@@ -115,16 +122,62 @@ export function useCompanyEvents() {
     }
   }, []);
 
+  const handleInvoiceSent: SSEEventHandler = useCallback(
+    (data) => {
+      queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      queryClient.invalidateQueries({ queryKey: ["invoice"] });
+
+      const invoiceId = data.invoiceId as string | undefined;
+      if (invoiceId) {
+        setNewInvoiceIds((prev) => {
+          const next = new Set(prev);
+          next.add(invoiceId);
+          return next;
+        });
+      }
+
+      setInvoiceToast("Nova fatura disponível");
+    },
+    [queryClient],
+  );
+
+  const dismissInvoiceToast = useCallback(() => {
+    setInvoiceToast(null);
+  }, []);
+
+  const clearNewInvoiceId = useCallback((id: string) => {
+    setNewInvoiceIds((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }, []);
+
   const handlers = useMemo(
     () => ({
       order_created: handleOrderCreated,
       order_status: handleOrderStatus,
       courier_location: handleCourierLocation,
+      invoice_sent: handleInvoiceSent,
     }),
-    [handleOrderCreated, handleOrderStatus, handleCourierLocation],
+    [
+      handleOrderCreated,
+      handleOrderStatus,
+      handleCourierLocation,
+      handleInvoiceSent,
+    ],
   );
 
   const { connected } = useSSE(channel, { handlers });
 
-  return { connected, courierLocations, orderCourierMap };
+  return {
+    connected,
+    courierLocations,
+    orderCourierMap,
+    invoiceToast,
+    dismissInvoiceToast,
+    newInvoiceIds,
+    clearNewInvoiceId,
+  };
 }

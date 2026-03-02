@@ -8,6 +8,7 @@ import {
   acceptDelivery,
   rejectDelivery,
   getDeliveryById,
+  getDeliveryByOrderId,
   getDeliveryEvents,
   updateDeliveryStatus,
 } from "../services/delivery.service.js";
@@ -139,6 +140,73 @@ deliveriesRouter.openapi(listDeliveriesRoute, async (c) => {
       created_at: d.created_at,
       updated_at: d.updated_at,
     })),
+    200
+  );
+});
+
+// --- GET /api/orders/:id/delivery ---
+
+const getOrderDeliveryRoute = createRoute({
+  method: "get",
+  path: "/orders/{id}/delivery",
+  tags: ["Deliveries"],
+  summary: "Get delivery for an order",
+  description:
+    "Get the delivery record associated with an order. Returns 404 if no delivery exists.",
+  request: {
+    params: z.object({
+      id: z.string().uuid(),
+    }),
+  },
+  responses: {
+    200: {
+      content: { "application/json": { schema: DeliveryResponseSchema } },
+      description: "Delivery for the order",
+    },
+    404: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "No delivery found for this order",
+    },
+    401: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Missing or invalid authentication",
+    },
+  },
+});
+
+deliveriesRouter.openapi(getOrderDeliveryRoute, async (c) => {
+  const { id: orderId } = c.req.valid("param");
+  const companyId = c.get("companyId");
+
+  const delivery = await getDeliveryByOrderId(orderId, companyId);
+
+  if (!delivery) {
+    return c.json(
+      {
+        error: "Not Found",
+        message: "No delivery found for this order",
+        statusCode: 404,
+      },
+      404
+    );
+  }
+
+  return c.json(
+    {
+      id: delivery.id,
+      order_id: delivery.order_id,
+      courier_id: delivery.courier_id,
+      company_id: delivery.company_id,
+      status: delivery.status,
+      assigned_at: delivery.assigned_at,
+      accepted_at: delivery.accepted_at,
+      picked_up_at: delivery.picked_up_at,
+      delivered_at: delivery.delivered_at,
+      actual_distance_km: delivery.actual_distance_km,
+      actual_duration_min: delivery.actual_duration_min,
+      created_at: delivery.created_at,
+      updated_at: delivery.updated_at,
+    },
     200
   );
 });

@@ -42,8 +42,14 @@ export function AppShell() {
       <main className="p-4 pb-20">
         {locationState === "denied" && <LocationDeniedAlert />}
         {toast && (
-          <div className="mb-3 flex items-center justify-between rounded-md bg-amber-50 p-3 text-sm font-medium text-amber-800">
-            <span>{toast}</span>
+          <div
+            className={`mb-3 flex items-center justify-between rounded-md p-3 text-sm font-medium ${
+              toast.variant === "success"
+                ? "bg-emerald-50 text-emerald-800"
+                : "bg-amber-50 text-amber-800"
+            }`}
+          >
+            <span>{toast.message}</span>
             <button
               type="button"
               onClick={dismissToast}

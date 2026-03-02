@@ -1,0 +1,611 @@
+{
+  "wave": 3,
+  "decision": "stop",
+  "decision_rationale": "Wave-3 research confirmou diminishing returns. Zero novas discoveries com score >= 8. As 7 novas discoveries tiveram score maximo de 7 e media de 6.3 (tendencia descendente: wave-1=7.6, wave-2=7.2, wave-3=6.3). O unico item score 8 nao implementado (D-019, periculosidade) e reclassificacao de item wave-2 (7->8), nao discovery nova. Todos os core gaps (financeiro, POD, analytics, pricing) foram resolvidos nas waves 1-2. Itens restantes sao otimizacoes (dispatch, ETA, routing) e nice-to-haves (tracking publico, ranking, notificacoes) — todos score 7 ou abaixo. D-019 (periculosidade 30%, urgencia abril 2026) pode ser tratado como hotfix incremental no modulo financeiro existente, sem necessidade de wave completa. Produto cobre ciclo completo: auth -> orders -> deliveries -> pricing -> financeiro -> POD -> analytics -> 3 PWAs.",
+  "threshold_note": "Threshold avaliado na wave 2 (GO) e reavaliado na wave 3 (STOP). Criterio aplicado: 'discoveries acima de 7 nao implementadas = GO' — nao atendido (zero novas discoveries 8+). 'majoritariamente abaixo de 3' — nao se aplica, mas tendencia de diminishing returns e forte. Decision: STOP com recomendacao de hotfix para D-019.",
+  "previous_wave": {
+    "wave": 2,
+    "decision": "go",
+    "total_discoveries": 37,
+    "implemented": 28,
+    "remaining": 8,
+    "partial": 1
+  },
+  "summary": {
+    "total_discoveries": 44,
+    "new_discoveries_this_wave": 7,
+    "pains": 26,
+    "gains": 18,
+    "avg_score": 7.2,
+    "score_gte_8": 22,
+    "score_gte_9": 10,
+    "score_10": 2,
+    "implemented": 29,
+    "not_implemented": 13,
+    "partial": 2,
+    "profiles_covered": ["empresario", "lojista", "motoboy"],
+    "wave3_new_discoveries": [
+      "D-024 (dispatch manual gargalo, score 7)",
+      "D-025 (sem notificacoes fora app, score 6)",
+      "D-026 (sem simulador regulatorio, score 6)",
+      "G-018 (ETA basico, score 7)",
+      "G-019 (pagina publica tracking, score 7)",
+      "G-020 (ranking entregadores, score 5)",
+      "G-021 (webhook/whatsapp notificacoes, score 6)"
+    ],
+    "wave3_reclassifications": [
+      "D-019: 7->8 (urgencia regulatoria abril 2026)",
+      "G-016: 6->7 (expectativa padrao mercado 2026)",
+      "G-005: 7->6 (dados insuficientes para IA)",
+      "D-009: 4->3 (sistema e resiliencia)",
+      "G-017: 7->implementado (POD cobre este ganho)"
+    ],
+    "wave3_score_distribution": {
+      "score_8_plus": 0,
+      "score_7": 4,
+      "score_6": 2,
+      "score_5": 1,
+      "below_3": 0
+    },
+    "diminishing_returns_trend": {
+      "wave1_avg_new": 7.6,
+      "wave2_avg_new": 7.2,
+      "wave3_avg_new": 6.3,
+      "wave1_max_new": 10,
+      "wave2_max_new": 8,
+      "wave3_max_new": 7
+    },
+    "hotfix_recommendation": {
+      "item": "D-019",
+      "description": "Periculosidade 30% — campo regime trabalhista no cadastro motoboy + calculo adicional no fechamento financeiro",
+      "urgency": "alta — entra em vigor 03/abril/2026",
+      "scope": "pequeno — extensao do modulo financeiro existente",
+      "approach": "hotfix incremental, sem wave completa"
+    }
+  },
+  "priority_tiers": {
+    "tier_1_hotfix": {
+      "description": "Score 8, urgente, escopo pequeno — hotfix recomendado",
+      "items": ["D-019"],
+      "count": 1,
+      "themes": ["Regulatorio/Compliance"]
+    },
+    "tier_2_important": {
+      "description": "Score 7, nao implementado — valor moderado, futuras waves se produto escalar",
+      "items": ["D-005", "D-020", "D-021", "D-024", "G-015", "G-016", "G-018", "G-019"],
+      "count": 8,
+      "themes": ["Dispatch inteligente", "ETA", "Tracking publico", "Retencao"]
+    },
+    "tier_3_nice_to_have": {
+      "description": "Score 5-6, nao implementado — nice-to-have, baixa prioridade",
+      "items": ["D-022", "D-025", "D-026", "G-005", "G-020", "G-021"],
+      "count": 6,
+      "themes": ["Notificacoes", "Simulador regulatorio", "IA progressiva", "Gamificacao"]
+    },
+    "tier_4_deferred": {
+      "description": "Score <= 4 — diferido indefinidamente",
+      "items": ["D-009", "D-016"],
+      "count": 2,
+      "themes": ["Roteirizacao", "Resiliencia operacional"]
+    }
+  },
+  "discoveries": [
+    {
+      "id": "D-001",
+      "type": "pain",
+      "profile": "empresario",
+      "description": "Gargalo do WhatsApp na operacao — ferramenta de comunicacao usada como gestao logistica. Quando volume cresce (2K-3K entregas/mes), processo colapsa.",
+      "score": 10,
+      "score_rationale": "Dor raiz que origina quase todas as outras. Eliminar essa dor e a razao de existir do produto.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1"
+    },
+    {
+      "id": "G-001",
+      "type": "gain",
+      "profile": "empresario",
+      "description": "Painel centralizado da operacao — dashboard unico com pedidos, motoboys no mapa, status em tempo real.",
+      "score": 10,
+      "score_rationale": "Ganho transformacional. E o que vende o produto na primeira demonstracao.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1"
+    },
+    {
+      "id": "D-002",
+      "type": "pain",
+      "profile": "empresario",
+      "description": "Equipes inchadas para tarefas repetitivas — 3+ pessoas so para digitar pedidos, copiar enderecos e fechar caixa.",
+      "score": 9,
+      "score_rationale": "Impacto direto no P&L do negocio. Case real documentado.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1"
+    },
+    {
+      "id": "D-003",
+      "type": "pain",
+      "profile": "empresario",
+      "description": "Sem visibilidade em tempo real dos motoboys — empresa nao sabe posicao da frota.",
+      "score": 9,
+      "score_rationale": "Risco operacional critico. Motoboy acidentado sem empresa saber e cenario real.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1"
+    },
+    {
+      "id": "D-004",
+      "type": "pain",
+      "profile": "empresario",
+      "description": "Fechamento de caixa manual e propenso a erros — planilhas/cadernos.",
+      "score": 9,
+      "score_rationale": "Core gap resolvido na wave-2. Sem financeiro, app nao gera valor real no dia a dia.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-2"
+    },
+    {
+      "id": "D-014",
+      "type": "pain",
+      "profile": "motoboy",
+      "description": "Falta de transparencia no pagamento — nao sabe quanto vai receber ao final do dia.",
+      "score": 9,
+      "score_rationale": "Regulamentacao de periculosidade torna transparencia financeira ainda mais critica.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-2"
+    },
+    {
+      "id": "G-002",
+      "type": "gain",
+      "profile": "empresario",
+      "description": "Escalar sem contratar atendentes — lojista cria pedido no app, motoboy recebe, zero intermediario.",
+      "score": 9,
+      "score_rationale": "Proposta de valor central do Chega.la. ROI imediato.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1"
+    },
+    {
+      "id": "G-003",
+      "type": "gain",
+      "profile": "empresario",
+      "description": "Fechamento financeiro automatico — sistema calcula entregas, valores, repasses por motoboy.",
+      "score": 9,
+      "score_rationale": "Proximo gargalo apos ciclo de pedidos. Sem ele, empresa continua na planilha.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-2"
+    },
+    {
+      "id": "G-006",
+      "type": "gain",
+      "profile": "lojista",
+      "description": "Solicitar entrega em segundos — abrir app, preencher, confirmar. Sem WhatsApp.",
+      "score": 9,
+      "score_rationale": "Experiencia do lojista define retencao.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1"
+    },
+    {
+      "id": "G-009",
+      "type": "gain",
+      "profile": "motoboy",
+      "description": "Extrato claro do que ganhou — entregas feitas, valor por corrida, total acumulado.",
+      "score": 9,
+      "score_rationale": "Ligado a retencao de motoboys e regulamentacao.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-2"
+    },
+    {
+      "id": "D-007",
+      "type": "pain",
+      "profile": "empresario",
+      "description": "Sem metricas e dados de gestao — nao sabe quantas entregas/dia, tempo medio, taxa de falha.",
+      "score": 8,
+      "score_rationale": "Analytics basico existe (wave-1 parcial), analytics avancado implementado wave-2.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1-partial"
+    },
+    {
+      "id": "D-008",
+      "type": "pain",
+      "profile": "empresario",
+      "description": "Dificuldade de escalar sem inchar equipe — limite humano para coordenar 50 motoboys.",
+      "score": 8,
+      "score_rationale": "Barreira estrutural. Core resolvido (self-service), dispatch manual ainda limita escala.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1"
+    },
+    {
+      "id": "D-010",
+      "type": "pain",
+      "profile": "lojista",
+      "description": "Falta de rastreamento do pedido — lojista nao sabe onde esta a mercadoria.",
+      "score": 8,
+      "score_rationale": "Impacto na experiencia do lojista e consumidor final.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1"
+    },
+    {
+      "id": "D-012",
+      "type": "pain",
+      "profile": "lojista",
+      "description": "Cobranças erradas e falta de transparencia — controle manual gera faturas imprecisas.",
+      "score": 8,
+      "score_rationale": "Faturamento automatico resolve. Corroi confianca sem ele.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-2"
+    },
+    {
+      "id": "D-017",
+      "type": "pain",
+      "profile": "empresario",
+      "description": "Sem comprovante de entrega (POD) — motoboy marca 'entregue' sem evidencia.",
+      "score": 8,
+      "score_rationale": "POD e expectativa padrao 2026. Todos concorrentes tem.",
+      "discovered_at": "wave-2",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-2"
+    },
+    {
+      "id": "D-018",
+      "type": "pain",
+      "profile": "empresario",
+      "description": "Sem tabela de precos configuravel — empresa precisa cobrar lojistas por corrida.",
+      "score": 8,
+      "score_rationale": "Base para todo o modulo financeiro.",
+      "discovered_at": "wave-2",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-2"
+    },
+    {
+      "id": "D-019",
+      "type": "pain",
+      "profile": "empresario",
+      "description": "Impacto regulatorio — adicional de periculosidade 30% para motoboys CLT (abril 2026). Portaria MTE 2.021/2025.",
+      "score": 8,
+      "score_rationale": "Urgencia: entra em vigor em 03/04/2026. Reclassificado de 7->8. Escopo pequeno: campo regime trabalhista + calculo adicional no financeiro. Recomendado como hotfix.",
+      "discovered_at": "wave-2",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": null
+    },
+    {
+      "id": "G-004",
+      "type": "gain",
+      "profile": "empresario",
+      "description": "Dados e metricas para gestao — volume/dia, tempo medio, performance por motoboy.",
+      "score": 8,
+      "score_rationale": "Profissionaliza gestao. Dashboard existe, analytics avancado na wave-2.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-2"
+    },
+    {
+      "id": "G-007",
+      "type": "gain",
+      "profile": "lojista",
+      "description": "Rastreamento em tempo real — ver motoboy no mapa, status ao vivo.",
+      "score": 8,
+      "score_rationale": "Expectativa padrao 2026. Lojistas de iFood/Rappi acostumados.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1"
+    },
+    {
+      "id": "G-008",
+      "type": "gain",
+      "profile": "lojista",
+      "description": "Historico e faturamento transparente — todas as entregas, valores, fatura clara.",
+      "score": 8,
+      "score_rationale": "Lojista precisa conferir e confiar. Sem isso troca de empresa.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-2"
+    },
+    {
+      "id": "G-012",
+      "type": "gain",
+      "profile": "empresario",
+      "description": "Tabela de frete configuravel — precos por km, bairro, faixa, fixa, hibrido.",
+      "score": 8,
+      "score_rationale": "Base para modulo financeiro.",
+      "discovered_at": "wave-2",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-2"
+    },
+    {
+      "id": "G-013",
+      "type": "gain",
+      "profile": "empresario",
+      "description": "Comprovante digital de entrega (POD) — foto + assinatura + GPS + timestamp.",
+      "score": 8,
+      "score_rationale": "Resolve disputas, gera confianca, padrao de mercado.",
+      "discovered_at": "wave-2",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-2"
+    },
+    {
+      "id": "G-014",
+      "type": "gain",
+      "profile": "empresario",
+      "description": "Faturamento automatizado para lojistas — faturas periodicas com detalhamento.",
+      "score": 8,
+      "score_rationale": "Elimina cobranca manual. Gera receita previsivel.",
+      "discovered_at": "wave-2",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-2"
+    },
+    {
+      "id": "D-005",
+      "type": "pain",
+      "profile": "empresario",
+      "description": "Rotas mal planejadas — dois motoboys para o mesmo bairro, gasto duplo.",
+      "score": 7,
+      "score_rationale": "Impacto no custo operacional, mas Waze/Maps complementam. Otimizacao, nao bloqueante.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": null
+    },
+    {
+      "id": "D-006",
+      "type": "pain",
+      "profile": "empresario",
+      "description": "Erros de digitacao geram entregas falhas — endereco copiado errado.",
+      "score": 7,
+      "score_rationale": "Campos estruturados com validacao Zod resolvem.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1"
+    },
+    {
+      "id": "D-011",
+      "type": "pain",
+      "profile": "lojista",
+      "description": "Processo lento para solicitar entregas — WhatsApp, digitar, esperar.",
+      "score": 7,
+      "score_rationale": "App do lojista resolve.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1"
+    },
+    {
+      "id": "D-015",
+      "type": "pain",
+      "profile": "motoboy",
+      "description": "Entregas perdidas em grupos de WhatsApp — motoboy em rota nao acompanha fluxo.",
+      "score": 7,
+      "score_rationale": "SSE notificacao resolve.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1"
+    },
+    {
+      "id": "D-020",
+      "type": "pain",
+      "profile": "empresario",
+      "description": "Alta rotatividade de motoboys — insatisfacao com desorganizacao gera migracao.",
+      "score": 7,
+      "score_rationale": "Parcialmente resolvido por financeiro transparente + POD. Residual e cultural/mercado.",
+      "discovered_at": "wave-2",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": null
+    },
+    {
+      "id": "D-021",
+      "type": "pain",
+      "profile": "lojista",
+      "description": "Sem estimativa de tempo de entrega — lojista nao sabe quando motoboy chega.",
+      "score": 7,
+      "score_rationale": "Importante mas nao bloqueante. Status real-time + mapa reduzem ansiedade.",
+      "discovered_at": "wave-2",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": null
+    },
+    {
+      "id": "D-023",
+      "type": "pain",
+      "profile": "motoboy",
+      "description": "Sem comprovante de que entregou — cliente alega nao receber, motoboy nao pode provar.",
+      "score": 7,
+      "score_rationale": "POD resolve. Foto + assinatura protege motoboy.",
+      "discovered_at": "wave-2",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-2"
+    },
+    {
+      "id": "D-024",
+      "type": "pain",
+      "profile": "empresario",
+      "description": "Dispatch manual e gargalo em escala — operador gasta tempo decidindo atribuicao em pico (15+ motoboys).",
+      "score": 7,
+      "score_rationale": "Nao bloqueante para operacoes menores (5-10 motoboys). Concorrentes tem distribuicao em lote.",
+      "discovered_at": "wave-3",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": null
+    },
+    {
+      "id": "G-005",
+      "type": "gain",
+      "profile": "empresario",
+      "description": "IA progressiva — monitoramento -> copiloto -> agente autonomo.",
+      "score": 6,
+      "score_rationale": "Dados insuficientes para IA real. Diferencial futuro. Dashboard/analytics ja cobre nivel 1. Reclassificado 7->6.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": null
+    },
+    {
+      "id": "G-010",
+      "type": "gain",
+      "profile": "motoboy",
+      "description": "Notificacao de entregas disponiveis — push em vez de vigiar WhatsApp.",
+      "score": 7,
+      "score_rationale": "SSE resolve no app aberto. Push offline seria melhor.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1"
+    },
+    {
+      "id": "G-015",
+      "type": "gain",
+      "profile": "empresario",
+      "description": "Dispatch inteligente — sistema sugere motoboy mais proximo/disponivel.",
+      "score": 7,
+      "score_rationale": "Reduz tempo de resposta. Manual funciona para maioria das operacoes atuais.",
+      "discovered_at": "wave-2",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": null
+    },
+    {
+      "id": "G-016",
+      "type": "gain",
+      "profile": "lojista",
+      "description": "Link de rastreamento para cliente final — URL publica com mapa read-only.",
+      "score": 7,
+      "score_rationale": "Tracking publico tornou-se expectativa padrao 2026. Profissionaliza a empresa. Reclassificado 6->7.",
+      "discovered_at": "wave-2",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": null
+    },
+    {
+      "id": "G-017",
+      "type": "gain",
+      "profile": "motoboy",
+      "description": "Protecao por comprovante digital — foto + assinatura protege contra acusacoes falsas.",
+      "score": 8,
+      "score_rationale": "Implementado via POD wave-2. Sistema de POD existente cobre integralmente este ganho.",
+      "discovered_at": "wave-2",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-3"
+    },
+    {
+      "id": "G-018",
+      "type": "gain",
+      "profile": "lojista",
+      "description": "ETA basico calculado automaticamente — distancia/velocidade media com dados GPS existentes.",
+      "score": 7,
+      "score_rationale": "Factivel com dados existentes, agrega valor perceptivel, nao transformacional.",
+      "discovered_at": "wave-3",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": null
+    },
+    {
+      "id": "G-019",
+      "type": "gain",
+      "profile": "lojista",
+      "description": "Pagina publica de rastreamento — URL unica por entrega, sem login, mapa read-only.",
+      "score": 7,
+      "score_rationale": "Complementa G-016. Feature que lojistas de iFood/Rappi ja esperam.",
+      "discovered_at": "wave-3",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": null
+    },
+    {
+      "id": "D-013",
+      "type": "pain",
+      "profile": "lojista",
+      "description": "Comunicacao fragmentada — mensagens se perdem em WhatsApp.",
+      "score": 6,
+      "score_rationale": "Canal dedicado via SSE resolve.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1"
+    },
+    {
+      "id": "D-022",
+      "type": "pain",
+      "profile": "lojista",
+      "description": "Sem notificacao para o cliente final — lojista repassa status manualmente.",
+      "score": 6,
+      "score_rationale": "Link de tracking publico resolve. Nice-to-have.",
+      "discovered_at": "wave-2",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": null
+    },
+    {
+      "id": "D-025",
+      "type": "pain",
+      "profile": "lojista",
+      "description": "Sem notificacoes automatizadas fora do app — mudancas de status so via SSE.",
+      "score": 6,
+      "score_rationale": "SSE funciona com app aberto; fora do app e gap mas nao critico.",
+      "discovered_at": "wave-3",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": null
+    },
+    {
+      "id": "D-026",
+      "type": "pain",
+      "profile": "empresario",
+      "description": "Sem simulador de impacto regulatorio — nao consegue ver efeito do adicional 30% na margem.",
+      "score": 6,
+      "score_rationale": "Ferramenta de planejamento, nao operacional. Empresario pode usar planilha.",
+      "discovered_at": "wave-3",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": null
+    },
+    {
+      "id": "G-011",
+      "type": "gain",
+      "profile": "motoboy",
+      "description": "Compartilhar localizacao sem esforco — GPS automatico no app.",
+      "score": 6,
+      "score_rationale": "Conveniencia. App ja faz isso.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1"
+    },
+    {
+      "id": "G-020",
+      "type": "gain",
+      "profile": "motoboy",
+      "description": "Ranking e gamificacao de entregadores — motoboys produtivos ganham destaque.",
+      "score": 5,
+      "score_rationale": "Nice-to-have. Analytics ja fornece dados base.",
+      "discovered_at": "wave-3",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": null
+    },
+    {
+      "id": "G-021",
+      "type": "gain",
+      "profile": "empresario",
+      "description": "Notificacoes via webhook/WhatsApp Business — status automatico por integracao.",
+      "score": 6,
+      "score_rationale": "Infraestrutura de notificacao, nao feature de produto. Webhook e infra, WhatsApp e custo.",
+      "discovered_at": "wave-3",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": null
+    },
+    {
+      "id": "D-009",
+      "type": "pain",
+      "profile": "empresario",
+      "description": "Operacao para se funcionario-chave sai — conhecimento na cabeca de uma pessoa.",
+      "score": 3,
+      "score_rationale": "Sistema em si e resiliencia. Todo conhecimento operacional esta no software. Reclassificado 4->3.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": "wave-1-partial"
+    },
+    {
+      "id": "D-016",
+      "type": "pain",
+      "profile": "motoboy",
+      "description": "Sem roteirizacao — decide rota por instinto.",
+      "score": 4,
+      "score_rationale": "Waze complementa. Baixa prioridade.",
+      "discovered_at": "wave-1",
+      "last_reclassified_at": "wave-3",
+      "implemented_at": null
+    }
+  ]
+}

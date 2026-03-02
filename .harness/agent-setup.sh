@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Agent Setup — PRP-005-app-motoboy (Wave 1 — App do Motoboy PWA)
+# Agent Setup - wave-3-research (Wave 3 - Harness A Research)
 # Bootstrap para o agente na worktree isolada.
 # Executar da raiz da worktree: bash .harness/agent-setup.sh
 # =============================================================================
 set -euo pipefail
 
 WT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-echo "=== Agent Setup: PRP-005-app-motoboy ==="
+echo "=== Agent Setup: wave-3-research ==="
 echo ""
 
 # --- Carregar .env ---
@@ -34,30 +34,30 @@ if [ -f "package.json" ]; then
   echo "  Instalando dependencias..."
   $PKG_MGR install 2>&1 | tail -5 || echo "WARN: falha ao instalar dependencias"
 else
-  echo "  Sem package.json — pulando instalacao"
+  echo "  Sem package.json - pulando instalacao"
 fi
 
 # --- Docker (platform) ---
 echo "[3/4] Verificando Docker..."
 if [ -f "$WT_DIR/docker-compose.platform.yml" ]; then
   if command -v docker &>/dev/null; then
-    echo "  Docker compose encontrado — subindo platform..."
+    echo "  Docker compose encontrado - subindo platform..."
     docker compose -f docker-compose.platform.yml -f docker-compose.platform.dev-ports.yml up -d 2>&1 | tail -5
     echo "  Aguardando servicos (10s)..."
     sleep 10
   else
-    echo "  Docker nao disponivel — skip"
+    echo "  Docker nao disponivel - skip"
   fi
 elif [ -f "$WT_DIR/docker-compose.yml" ]; then
   if command -v docker &>/dev/null; then
-    echo "  docker-compose.yml encontrado — subindo..."
+    echo "  docker-compose.yml encontrado - subindo..."
     docker compose up -d 2>&1 | tail -5
     sleep 10
   else
-    echo "  Docker nao disponivel — skip"
+    echo "  Docker nao disponivel - skip"
   fi
 else
-  echo "  Sem docker-compose — skip"
+  echo "  Sem docker-compose - skip"
 fi
 
 # --- Smoke test ---
@@ -65,17 +65,10 @@ echo "[4/4] Smoke test..."
 node -e "console.log('  Node OK:', process.version)" 2>&1 || echo "  WARN: Node.js nao disponivel"
 
 # Health check Kong (Supabase gateway) se portas configuradas
-KONG="${KONG_HTTP_PORT:-3530}"
+KONG="${KONG_HTTP_PORT:-4630}"
 if command -v curl &>/dev/null; then
   HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 3 "http://localhost:$KONG" 2>/dev/null || echo "000")
   echo "  Kong (port $KONG): HTTP $HTTP_CODE"
-fi
-
-# Verificar se apps/motoboy existe
-if [ -d "$WT_DIR/apps/motoboy" ]; then
-  echo "  apps/motoboy/ encontrado"
-else
-  echo "  WARN: apps/motoboy/ nao encontrado — sera criado durante F-001"
 fi
 
 echo ""
@@ -85,9 +78,7 @@ echo "  Branch:    $(git branch --show-current)"
 echo "  Node:      $(node --version 2>/dev/null || echo 'N/A')"
 echo "  Pkg mgr:   $PKG_MGR"
 echo "  PREFIX:    ${PREFIX:-N/A}"
-echo "  Session:   PRP-005-app-motoboy--cc"
-echo "  Runs dir:  .harness/runs/PRP-005-app-motoboy--cc/ (ROOT)"
-echo "  App dir:   apps/motoboy/"
-echo "  Dev port:  \${PREFIX}04 (motoboy)"
+echo "  Session:   wave-3-research--cc"
+echo "  Runs dir:  .harness/runs/wave-3-research--cc/ (ROOT)"
 echo ""
 echo "=== Setup completo ==="
