@@ -1,0 +1,65 @@
+{
+  "wave": 5,
+  "decision": "go",
+  "decision_rationale": "Wave 5 resolve gaps de operacao real: enderecamento 100% manual (unico app do mercado sem autocomplete), CRUDs incompletos (nao e possivel editar lojas/motoboys), mapa nao confiavel (motoboy nao aparece), interfaces incompletas para producao real. 2 discoveries score 9 + 12 score 8. Score medio 8.0. Produto pos wave-4 tem seguranca e login resolvidos, mas operacao diaria ainda e demo, nao producao.",
+  "previous_wave": {
+    "wave": 4,
+    "decision": "go",
+    "total_discoveries": 60,
+    "implemented": 29,
+    "remaining": 29,
+    "partial": 2
+  },
+  "summary": {
+    "total_discoveries": 76,
+    "new_discoveries_this_wave": 16,
+    "pains": 43,
+    "gains": 33,
+    "avg_score": 7.3,
+    "score_gte_8": 48,
+    "score_gte_9": 20,
+    "score_10": 2,
+    "implemented": 29,
+    "not_implemented": 45,
+    "partial": 2,
+    "profiles_covered": ["empresario", "operador", "lojista", "motoboy", "super_admin"],
+    "wave5_new_discoveries": [
+      "D-035 (endereco manual, score 9)",
+      "D-036 (sem enderecos salvos, score 8)",
+      "D-037 (sem geocoding, score 8)",
+      "D-038 (sem gestao enderecos, score 7)",
+      "D-039 (sem pin drop, score 7)",
+      "D-040 (CRUD lojas incompleto, score 8)",
+      "D-041 (CRUD motoboys incompleto, score 8)",
+      "D-042 (motoboy nao aparece mapa, score 8)",
+      "D-043 (interfaces incompletas, score 8)",
+      "G-030 (autocomplete geocoding, score 9)",
+      "G-031 (enderecos salvos, score 8)",
+      "G-032 (gestao enderecos CRUD, score 7)",
+      "G-033 (CRUD lojas completo, score 8)",
+      "G-034 (CRUD motoboys completo, score 8)",
+      "G-035 (fix tracking motoboy, score 8)",
+      "G-036 (quality pass interfaces, score 8)"
+    ],
+    "wave5_score_distribution": {
+      "score_9": 2,
+      "score_8": 12,
+      "score_7": 2,
+      "below_7": 0
+    }
+  },
+  "priority_tiers": {
+    "tier_1_critical": {
+      "description": "Score 8-9, operacao real — DEVE estar na wave 5",
+      "items": ["D-035", "G-030", "D-036", "D-037", "G-031", "D-040", "G-033", "D-041", "G-034", "D-042", "G-035", "D-043", "G-036"],
+      "count": 13,
+      "themes": ["Autocomplete/Geocoding", "Enderecos salvos", "CRUD completo", "Fix tracking", "Quality pass"]
+    },
+    "tier_2_important": {
+      "description": "Score 7, deve estar se possivel",
+      "items": ["D-038", "D-039", "G-032"],
+      "count": 3,
+      "themes": ["Gestao enderecos", "Pin drop"]
+    }
+  }
+}
