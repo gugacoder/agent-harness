@@ -1,5 +1,6 @@
 ---
-status: current
+status: finished
+finished_at: 2026-03-02T23:45:00Z
 wave: 6
 depends_on: []
 ---
