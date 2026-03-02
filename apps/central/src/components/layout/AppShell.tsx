@@ -36,6 +36,7 @@ export function AppShell() {
       >
         <Header
           userName={profile?.full_name || user?.fullName || "Operador"}
+          userRole={user?.role}
           avatarUrl={profile?.avatar_url}
           onLogout={logout}
           impersonating={

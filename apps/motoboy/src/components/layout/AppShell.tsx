@@ -40,7 +40,7 @@ export function AppShell() {
 
   return (
     <div className="mx-auto min-h-screen max-w-[480px] bg-background">
-      <Header userName={profile?.full_name || user?.fullName || "Motoboy"} avatarUrl={profile?.avatar_url} status={status} onLogout={logout}>
+      <Header userName={profile?.full_name || user?.fullName || "Motoboy"} userRole={user?.role} avatarUrl={profile?.avatar_url} status={status} onLogout={logout}>
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           {connected ? (
             <Wifi className="h-3.5 w-3.5 text-cs-success" />

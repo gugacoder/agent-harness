@@ -45,6 +45,7 @@ export function AppShell() {
       >
         <Header
           userName={profile?.full_name || user?.fullName || user?.email || "Lojista"}
+          userRole={user?.role}
           avatarUrl={profile?.avatar_url}
           onLogout={logout}
           onHelpClick={() => setShowHelpModal(true)}
