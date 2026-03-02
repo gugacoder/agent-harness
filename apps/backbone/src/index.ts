@@ -20,6 +20,7 @@ import { deliveryProofRouter } from "./routes/delivery-proof.js";
 import { invoicesRouter } from "./routes/invoices.js";
 import { analyticsRouter } from "./routes/analytics.js";
 import { eventsRouter } from "./routes/events.js";
+import { geocodingRouter } from "./routes/geocoding.js";
 
 // Re-export for convenience
 export type { AppType };
@@ -92,6 +93,7 @@ app.route("/", earningsRouter);
 app.route("/", deliveryProofRouter);
 app.route("/", invoicesRouter);
 app.route("/", analyticsRouter);
+app.route("/", geocodingRouter);
 
 const port = parseInt(process.env.BACKBONE_PORT!, 10);
 
