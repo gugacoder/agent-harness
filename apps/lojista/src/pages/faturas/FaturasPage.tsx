@@ -23,6 +23,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
 import { api } from "@/lib/api";
 import type { Invoice, InvoiceWithItems } from "@/types/api";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 // --- Helpers ---
 
@@ -488,7 +489,10 @@ export function FaturasPage() {
   // --- List View ---
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold">Faturas</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold">Faturas</h1>
+        <PageHelpLink url="/docs#faturas" />
+      </div>
 
       {/* Filter Bar */}
       <FilterBar

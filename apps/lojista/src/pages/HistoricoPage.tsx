@@ -17,6 +17,7 @@ import { OrderTimeline } from "@/components/ui/OrderTimeline";
 import { OrderProofBadge } from "@/components/delivery-proof/OrderProofBadge";
 import { OrderProofSection } from "@/components/delivery-proof/OrderProofSection";
 import type { Order, OrderStatus } from "@/types/api";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 const HISTORY_STATUSES: OrderStatus[] = ["delivered", "cancelled"];
 const PAGE_SIZE = 20;
@@ -197,7 +198,10 @@ export function HistoricoPage() {
   // --- Render Order List ---
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold">Histórico</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold">Histórico</h1>
+        <PageHelpLink url="/docs#historico" />
+      </div>
 
       <div className="rounded-lg border bg-card shadow-sm">
         {isLoading ? (

@@ -14,6 +14,7 @@ import { useCompanyEventsContext } from "@/contexts/CompanyEventsContext";
 import { COURIER_STATUS_LABELS } from "@/components/ui/StatusBadge";
 import type { CourierLocation } from "@/hooks/useCourierLocations";
 import type { Courier, CourierStatus } from "@/types/api";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 // --- Status colors matching branding ---
 // available → secondary #1dace7 (blue)
@@ -172,6 +173,7 @@ export function MapaPage() {
               Ocupado
             </span>
           </div>
+          <PageHelpLink url="/docs#mapa" />
           {/* SSE status */}
           <span
             className="flex items-center gap-1 text-xs"

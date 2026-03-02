@@ -7,6 +7,7 @@ import { ClosingList } from "@/components/financial/ClosingList";
 import { ClosingDetail } from "@/components/financial/ClosingDetail";
 import { CreateClosingForm } from "@/components/financial/CreateClosingForm";
 import type { ClosingStatus } from "@/types/api";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 type View = { type: "list" } | { type: "detail"; closingId: string };
 
@@ -78,6 +79,7 @@ export function FinanceiroPage() {
         <div className="flex items-center gap-3">
           <Wallet className="h-8 w-8 text-primary" />
           <h1 className="text-2xl font-bold tracking-tight">Financeiro</h1>
+          <PageHelpLink url="/docs#financeiro" />
         </div>
         <p className="mt-1 text-muted-foreground">
           Gerencie os fechamentos financeiros dos motoboys.

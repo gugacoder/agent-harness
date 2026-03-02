@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { Link } from "react-router";
 import { Settings, Loader2, CheckCircle2, Circle, Camera, AlertTriangle, RefreshCw, Calendar } from "lucide-react";
 import { useCompanyConfig, useUpdateCompanyConfig } from "@/hooks/useCompanyConfig";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { HelpTooltip } from "@/components/ui/HelpTooltip";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 export function ConfiguracaoPage() {
   const { data: config, isLoading, error, refetch } = useCompanyConfig();
@@ -26,6 +28,7 @@ export function ConfiguracaoPage() {
         <div className="flex items-center gap-3">
           <Settings className="h-8 w-8 text-primary" />
           <h1 className="text-2xl font-bold tracking-tight">Configurações</h1>
+          <PageHelpLink url="/docs#configuracao" />
         </div>
         <p className="mt-1 text-muted-foreground">
           Gerencie as configurações da sua empresa.
@@ -143,6 +146,10 @@ export function ConfiguracaoPage() {
           )}
         </div>
       </div>
+
+      <p className="text-xs text-muted-foreground text-center mt-8">
+        Precisa de ajuda? <Link to="/docs" className="text-primary underline">Guia de uso</Link> · <Link to="/docs#faq" className="text-primary underline">FAQ</Link>
+      </p>
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { DeliveryProofViewer } from "@/components/delivery-proof/DeliveryProofVi
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import type { DeliveryEvent } from "@/types/delivery";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 const PAGE_SIZE = 20;
 
@@ -231,7 +232,10 @@ export function HistoricoPage() {
     <div className="space-y-4 p-4">
       {/* Header with today's count */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Histórico</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold">Histórico</h1>
+          <PageHelpLink url="/docs#historico" />
+        </div>
         {!isLoading && (
           <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
             Hoje: {todayCount}

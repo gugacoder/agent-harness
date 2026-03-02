@@ -22,6 +22,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { OrderStatusBadge, ORDER_STATUS_LABELS } from "@/components/ui/StatusBadge";
 import type { Shop, Order } from "@/types/api";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 // --- New Shop Form ---
 
@@ -534,11 +535,14 @@ export function LojistasPage() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Lojistas</h1>
-          <p className="mt-1 text-muted-foreground">
-            Gerenciamento de lojistas
-          </p>
+        <div className="flex items-center gap-2">
+          <div>
+            <h1 className="text-2xl font-bold">Lojistas</h1>
+            <p className="mt-1 text-muted-foreground">
+              Gerenciamento de lojistas
+            </p>
+          </div>
+          <PageHelpLink url="/docs#lojas" />
         </div>
         <button
           onClick={() => setView({ type: "new" })}

@@ -23,6 +23,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CourierStatusBadge } from "@/components/ui/StatusBadge";
 import type { Courier, CourierStatus } from "@/types/api";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 // --- New Courier Form ---
 
@@ -538,11 +539,14 @@ export function MotoboysPage() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Motoboys</h1>
-          <p className="mt-1 text-muted-foreground">
-            Gerenciamento de motoboys
-          </p>
+        <div className="flex items-center gap-2">
+          <div>
+            <h1 className="text-2xl font-bold">Motoboys</h1>
+            <p className="mt-1 text-muted-foreground">
+              Gerenciamento de motoboys
+            </p>
+          </div>
+          <PageHelpLink url="/docs#motoboys" />
         </div>
         <button
           onClick={() => setView({ type: "new" })}

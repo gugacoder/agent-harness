@@ -15,6 +15,7 @@ import { useShop } from "@/hooks/useShop";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 const formSchema = z.object({
   pickup_address: z.string().min(1, "Endereço de coleta é obrigatório"),
@@ -109,7 +110,10 @@ export function NovaEntregaPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold">Nova Entrega</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold">Nova Entrega</h1>
+        <PageHelpLink url="/docs#criar-pedido" />
+      </div>
 
       {error && (
         <div className="mt-3">

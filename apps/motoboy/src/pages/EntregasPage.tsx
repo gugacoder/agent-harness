@@ -8,6 +8,7 @@ import { DeliveryCard } from "@/components/ui/DeliveryCard";
 import { DeliveryTimeline } from "@/components/ui/DeliveryTimeline";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PodCaptureFlow } from "@/components/pod-capture/PodCaptureFlow";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 type PodState =
   | { mode: "none" }
@@ -99,6 +100,9 @@ export function EntregasPage() {
 
   return (
     <div className="space-y-4 p-4">
+      <div className="flex justify-end">
+        <PageHelpLink url="/docs#entregas" />
+      </div>
       {/* Pending delivery notification */}
       {pendingDelivery && pendingOrder && (
         <DeliveryNotification

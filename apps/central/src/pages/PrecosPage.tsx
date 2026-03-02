@@ -5,6 +5,7 @@ import { usePricingTables } from "@/hooks/usePricingTables";
 import { PricingTableList } from "@/components/pricing/PricingTableList";
 import { PricingTableDetail } from "@/components/pricing/PricingTableDetail";
 import { ShopOverrides } from "@/components/pricing/ShopOverrides";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 type View =
   | { type: "list" }
@@ -44,6 +45,7 @@ export function PrecosPage() {
         <div className="flex items-center gap-3">
           <DollarSign className="h-8 w-8 text-primary" />
           <h1 className="text-2xl font-bold tracking-tight">Preços</h1>
+          <PageHelpLink url="/docs#precos" />
         </div>
         <p className="mt-1 text-muted-foreground">
           Gerencie as tabelas de preço da sua empresa.

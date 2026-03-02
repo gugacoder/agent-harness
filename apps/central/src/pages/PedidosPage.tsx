@@ -29,6 +29,7 @@ import {
 import type { Order, OrderStatus, Courier, Delivery } from "@/types/api";
 import { OrderProofSection } from "@/components/delivery-proof/OrderProofSection";
 import { OrderProofBadge } from "@/components/delivery-proof/OrderProofBadge";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 const ALL_STATUSES: OrderStatus[] = [
   "pending",
@@ -788,11 +789,14 @@ export function PedidosPage() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Pedidos</h1>
-          <p className="mt-1 text-muted-foreground">
-            Gerenciamento de pedidos
-          </p>
+        <div className="flex items-center gap-2">
+          <div>
+            <h1 className="text-2xl font-bold">Pedidos</h1>
+            <p className="mt-1 text-muted-foreground">
+              Gerenciamento de pedidos
+            </p>
+          </div>
+          <PageHelpLink url="/docs#pedidos" />
         </div>
         <button
           onClick={() => setView({ type: "new" })}
