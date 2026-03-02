@@ -14,6 +14,9 @@ import {
 } from "../services/delivery.service.js";
 import { sseManager } from "../sse/manager.js";
 import { companyChannel, courierChannel, orderChannel } from "../sse/channels.js";
+import { db } from "../db.js";
+import { deliveryPrices } from "../../db/schema/index.js";
+import { eq } from "drizzle-orm";
 
 // --- Schemas ---
 
@@ -652,6 +655,81 @@ deliveriesRouter.openapi(getDeliveryEventsRoute, async (c) => {
       lng: event.lng,
       created_at: event.created_at,
     })),
+    200
+  );
+});
+
+// --- GET /api/deliveries/:id/price ---
+
+const DeliveryPriceResponseSchema = z.object({
+  delivery_id: z.string().uuid(),
+  estimated_distance_km: z.string(),
+  actual_distance_km: z.string().nullable(),
+  base_price: z.string(),
+  surcharge_amount: z.string(),
+  total_price: z.string(),
+  calculated_at: z.string(),
+});
+
+const getDeliveryPriceRoute = createRoute({
+  method: "get",
+  path: "/deliveries/{id}/price",
+  tags: ["Deliveries"],
+  summary: "Get delivery price",
+  description: "Get the calculated price for a delivery.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      content: { "application/json": { schema: DeliveryPriceResponseSchema } },
+      description: "Delivery price",
+    },
+    404: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Delivery price not found",
+    },
+    401: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Missing or invalid authentication",
+    },
+  },
+});
+
+deliveriesRouter.openapi(getDeliveryPriceRoute, async (c) => {
+  const { id: deliveryId } = c.req.valid("param");
+  const companyId = c.get("companyId");
+
+  const delivery = await getDeliveryById(deliveryId, companyId);
+  if (!delivery) {
+    return c.json(
+      { error: "Not Found", message: "Delivery not found", statusCode: 404 },
+      404
+    );
+  }
+
+  const [price] = await db
+    .select()
+    .from(deliveryPrices)
+    .where(eq(deliveryPrices.delivery_id, deliveryId));
+
+  if (!price) {
+    return c.json(
+      { error: "Not Found", message: "Price not calculated", statusCode: 404 },
+      404
+    );
+  }
+
+  return c.json(
+    {
+      delivery_id: price.delivery_id,
+      estimated_distance_km: price.estimated_distance_km,
+      actual_distance_km: price.actual_distance_km,
+      base_price: price.base_price,
+      surcharge_amount: price.surcharge_amount,
+      total_price: price.total_price,
+      calculated_at: price.calculated_at,
+    },
     200
   );
 });

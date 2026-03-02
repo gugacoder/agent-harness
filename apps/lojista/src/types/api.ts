@@ -131,3 +131,38 @@ export interface OrderEstimate {
   estimated_price: number;
   pricing_table_name: string;
 }
+
+// --- Timeline ---
+
+export interface TimelineEvent {
+  event_type: string;
+  old_status: string | null;
+  new_status: string | null;
+  description: string;
+  actor_name: string;
+  created_at: string;
+}
+
+// --- Courier Info ---
+
+export interface CourierInfo {
+  id: string;
+  full_name: string;
+  phone: string;
+  photo_url: string | null;
+  status: string;
+  vehicle_type: string | null;
+  plate_number: string | null;
+}
+
+// --- Delivery Price ---
+
+export interface DeliveryPrice {
+  delivery_id: string;
+  estimated_distance_km: string;
+  actual_distance_km: string | null;
+  base_price: string;
+  surcharge_amount: string;
+  total_price: string;
+  calculated_at: string;
+}
