@@ -1,0 +1,95 @@
+{
+  "wave": 6,
+  "decision": "go",
+  "decision_rationale": "Wave 6 e a wave final que torna o produto adotavel sem treinamento presencial. Com waves 4-5 resolvidas (seguranca, login, enderecos, completude), o produto esta funcional mas sem guia de uso. 6 discoveries score 8 (onboarding central/motoboy, guias de uso). Onboarding e o ultimo mile entre 'produto pronto' e 'produto adotado'. Sem ele, churn no primeiro dia.",
+  "previous_wave": {
+    "wave": 5,
+    "decision": "go",
+    "total_discoveries": 76,
+    "implemented": 29,
+    "remaining": 45,
+    "partial": 2
+  },
+  "summary": {
+    "total_discoveries": 86,
+    "new_discoveries_this_wave": 10,
+    "pains": 48,
+    "gains": 38,
+    "avg_score": 7.3,
+    "score_gte_8": 54,
+    "score_gte_9": 20,
+    "score_10": 2,
+    "implemented": 29,
+    "not_implemented": 55,
+    "partial": 2,
+    "profiles_covered": ["empresario", "operador", "lojista", "motoboy", "super_admin"],
+    "wave6_new_discoveries": [
+      "D-044 (central sem onboarding, score 8)",
+      "D-045 (motoboy sem onboarding, score 8)",
+      "D-046 (lojista sem onboarding, score 7)",
+      "D-047 (sem documentacao, score 8)",
+      "D-048 (sem help contextual, score 6)",
+      "G-037 (wizard central, score 8)",
+      "G-038 (tutorial motoboy, score 8)",
+      "G-039 (onboarding lojista, score 7)",
+      "G-040 (guias de uso, score 8)",
+      "G-041 (help contextual, score 6)"
+    ],
+    "wave6_score_distribution": {
+      "score_8": 6,
+      "score_7": 2,
+      "score_6": 2,
+      "below_6": 0
+    },
+    "consolidated_waves_4_5_6": {
+      "total_new_discoveries": 42,
+      "avg_score": 7.9,
+      "items_score_8_plus": 31,
+      "items_score_9_plus": 6,
+      "dependency_chain": "wave-4 → wave-5 → wave-6"
+    }
+  },
+  "priority_tiers": {
+    "tier_1_critical": {
+      "description": "Score 8, onboarding e docs — DEVE estar na wave 6",
+      "items": ["D-044", "D-045", "D-047", "G-037", "G-038", "G-040"],
+      "count": 6,
+      "themes": ["Onboarding Central", "Onboarding Motoboy", "Guias de uso"]
+    },
+    "tier_2_important": {
+      "description": "Score 7, deve estar se possivel",
+      "items": ["D-046", "G-039"],
+      "count": 2,
+      "themes": ["Onboarding Lojista"]
+    },
+    "tier_3_nice_to_have": {
+      "description": "Score 6, polimento",
+      "items": ["D-048", "G-041"],
+      "count": 2,
+      "themes": ["Help contextual", "Tooltips"]
+    }
+  },
+  "items_deferred_across_all_waves": {
+    "description": "Itens de waves anteriores nao cobertos pelas waves 4-6, mantidos para futuro",
+    "items": [
+      "D-005 (rotas mal planejadas, score 7)",
+      "D-019 (periculosidade 30%, score 8 — hotfix recomendado)",
+      "D-020 (rotatividade motoboys, score 7)",
+      "D-021 (sem ETA, score 7)",
+      "D-024 (dispatch manual, score 7)",
+      "G-015 (dispatch inteligente, score 7)",
+      "G-016 (link rastreamento, score 7)",
+      "G-018 (ETA basico, score 7)",
+      "G-019 (pagina publica rastreamento, score 7)",
+      "D-022 (sem notif cliente final, score 6)",
+      "D-025 (sem notif fora app, score 6)",
+      "D-026 (sem simulador regulatorio, score 6)",
+      "G-005 (IA progressiva, score 6)",
+      "G-021 (webhook/whatsapp, score 6)",
+      "G-020 (ranking entregadores, score 5)",
+      "D-016 (sem roteirizacao, score 4)",
+      "D-009 (resiliencia operacional, score 3)"
+    ],
+    "note": "Estes itens sao candidatos para wave-7+ ou podem ser tratados como hotfixes independentes (especialmente D-019 periculosidade)"
+  }
+}
