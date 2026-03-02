@@ -93,10 +93,10 @@ const profilesRouter = new OpenAPIHono<AppType>({
 });
 
 // Middleware chain
-profilesRouter.use("/*", authMiddleware);
-profilesRouter.use("/*", companyMiddleware);
+profilesRouter.use("/profiles/*", authMiddleware);
+profilesRouter.use("/profiles/*", companyMiddleware);
 profilesRouter.use(
-  "/*",
+  "/profiles/*",
   requireRole("operator", "shop", "courier", "super_admin")
 );
 

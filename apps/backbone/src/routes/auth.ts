@@ -35,9 +35,9 @@ const authRouter = new OpenAPIHono<AppType>({
 });
 
 // Apply auth + company + role middleware to all auth routes
-authRouter.use("/*", authMiddleware);
-authRouter.use("/*", companyMiddleware);
-authRouter.use("/*", requireRole("operator", "super_admin"));
+authRouter.use("/auth/*", authMiddleware);
+authRouter.use("/auth/*", companyMiddleware);
+authRouter.use("/auth/*", requireRole("operator", "super_admin"));
 
 const InviteResponseSchema = z.object({
   message: z.string(),

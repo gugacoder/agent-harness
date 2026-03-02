@@ -76,9 +76,9 @@ const companiesRouter = new OpenAPIHono<AppType>({
 });
 
 // Apply auth + company + role middleware
-companiesRouter.use("/*", authMiddleware);
-companiesRouter.use("/*", companyMiddleware);
-companiesRouter.use("/*", requireRole("operator", "super_admin"));
+companiesRouter.use("/companies/*", authMiddleware);
+companiesRouter.use("/companies/*", companyMiddleware);
+companiesRouter.use("/companies/*", requireRole("operator", "super_admin"));
 
 // --- POST /api/companies ---
 

@@ -63,9 +63,9 @@ const usersRouter = new OpenAPIHono<AppType>({
 });
 
 // Middleware chain
-usersRouter.use("/*", authMiddleware);
-usersRouter.use("/*", companyMiddleware);
-usersRouter.use("/*", requireRole("operator", "super_admin"));
+usersRouter.use("/users/*", authMiddleware);
+usersRouter.use("/users/*", companyMiddleware);
+usersRouter.use("/users/*", requireRole("operator", "super_admin"));
 
 // --- Helper: get email from Supabase Auth for a user id ---
 

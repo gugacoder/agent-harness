@@ -49,9 +49,9 @@ const deliveryProofRouter = new OpenAPIHono<AppType>({
   },
 });
 
-deliveryProofRouter.use("/*", authMiddleware);
-deliveryProofRouter.use("/*", companyMiddleware);
-deliveryProofRouter.use("/*", requireRole("courier", "super_admin"));
+deliveryProofRouter.use("/deliveries/*", authMiddleware);
+deliveryProofRouter.use("/deliveries/*", companyMiddleware);
+deliveryProofRouter.use("/deliveries/*", requireRole("courier", "super_admin"));
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];

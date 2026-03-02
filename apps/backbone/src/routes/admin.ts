@@ -95,8 +95,8 @@ const adminRouter = new OpenAPIHono<AppType>({
 });
 
 // Auth middleware only — no companyMiddleware (super_admin has no company)
-adminRouter.use("/*", authMiddleware);
-adminRouter.use("/*", requireRole("super_admin"));
+adminRouter.use("/admin/*", authMiddleware);
+adminRouter.use("/admin/*", requireRole("super_admin"));
 
 // --- GET /admin/companies ---
 

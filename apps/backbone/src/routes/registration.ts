@@ -195,9 +195,9 @@ export const registrationRouter = new OpenAPIHono<AppType>({
 });
 
 // Auth middleware for all protected registration routes
-registrationRouter.use("/*", authMiddleware);
-registrationRouter.use("/*", companyMiddleware);
-registrationRouter.use("/*", requireRole("operator", "super_admin"));
+registrationRouter.use("/registration/*", authMiddleware);
+registrationRouter.use("/registration/*", companyMiddleware);
+registrationRouter.use("/registration/*", requireRole("operator", "super_admin"));
 
 // --- GET /registration/pending ---
 

@@ -90,9 +90,12 @@ const invoicesRouter = new OpenAPIHono<AppType>({
   },
 });
 
-invoicesRouter.use("/*", authMiddleware);
-invoicesRouter.use("/*", companyMiddleware);
-invoicesRouter.use("/*", requireRole("operator", "super_admin"));
+invoicesRouter.use("/invoices/*", authMiddleware);
+invoicesRouter.use("/invoices/*", companyMiddleware);
+invoicesRouter.use("/invoices/*", requireRole("operator", "super_admin"));
+invoicesRouter.use("/shops/*", authMiddleware);
+invoicesRouter.use("/shops/*", companyMiddleware);
+invoicesRouter.use("/shops/*", requireRole("operator", "super_admin"));
 
 // --- GET /api/invoices ---
 

@@ -40,8 +40,8 @@ const savedAddressesRouter = new OpenAPIHono<AppType>({
   },
 });
 
-savedAddressesRouter.use("/*", authMiddleware);
-savedAddressesRouter.use("/*", companyMiddleware);
+savedAddressesRouter.use("/saved-addresses/*", authMiddleware);
+savedAddressesRouter.use("/saved-addresses/*", companyMiddleware);
 
 // --- GET /saved-addresses ---
 

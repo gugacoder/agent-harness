@@ -130,9 +130,15 @@ const pricingRouter = new OpenAPIHono<AppType>({
 });
 
 // Apply auth + company + role middleware
-pricingRouter.use("/*", authMiddleware);
-pricingRouter.use("/*", companyMiddleware);
-pricingRouter.use("/*", requireRole("operator", "super_admin"));
+pricingRouter.use("/pricing-tables/*", authMiddleware);
+pricingRouter.use("/pricing-tables/*", companyMiddleware);
+pricingRouter.use("/pricing-tables/*", requireRole("operator", "super_admin"));
+pricingRouter.use("/pricing-rules/*", authMiddleware);
+pricingRouter.use("/pricing-rules/*", companyMiddleware);
+pricingRouter.use("/pricing-rules/*", requireRole("operator", "super_admin"));
+pricingRouter.use("/shops/*", authMiddleware);
+pricingRouter.use("/shops/*", companyMiddleware);
+pricingRouter.use("/shops/*", requireRole("operator", "super_admin"));
 
 // --- GET /api/pricing-tables ---
 

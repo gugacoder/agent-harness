@@ -102,8 +102,8 @@ const ordersRouter = new OpenAPIHono<AppType>({
 });
 
 // Apply auth + company middleware
-ordersRouter.use("/*", authMiddleware);
-ordersRouter.use("/*", companyMiddleware);
+ordersRouter.use("/orders/*", authMiddleware);
+ordersRouter.use("/orders/*", companyMiddleware);
 
 // Role guards (PRP-002 §4)
 ordersRouter.use("/orders", requireRole("operator", "shop", "courier", "super_admin"));

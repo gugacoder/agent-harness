@@ -67,9 +67,9 @@ const shopsRouter = new OpenAPIHono<AppType>({
 });
 
 // Apply auth + company + role middleware
-shopsRouter.use("/*", authMiddleware);
-shopsRouter.use("/*", companyMiddleware);
-shopsRouter.use("/*", requireRole("operator", "super_admin"));
+shopsRouter.use("/shops/*", authMiddleware);
+shopsRouter.use("/shops/*", companyMiddleware);
+shopsRouter.use("/shops/*", requireRole("operator", "super_admin"));
 
 // --- GET /api/shops ---
 

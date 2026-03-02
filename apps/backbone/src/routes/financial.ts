@@ -83,9 +83,9 @@ const financialRouter = new OpenAPIHono<AppType>({
   },
 });
 
-financialRouter.use("/*", authMiddleware);
-financialRouter.use("/*", companyMiddleware);
-financialRouter.use("/*", requireRole("operator", "super_admin"));
+financialRouter.use("/financial/*", authMiddleware);
+financialRouter.use("/financial/*", companyMiddleware);
+financialRouter.use("/financial/*", requireRole("operator", "super_admin"));
 
 // --- GET /api/financial/closings ---
 

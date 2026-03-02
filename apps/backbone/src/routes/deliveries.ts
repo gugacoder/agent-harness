@@ -86,11 +86,9 @@ const deliveriesRouter = new OpenAPIHono<AppType>({
 });
 
 // Apply auth + company middleware
-deliveriesRouter.use("/*", authMiddleware);
-deliveriesRouter.use("/*", companyMiddleware);
-
-// Role guards (PRP-002 §4)
-deliveriesRouter.use("/*", requireRole("operator", "shop", "courier", "super_admin"));
+deliveriesRouter.use("/deliveries/*", authMiddleware);
+deliveriesRouter.use("/deliveries/*", companyMiddleware);
+deliveriesRouter.use("/deliveries/*", requireRole("operator", "shop", "courier", "super_admin"));
 
 // --- GET /api/deliveries ---
 

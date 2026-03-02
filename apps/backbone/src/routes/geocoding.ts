@@ -38,8 +38,8 @@ const geocodingRouter = new OpenAPIHono<AppType>({
   },
 });
 
-geocodingRouter.use("/*", authMiddleware);
-geocodingRouter.use("/*", companyMiddleware);
+geocodingRouter.use("/geocoding/*", authMiddleware);
+geocodingRouter.use("/geocoding/*", companyMiddleware);
 
 // --- GET /geocoding/cep/:cep ---
 

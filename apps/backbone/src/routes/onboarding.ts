@@ -43,8 +43,8 @@ const onboardingRouter = new OpenAPIHono<AppType>({
 });
 
 // Apply auth + company middleware
-onboardingRouter.use("/*", authMiddleware);
-onboardingRouter.use("/*", companyMiddleware);
+onboardingRouter.use("/onboarding/*", authMiddleware);
+onboardingRouter.use("/onboarding/*", companyMiddleware);
 
 // --- GET /api/onboarding/progress ---
 
