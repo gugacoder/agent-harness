@@ -101,3 +101,10 @@ export {
   SavedAddressSchema,
   type SavedAddress,
 } from "./saved-address.js";
+
+export {
+  OnboardingFlowEnum,
+  OnboardingStepSchema,
+  type OnboardingFlow,
+  type OnboardingStep,
+} from "./onboarding.js";

@@ -29,6 +29,7 @@ import {
   publicRegistrationRouter,
   registrationRouter,
 } from "./routes/registration.js";
+import { onboardingRouter } from "./routes/onboarding.js";
 
 // Re-export for convenience
 export type { AppType };
@@ -109,6 +110,7 @@ app.route("/", profilesRouter);
 app.route("/", usersRouter);
 app.route("/", adminRouter);
 app.route("/", registrationRouter);
+app.route("/", onboardingRouter);
 
 const port = parseInt(process.env.BACKBONE_PORT!, 10);
 

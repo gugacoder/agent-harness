@@ -135,3 +135,12 @@ export {
   RegistrationRequestSchema,
   type RegistrationRequest,
 } from "./registration.js";
+
+export {
+  GetOnboardingProgressQuerySchema,
+  CompleteOnboardingStepRequestSchema,
+  OnboardingProgressResponseSchema,
+  type GetOnboardingProgressQuery,
+  type CompleteOnboardingStepRequest,
+  type OnboardingProgressResponse,
+} from "./onboarding.js";

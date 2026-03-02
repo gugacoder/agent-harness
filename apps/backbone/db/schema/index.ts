@@ -13,6 +13,7 @@ export {
   closingPeriodEnum,
   otpChannelEnum,
   registrationStatusEnum,
+  onboardingFlowEnum,
 } from "./_enums";
 
 export { companies } from "./companies";
@@ -32,3 +33,4 @@ export { companyConfigs } from "./company-config";
 export { savedAddresses, savedAddressesRelations } from "./saved-addresses";
 export { otpCodes } from "./otp-codes";
 export { registrationRequests } from "./registration-requests";
+export { onboardingProgress } from "./onboarding";

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Agent Setup - merged (Wave 4 + Wave 5)
+# Agent Setup - merged (Wave 4 + 5 + 6)
 # Bootstrap para o agente na worktree isolada.
 # Executar da raiz da worktree: bash .harness/agent-setup.sh
 # =============================================================================
@@ -97,6 +97,7 @@ echo "  Drizzle schemas: $SCHEMA_COUNT files"
 MIGRATION_COUNT=$(ls "$WT_DIR"/apps/backbone/db/migrations/*.sql 2>/dev/null | wc -l)
 echo "  Existing migrations: $MIGRATION_COUNT files"
 
+
 echo ""
 echo "=== Resumo ==="
 echo "  Worktree:  $WT_DIR"
@@ -104,7 +105,6 @@ echo "  Branch:    $(git branch --show-current)"
 echo "  Node:      $(node --version 2>/dev/null || echo 'N/A')"
 echo "  Pkg mgr:   $PKG_MGR"
 echo "  PREFIX:    ${PREFIX:-N/A}"
-echo "  Session:   merged"
 echo ""
 echo "  Dev commands:"
 echo "    npm run dev:backbone    # Hono API (port ${BACKBONE_PORT:-3405})"

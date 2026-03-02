@@ -89,3 +89,9 @@ export const registrationStatusEnum = pgEnum("registration_status", [
   "approved",
   "rejected",
 ]);
+
+export const onboardingFlowEnum = pgEnum("onboarding_flow", [
+  "wizard",
+  "tutorial",
+  "guided_overlay",
+]);
