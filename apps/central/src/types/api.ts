@@ -53,9 +53,28 @@ export interface Shop {
   address: string;
   lat: string;
   lng: string;
+  contact_name: string | null;
   active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface ShopDetail extends Shop {
+  total_orders: number;
+  last_order_date: string | null;
+}
+
+export interface ShopOrdersResponse {
+  data: Order[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface ShopFinancialSummary {
+  total_invoiced: string;
+  total_pending: string;
+  last_payment_date: string | null;
 }
 
 export type DeliveryStatus =

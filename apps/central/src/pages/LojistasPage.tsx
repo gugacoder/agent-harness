@@ -15,12 +15,15 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useShops } from "@/hooks/useShops";
 import { useOrders } from "@/hooks/useOrders";
+import { useShopDetail } from "@/hooks/useShopDetail";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { OrderStatusBadge, ORDER_STATUS_LABELS } from "@/components/ui/StatusBadge";
+import { ShopDetailView } from "@/components/shops/ShopDetailView";
+import { ShopEditForm } from "@/components/shops/ShopEditForm";
 import type { Shop, Order } from "@/types/api";
 
 // --- New Shop Form ---
@@ -433,6 +436,7 @@ type View =
 export function LojistasPage() {
   const [view, setView] = useState<View>({ type: "list" });
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [editShopId, setEditShopId] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
   const { data: shops, isLoading } = useShops();
@@ -479,13 +483,8 @@ export function LojistasPage() {
     queryClient.invalidateQueries({ queryKey: ["shops"] });
   }, [queryClient]);
 
-  // Get current shop for detail view
-  const currentShop = useMemo(() => {
-    if (view.type === "detail") {
-      return shops?.find((s) => s.id === view.shopId) ?? null;
-    }
-    return null;
-  }, [shops, view]);
+  // Shop detail data for edit form
+  const { data: editShopData } = useShopDetail(editShopId);
 
   // --- Render New Shop Form ---
   if (view.type === "new") {
@@ -513,13 +512,22 @@ export function LojistasPage() {
   }
 
   // --- Render Shop Detail ---
-  if (view.type === "detail" && currentShop) {
+  if (view.type === "detail") {
     return (
-      <ShopDetail
-        shop={currentShop}
-        orders={orders ?? []}
-        onBack={() => setView({ type: "list" })}
-      />
+      <>
+        <ShopDetailView
+          shopId={view.shopId}
+          onBack={() => setView({ type: "list" })}
+          onEdit={() => setEditShopId(view.shopId)}
+        />
+        {editShopData && (
+          <ShopEditForm
+            shop={editShopData}
+            open={editShopId === view.shopId}
+            onClose={() => setEditShopId(null)}
+          />
+        )}
+      </>
     );
   }
 
