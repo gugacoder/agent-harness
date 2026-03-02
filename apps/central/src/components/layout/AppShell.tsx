@@ -26,7 +26,7 @@ export function AppShell() {
         }
       >
         <Header userName={user?.fullName || "Operador"} userEmail={user?.email} onLogout={logout} />
-        <main className="p-4 pb-20 md:p-6 md:pb-6">
+        <main className="relative z-0 p-4 pb-20 md:p-6 md:pb-6">
           <Outlet />
         </main>
       </div>
