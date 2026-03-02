@@ -12,6 +12,9 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useShop } from "@/hooks/useShop";
+import { useOnboarding } from "@/hooks/useOnboarding";
+import { GuidedOverlay, type OverlayStep } from "@/components/onboarding/GuidedOverlay";
+import { PostOrderModal } from "@/components/onboarding/PostOrderModal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -40,6 +43,29 @@ export function NovaEntregaPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { shouldShowOnboarding, completeStep } = useOnboarding();
+  const [showPostOrderModal, setShowPostOrderModal] = useState(false);
+
+  const stepKeys = ["delivery_address", "recipient", "confirm_button"] as const;
+
+  const overlaySteps: OverlayStep[] = [
+    {
+      targetSelector: "#delivery-address",
+      title: "Endereço de entrega",
+      description: "Digite o endereço de entrega ou selecione um favorito",
+    },
+    {
+      targetSelector: "#recipient-fields",
+      title: "Destinatário",
+      description: "Informe o nome e telefone de quem vai receber",
+    },
+    {
+      targetSelector: "#submit-button",
+      title: "Confirmar",
+      description: "Confirme e pronto! Um motoboy será atribuído em instantes.",
+    },
+  ];
 
   const {
     register,
@@ -188,7 +214,7 @@ export function NovaEntregaPage() {
         </div>
 
         {/* Endereço de entrega — SavedAddressPicker + Autocomplete + PinDrop */}
-        <div className="space-y-2">
+        <div id="delivery-address" className="space-y-2">
           <label className="mb-1 flex items-center gap-1.5 text-sm font-medium">
             <MapPin className="h-4 w-4 text-muted-foreground" />
             Endereço de entrega
@@ -227,42 +253,43 @@ export function NovaEntregaPage() {
           />
         </div>
 
-        {/* Nome do destinatário */}
-        <div>
-          <label className="mb-1 flex items-center gap-1.5 text-sm font-medium">
-            <User className="h-4 w-4 text-muted-foreground" />
-            Nome do destinatário
-          </label>
-          <input
-            type="text"
-            {...register("recipient_name")}
-            placeholder="Nome completo"
-            className="w-full rounded-md border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-          />
-          {errors.recipient_name && (
-            <p className="mt-1 text-xs text-destructive">
-              {errors.recipient_name.message}
-            </p>
-          )}
-        </div>
+        {/* Destinatário (nome + telefone) */}
+        <div id="recipient-fields" className="space-y-4">
+          <div>
+            <label className="mb-1 flex items-center gap-1.5 text-sm font-medium">
+              <User className="h-4 w-4 text-muted-foreground" />
+              Nome do destinatário
+            </label>
+            <input
+              type="text"
+              {...register("recipient_name")}
+              placeholder="Nome completo"
+              className="w-full rounded-md border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+            {errors.recipient_name && (
+              <p className="mt-1 text-xs text-destructive">
+                {errors.recipient_name.message}
+              </p>
+            )}
+          </div>
 
-        {/* Telefone do destinatário */}
-        <div>
-          <label className="mb-1 flex items-center gap-1.5 text-sm font-medium">
-            <Phone className="h-4 w-4 text-muted-foreground" />
-            Telefone do destinatário
-          </label>
-          <input
-            type="tel"
-            {...register("recipient_phone")}
-            placeholder="(00) 00000-0000"
-            className="w-full rounded-md border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-          />
-          {errors.recipient_phone && (
-            <p className="mt-1 text-xs text-destructive">
-              {errors.recipient_phone.message}
-            </p>
-          )}
+          <div>
+            <label className="mb-1 flex items-center gap-1.5 text-sm font-medium">
+              <Phone className="h-4 w-4 text-muted-foreground" />
+              Telefone do destinatário
+            </label>
+            <input
+              type="tel"
+              {...register("recipient_phone")}
+              placeholder="(00) 00000-0000"
+              className="w-full rounded-md border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+            {errors.recipient_phone && (
+              <p className="mt-1 text-xs text-destructive">
+                {errors.recipient_phone.message}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Observações */}
@@ -284,6 +311,7 @@ export function NovaEntregaPage() {
 
         {/* Submit */}
         <button
+          id="submit-button"
           type="submit"
           className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-3 text-sm font-medium text-white hover:bg-primary/90"
         >
@@ -301,6 +329,26 @@ export function NovaEntregaPage() {
         onConfirm={onConfirm}
         onCancel={() => setShowConfirm(false)}
         loading={submitting}
+      />
+
+      {/* Onboarding overlay */}
+      {shouldShowOnboarding && !showPostOrderModal && (
+        <GuidedOverlay
+          steps={overlaySteps}
+          onStepChange={(i) => completeStep(stepKeys[i])}
+          onComplete={() => setShowPostOrderModal(true)}
+          onSkip={() => completeStep("completed")}
+        />
+      )}
+
+      {/* Post-order modal (step 4 of onboarding) */}
+      <PostOrderModal
+        open={showPostOrderModal}
+        onClose={() => {
+          completeStep("post_order_flow");
+          completeStep("completed");
+          setShowPostOrderModal(false);
+        }}
       />
     </div>
   );

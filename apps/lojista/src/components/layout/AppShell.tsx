@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { FileText, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompanyEventsContext } from "@/contexts/CompanyEventsContext";
+import { PostOrderModal } from "@/components/onboarding/PostOrderModal";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 import { BottomNav } from "./BottomNav";
@@ -20,6 +21,7 @@ export function AppShell() {
   const { invoiceToast, dismissInvoiceToast } = useCompanyEventsContext();
 
   const isOnFaturas = location.pathname.startsWith("/faturas");
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   // Auto-dismiss toast after 6 seconds
   useEffect(() => {
@@ -45,6 +47,7 @@ export function AppShell() {
           userName={profile?.full_name || user?.fullName || user?.email || "Lojista"}
           avatarUrl={profile?.avatar_url}
           onLogout={logout}
+          onHelpClick={() => setShowHelpModal(true)}
         />
         <main className="p-4 pb-20 md:p-6 md:pb-6">
           <Outlet />
@@ -79,6 +82,12 @@ export function AppShell() {
           </button>
         </div>
       )}
+
+      {/* "Como funciona" modal — accessible from any page via header */}
+      <PostOrderModal
+        open={showHelpModal}
+        onClose={() => setShowHelpModal(false)}
+      />
     </div>
   );
 }
