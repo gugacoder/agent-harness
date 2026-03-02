@@ -96,3 +96,8 @@ export {
   ShopPricingOverrideSchema,
   type ShopPricingOverride,
 } from "./shop-pricing-override.js";
+
+export {
+  SavedAddressSchema,
+  type SavedAddress,
+} from "./saved-address.js";
