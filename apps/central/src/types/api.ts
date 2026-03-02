@@ -264,6 +264,25 @@ export interface TrendDataPoint {
   total_deliveries: number;
 }
 
+// --- Saved Addresses ---
+
+export interface SavedAddress {
+  id: string;
+  company_id: string;
+  profile_id: string;
+  label: string | null;
+  address: string;
+  lat: string;
+  lng: string;
+  complement: string | null;
+  reference: string | null;
+  is_favorite: boolean;
+  use_count: number;
+  last_used_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // --- Company Config ---
 
 export interface CompanyConfig {
