@@ -36,6 +36,9 @@ Sua missao tipica envolve:
 - Se o threshold de viabilidade for atingido antes de completar todas as features da wave, pode skipar as restantes (marque como `skipped` com justificativa).
 - Consulte o `specs` de `{runs_dir}/config.json` para referencias e contexto.
 - Consulte `.harness/learnings.md` para licoes aprendidas de sessoes anteriores.
+- **JAMAIS** faca `sleep`, polling, ou qualquer forma de espera por processos externos.
+- **JAMAIS** monitore o progresso de outra session, loop ou agente.
+- Se voce se pegar pensando "let me wait and check again" → PARE. Faca o que pode fazer AGORA, marque passing e saia.
 - Ao FINAL da sessao:
   1. Atualize `{runs_dir}/features.json` (status da feature para "passing" + completed_at)
   2. Atualize `{runs_dir}/progress.txt` (registre o que fez, proxima prioridade)

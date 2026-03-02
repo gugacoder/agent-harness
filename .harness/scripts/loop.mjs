@@ -574,6 +574,11 @@ async function main() {
       started_at: loopStartedAt,
     }));
 
+    // Timeout: env > config > default 20min
+    const timeoutMs = parseInt(process.env.AGENT_TIMEOUT_MS || '0', 10)
+      || (config.agent?.timeout_minutes ? config.agent.timeout_minutes * 60_000 : 0)
+      || 2 * 60_000;
+
     // Spawnar agente via runner do harness
     let agentResult;
     try {
@@ -586,7 +591,13 @@ async function main() {
         features,
         workspace: agentWorkspace,
         session,
+        timeoutMs,
       });
+      if (agentResult.timedOut) {
+        const timeoutMsg = `[${now()}] [TIMEOUT] Feature ${featureId}: agente morto por inatividade (${Math.round(timeoutMs / 1000)}s sem output)`;
+        console.log(`${RED}${timeoutMsg}${NC}`);
+        await appendProgress(progressPath, timeoutMsg);
+      }
     } catch (err) {
       console.error(`${RED}Erro ao spawnar agente para ${featureId}: ${err.message}${NC}`);
       agentResult = { code: 1, pid: 0 };

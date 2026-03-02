@@ -3,7 +3,8 @@
 // Harness Status — Visual dashboard para sessions do agent harness
 //
 // Uso:
-//   node .harness/scripts/status.mjs              # todas as sessions
+//   node .harness/scripts/status.mjs              # sessions ativas
+//   node .harness/scripts/status.mjs --all        # todas as sessions
 //   node .harness/scripts/status.mjs <session>    # session especifica
 //   node .harness/scripts/status.mjs --watch      # refresh a cada 3s
 //   node .harness/scripts/status.mjs <session> -w # watch session especifica
@@ -176,13 +177,24 @@ function wrapText(text, maxWidth) {
 }
 
 // --- Listar sessions ---
-async function listSessions(runsDir) {
+async function listSessions(runsDir, { activeOnly = false } = {}) {
   try {
     const entries = await readdir(runsDir, { withFileTypes: true });
-    return entries
+    const dirs = entries
       .filter(e => e.isDirectory())
       .map(e => e.name)
       .sort();
+
+    if (!activeOnly) return dirs;
+
+    const active = [];
+    for (const name of dirs) {
+      const loop = await readJson(join(runsDir, name, 'loop.json'));
+      if (loop && loop.status !== 'exited') {
+        active.push(name);
+      }
+    }
+    return active;
   } catch {
     return [];
   }
@@ -309,6 +321,7 @@ async function renderSession(runsDir, session) {
 async function main() {
   const args = process.argv.slice(2);
   const watch = args.includes('--watch') || args.includes('-w');
+  const showAll = args.includes('--all') || args.includes('-a');
   const sessionArg = args.find(a => !a.startsWith('-'));
 
   const runsDir = join(resolve('.'), '.harness', 'runs');
@@ -316,17 +329,23 @@ async function main() {
   const render = async () => {
     const sessions = sessionArg
       ? [sessionArg]
-      : await listSessions(runsDir);
-
-    if (sessions.length === 0) {
-      console.log(`${C.dim}Nenhuma session encontrada em .harness/runs/${C.reset}`);
-      return;
-    }
+      : await listSessions(runsDir, { activeOnly: !showAll });
 
     const output = [];
     output.push('');
     output.push(`${C.bold}${C.white}  ⚡ HARNESS STATUS${C.reset}  ${C.dim}${new Date().toLocaleTimeString()}${C.reset}`);
     output.push('');
+
+    if (sessions.length === 0) {
+      output.push(`  ${C.dim}Nenhum harness ativo no momento.${C.reset}`);
+      if (!showAll && !sessionArg) {
+        output.push(`  ${C.dim}Use ${C.reset}--all${C.dim} para ver todas as sessions.${C.reset}`);
+      }
+      output.push('');
+      if (watch) console.clear();
+      console.log(output.join('\n'));
+      return;
+    }
 
     for (const session of sessions) {
       const configExists = await fileExists(join(runsDir, session, 'config.json'));

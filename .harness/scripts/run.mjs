@@ -79,7 +79,7 @@ async function resolveAgent(config, harnessDir, feature) {
  * @param {string} params.session - nome da session
  * @returns {Promise<{code: number, pid: number}>}
  */
-export async function spawnAgent({ config, featureId, sessionDir, runsDir, harnessDir, features, workspace, session }) {
+export async function spawnAgent({ config, featureId, sessionDir, runsDir, harnessDir, features, workspace, session, timeoutMs }) {
   // Encontrar feature pelo ID para resolver agent profile
   const feature = Array.isArray(features) ? features.find(f => f.id === featureId) : undefined;
 
@@ -115,12 +115,37 @@ export async function spawnAgent({ config, featureId, sessionDir, runsDir, harne
   const outputPath = join(runsDir, `${featureId}.jsonl`);
   const outputStream = createWriteStream(outputPath, { flags: 'a' });
 
+  // Inactivity timeout: env > param > config > default 2min
+  const inactivityMs = parseInt(process.env.AGENT_TIMEOUT_MS || '0', 10)
+    || timeoutMs
+    || (config.agent?.timeout_minutes ? config.agent.timeout_minutes * 60_000 : 0)
+    || 2 * 60_000;
+
   return new Promise((resolvePromise, reject) => {
     const proc = spawn('claude', args, {
       cwd: resolve(workspace),
       stdio: ['pipe', 'pipe', 'pipe'],
       shell: true,
     });
+
+    let timedOut = false;
+    let settled = false;
+
+    // Inactivity timer — resets on every chunk of output
+    let timer = null;
+    function resetTimer() {
+      if (settled) return;
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (settled) return;
+        timedOut = true;
+        const msg = `[TIMEOUT] Agent killed after ${Math.round(inactivityMs / 1000)}s inactivity for ${featureId}\n`;
+        outputStream.write(msg);
+        try { proc.kill('SIGTERM'); } catch {}
+        setTimeout(() => { try { proc.kill('SIGKILL'); } catch {} }, 10_000);
+      }, inactivityMs);
+    }
+    resetTimer(); // start initial timer
 
     // Substituir placeholders e enviar prompt via stdin
     let prompt = body;
@@ -129,16 +154,20 @@ export async function spawnAgent({ config, featureId, sessionDir, runsDir, harne
     proc.stdin.write(prompt);
     proc.stdin.end();
 
-    // Capturar output
-    proc.stdout.pipe(outputStream);
-    proc.stderr.pipe(outputStream);
+    // Capturar output — reset timer on every data chunk
+    proc.stdout.on('data', (chunk) => { outputStream.write(chunk); resetTimer(); });
+    proc.stderr.on('data', (chunk) => { outputStream.write(chunk); resetTimer(); });
 
     proc.on('close', (code) => {
+      settled = true;
+      if (timer) clearTimeout(timer);
       outputStream.end();
-      resolvePromise({ code, pid: proc.pid });
+      resolvePromise({ code: timedOut ? 124 : code, pid: proc.pid, timedOut });
     });
 
     proc.on('error', (err) => {
+      settled = true;
+      if (timer) clearTimeout(timer);
       outputStream.end();
       reject(err);
     });

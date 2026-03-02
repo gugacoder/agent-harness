@@ -98,7 +98,7 @@ Se a feature implementada envolve UI (paginas, componentes, rotas frontend), **O
    PLAYWRIGHT_BASE_URL=http://localhost:{porta_isolada} npx playwright test {spec-file} --reporter=list
    ```
    - `cia-app`: usa `FRONTEND_PORT` do `.env` da worktree
-   - `agentic-hub`: usa `HUB_PORT` do `.env` da worktree
+   - `central`: usa `CENTRAL_PORT` do `.env` da worktree
 4. **Se o teste falhar**: corrija a implementacao e re-rode antes de prosseguir
 5. **Se a feature NAO toca interface** (ex: backend-only, config, schema): pule este passo
 

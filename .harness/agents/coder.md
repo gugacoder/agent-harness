@@ -29,6 +29,9 @@ Selecione a feature de MAIOR PRIORIDADE com status "failing" cujas dependencias 
 - Se encontrar bugs de sessoes anteriores, CORRIJA PRIMEIRO antes de avancar.
 - Consulte o `specs` de `{runs_dir}/config.json` para referencias tecnicas e specs quando precisar de contexto durante a implementacao. Se a feature tiver `prp_path`, leia o PRP para detalhes.
 - Consulte `.harness/learnings.md` para licoes aprendidas de sessoes anteriores.
+- **JAMAIS** faca `sleep`, polling, ou qualquer forma de espera por processos externos.
+- **JAMAIS** monitore o progresso de outra session, loop ou agente.
+- Se voce se pegar pensando "let me wait and check again" → PARE. Faca o que pode fazer AGORA e saia.
 - Ao FINAL da sessao:
   1. Atualize `{runs_dir}/features.json` (status da feature para "passing" + completed_at)
   2. Atualize `{runs_dir}/progress.txt` (registre o que fez, proxima prioridade)

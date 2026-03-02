@@ -86,7 +86,7 @@ O worktree precisa de um `.env` proprio com portas diferentes do parent para que
 
 2. Aplique um **offset de +100** em TODAS as portas de servicos de aplicacao (`./apps`):
    - `FRONTEND_PORT` — ex: 8001 → 8101
-   - `HUB_PORT` — ex: 8002 → 8102
+   - `CENTRAL_PORT` — ex: 8002 → 8102
    - `BACKEND_PORT` — ex: 8003 → 8103
    - `BACKBONE_PORT` — ex: 8004 → 8104
    - `GATEWAY_PORT` — ex: 8005 → 8105

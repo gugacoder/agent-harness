@@ -34,6 +34,15 @@ Tarefas tipicas incluem:
 - TESTE/VALIDE o resultado antes de marcar como passing.
 - Consulte o `specs` de `{runs_dir}/config.json` para referencias e contexto.
 - Consulte `.harness/learnings.md` para licoes aprendidas de sessoes anteriores.
+
+## PROIBIDO — Monitoramento e espera
+
+- **JAMAIS** faca `sleep`, polling, ou qualquer forma de espera por processos externos.
+- **JAMAIS** monitore o progresso de outra session, loop ou agente.
+- **JAMAIS** fique "aguardando" algo terminar. Voce NAO eh monitor.
+- **JAMAIS** spawne processos de longa duracao (loop.mjs, claude, etc.) e espere por eles.
+- Se a feature pede "passar bastao" ou "handoff": configure arquivos (config.json, worktrees, etc.), documente no progress.txt, marque passing e SAIA. O operador humano ou o loop.mjs cuida do resto.
+- Se voce se pegar pensando "let me wait and check again" → PARE. Faca o que pode fazer AGORA, marque passing e saia.
 - Ao FINAL da sessao:
   1. Atualize `{runs_dir}/features.json` (status da feature para "passing" + completed_at)
   2. Atualize `{runs_dir}/progress.txt` (registre o que fez, proxima prioridade)
