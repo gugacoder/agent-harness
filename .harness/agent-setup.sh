@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Agent Setup - wave-3-research (Wave 3 - Harness A Research)
+# Agent Setup - PRP-001-onboarding-infra (Wave 6 - Onboarding Infrastructure)
 # Bootstrap para o agente na worktree isolada.
 # Executar da raiz da worktree: bash .harness/agent-setup.sh
 # =============================================================================
 set -euo pipefail
 
 WT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-echo "=== Agent Setup: wave-3-research ==="
+echo "=== Agent Setup: PRP-001-onboarding-infra ==="
 echo ""
 
 # --- Carregar .env ---
@@ -65,10 +65,17 @@ echo "[4/4] Smoke test..."
 node -e "console.log('  Node OK:', process.version)" 2>&1 || echo "  WARN: Node.js nao disponivel"
 
 # Health check Kong (Supabase gateway) se portas configuradas
-KONG="${KONG_HTTP_PORT:-4630}"
+KONG="${KONG_HTTP_PORT:-3630}"
 if command -v curl &>/dev/null; then
   HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 3 "http://localhost:$KONG" 2>/dev/null || echo "000")
   echo "  Kong (port $KONG): HTTP $HTTP_CODE"
+fi
+
+# Health check Backbone se estiver rodando
+BACKBONE="${BACKBONE_PORT:-3605}"
+if command -v curl &>/dev/null; then
+  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 3 "http://localhost:$BACKBONE/api/health" 2>/dev/null || echo "000")
+  echo "  Backbone (port $BACKBONE): HTTP $HTTP_CODE"
 fi
 
 echo ""
@@ -78,7 +85,7 @@ echo "  Branch:    $(git branch --show-current)"
 echo "  Node:      $(node --version 2>/dev/null || echo 'N/A')"
 echo "  Pkg mgr:   $PKG_MGR"
 echo "  PREFIX:    ${PREFIX:-N/A}"
-echo "  Session:   wave-3-research--cc"
-echo "  Runs dir:  .harness/runs/wave-3-research--cc/ (ROOT)"
+echo "  Session:   PRP-001-onboarding-infra--cc"
+echo "  Runs dir:  .harness/runs/PRP-wave-6/PRP-001-onboarding-infra--cc/ (ROOT)"
 echo ""
 echo "=== Setup completo ==="
