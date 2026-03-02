@@ -43,12 +43,17 @@ export function useSSE(channel: string | null, options: UseSSEOptions) {
     const backboneUrl = import.meta.env.VITE_BACKBONE_URL as string;
     if (!backboneUrl) return;
 
+    let aborted = false;
+
     function connect() {
+      if (aborted) return;
+
       const url = `${backboneUrl}/api/events/${channel}?token=${token}`;
       const es = new EventSource(url);
       eventSourceRef.current = es;
 
       es.addEventListener("connected", () => {
+        if (aborted) return;
         setConnected(true);
         retryRef.current = 0;
       });
@@ -56,6 +61,7 @@ export function useSSE(channel: string | null, options: UseSSEOptions) {
       const eventTypes = Object.keys(handlersRef.current);
       for (const eventType of eventTypes) {
         es.addEventListener(eventType, (event) => {
+          if (aborted) return;
           try {
             const data = JSON.parse(event.data);
             handlersRef.current[eventType]?.(data);
@@ -67,6 +73,7 @@ export function useSSE(channel: string | null, options: UseSSEOptions) {
 
       es.onerror = () => {
         es.close();
+        if (aborted) return;
         eventSourceRef.current = null;
         setConnected(false);
 
@@ -78,7 +85,10 @@ export function useSSE(channel: string | null, options: UseSSEOptions) {
 
     connect();
 
-    return cleanup;
+    return () => {
+      aborted = true;
+      cleanup();
+    };
   }, [channel, session?.access_token, enabled, cleanup]);
 
   return { connected };
