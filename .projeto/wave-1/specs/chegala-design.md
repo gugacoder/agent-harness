@@ -215,9 +215,9 @@ Lojista                    Central                     Motoboy
 |---------|-------|----------|
 | Caddy (proxy) | ${PREFIX}00 | PUBLIC_PORT |
 | Backbone (API) | ${PREFIX}01 | BACKBONE_PORT |
-| Central | ${PREFIX}02 | HUB_PORT |
-| Lojista | ${PREFIX}03 | PORTAL_PORT |
-| Motoboy | ${PREFIX}04 | ROTA_PORT |
+| Central | ${PREFIX}02 | CENTRAL_PORT |
+| Lojista | ${PREFIX}03 | LOJISTA_PORT |
+| Motoboy | ${PREFIX}04 | MOTOBOY_PORT |
 | PostgreSQL | ${PREFIX}32 | POSTGRES_PORT |
 | Kong | ${PREFIX}08 | KONG_PORT |
 | Studio | ${PREFIX}09 | STUDIO_PORT |
