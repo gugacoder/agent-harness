@@ -264,6 +264,22 @@ export interface TrendDataPoint {
   total_deliveries: number;
 }
 
+// --- Users ---
+
+export type UserRole = "operator" | "shop" | "courier";
+
+export interface User {
+  id: string;
+  full_name: string;
+  phone: string;
+  email: string | null;
+  role: UserRole;
+  avatar_url: string | null;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 // --- Company Config ---
 
 export interface CompanyConfig {
