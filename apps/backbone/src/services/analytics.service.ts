@@ -1,4 +1,4 @@
-import { eq, and, gte, lte, sql, count, sum, avg } from "drizzle-orm";
+import { eq, and, gte, lte, sql, count, sum, avg, inArray } from "drizzle-orm";
 import { db } from "../db.js";
 import {
   deliveries,
@@ -209,4 +209,59 @@ export async function getTrend(params: {
     date: r.date,
     total_deliveries: r.total_deliveries,
   }));
+}
+
+export async function getTodayMetrics(companyId: string) {
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayStartISO = todayStart.toISOString();
+
+  // Deliveries today (delivered_at >= today 00:00) and completed (status = delivered)
+  const [deliveryStats] = await db
+    .select({
+      deliveries_today: count(deliveries.id),
+      deliveries_today_completed: sum(
+        sql<number>`CASE WHEN ${deliveries.status} = 'delivered' THEN 1 ELSE 0 END`
+      ),
+    })
+    .from(deliveries)
+    .where(
+      and(
+        eq(deliveries.company_id, companyId),
+        gte(deliveries.delivered_at, todayStartISO)
+      )
+    );
+
+  // Couriers online (status IN available, busy)
+  const [courierStats] = await db
+    .select({
+      couriers_online: count(couriers.id),
+    })
+    .from(couriers)
+    .where(
+      and(
+        eq(couriers.company_id, companyId),
+        inArray(couriers.status, ["available", "busy"])
+      )
+    );
+
+  // Orders pending
+  const [orderStats] = await db
+    .select({
+      orders_pending: count(orders.id),
+    })
+    .from(orders)
+    .where(
+      and(
+        eq(orders.company_id, companyId),
+        eq(orders.status, "pending")
+      )
+    );
+
+  return {
+    deliveries_today: deliveryStats?.deliveries_today ?? 0,
+    deliveries_today_completed: Number(deliveryStats?.deliveries_today_completed ?? 0),
+    couriers_online: courierStats?.couriers_online ?? 0,
+    orders_pending: orderStats?.orders_pending ?? 0,
+  };
 }
