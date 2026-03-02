@@ -1,30 +1,6 @@
 import { NavLink } from "react-router";
-import {
-  LayoutDashboard,
-  Package,
-  Bike,
-  Store,
-  Map,
-  DollarSign,
-  Wallet,
-  FileText,
-  BarChart3,
-  Settings,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/pedidos", label: "Pedidos", icon: Package },
-  { to: "/motoboys", label: "Motoboys", icon: Bike },
-  { to: "/lojistas", label: "Lojistas", icon: Store },
-  { to: "/mapa", label: "Mapa", icon: Map },
-  { to: "/precos", label: "Preços", icon: DollarSign },
-  { to: "/financeiro", label: "Financeiro", icon: Wallet },
-  { to: "/faturas", label: "Faturas", icon: FileText },
-  { to: "/analytics", label: "Analytics", icon: BarChart3 },
-  { to: "/configuracao", label: "Configurações", icon: Settings },
-] as const;
+import { navItems } from "@/lib/nav-items";
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -62,7 +38,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
             }
           >
             <item.icon className="h-5 w-5 shrink-0" />
-            {!collapsed && <span>{item.label}</span>}
+            {!collapsed && <span>{item.menuLabel}</span>}
           </NavLink>
         ))}
       </nav>
