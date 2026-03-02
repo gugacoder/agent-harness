@@ -87,3 +87,8 @@ export {
   type SendOtpRequest,
   type VerifyOtpRequest,
 } from "./otp.js";
+
+export {
+  UpdateProfileSchema,
+  type UpdateProfileRequest,
+} from "./profile.js";
