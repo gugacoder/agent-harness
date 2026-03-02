@@ -3,7 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" id="meta-theme-color" content="#222e6e" />
     <title>Chega.la - Lojista</title>
+    <script>
+      (function() {
+        var t = localStorage.getItem('theme');
+        var d = (t === 'dark') || (t !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', d);
+        var m = document.getElementById('meta-theme-color');
+        if (m) m.setAttribute('content', d ? '#1a1a2e' : '#222e6e');
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,30 +1,74 @@
+import { useState, useRef, useEffect } from "react";
 import { LogOut } from "lucide-react";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface HeaderProps {
   userName?: string;
+  userEmail?: string;
   onLogout?: () => void;
 }
 
-export function Header({ userName = "Operador", onLogout }: HeaderProps) {
+function getInitials(name: string): string {
+  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+}
+
+export function Header({ userName = "Operador", userEmail, onLogout }: HeaderProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border bg-background px-4 md:px-6">
       <div className="flex items-center gap-2 md:hidden">
-        <img src="/logo.svg" alt="Chega.la" className="h-7 w-7" />
-        <span className="text-sm font-semibold text-primary">Chega.la</span>
+        <img src="/logo-brand.svg" alt="Chega.la" className="h-6" />
+        <span className="text-sm text-muted-foreground">/</span>
+        <span className="text-sm">Área <strong>Central</strong></span>
       </div>
 
       <div className="hidden md:block" />
 
       <div className="flex items-center gap-3">
-        <span className="text-sm text-muted-foreground">{userName}</span>
-        <button
-          onClick={onLogout}
-          className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          title="Sair"
-        >
-          <LogOut className="h-4 w-4" />
-          <span className="hidden sm:inline">Sair</span>
-        </button>
+        <div ref={ref} className="relative">
+          <button
+            onClick={() => setOpen(!open)}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-foreground"
+          >
+            {getInitials(userName)}
+          </button>
+          {open && (
+            <div className="absolute right-0 top-full mt-1 min-w-[200px] rounded-md border border-border bg-popover p-2 shadow-lg">
+              <div className="px-2 py-1.5">
+                <p className="text-sm font-medium">{userName}</p>
+                {userEmail && (
+                  <p className="text-xs text-muted-foreground">{userEmail}</p>
+                )}
+              </div>
+              <div className="my-1 border-t border-border" />
+              <div className="flex items-center justify-between px-2 py-1.5">
+                <span className="text-sm text-muted-foreground">Tema</span>
+                <ThemeToggle />
+              </div>
+              <div className="my-1 border-t border-border" />
+              <button
+                onClick={onLogout}
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+                Sair
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
