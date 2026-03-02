@@ -13,6 +13,14 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
 
+  redis:
+    ports:
+      - "${REDIS_PORT}:6379"
+
+  evolution:
+    ports:
+      - "${EVOLUTION_PORT}:8080"
+
   kong:
     ports:
       - "${KONG_HTTP_PORT}:8000"
@@ -21,24 +29,3 @@ services:
   studio:
     ports:
       - "${STUDIO_PORT}:3000"
-
-  # --- removidos (ver docker-compose.platform.opt-out) ---
-  # redis:
-  #   ports:
-  #     - "${REDIS_PORT}:6379"
-  #
-  # mongo:
-  #   ports:
-  #     - "${MONGO_PORT}:27017"
-  #
-  # whisper:
-  #   ports:
-  #     - "${WHISPER_PORT}:8000"
-  #
-  # evolution:
-  #   ports:
-  #     - "${EVOLUTION_PORT}:8080"
-  #
-  # n8n:
-  #   ports:
-  #     - "${N8N_PORT}:5678"

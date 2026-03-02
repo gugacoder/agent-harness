@@ -8,49 +8,6 @@
 # e ajuste o servico `init` (pastas) e dependencias conforme necessario.
 # ==============================================================================
 
-# --- REDIS ---
-# Motivo: nao consta no design. Era dependencia de evolution e n8n (tambem removidos).
-
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    depends_on:
-      init:
-        condition: service_completed_successfully
-    command: redis-server --appendonly yes
-    volumes:
-      - ./data/redis:/data
-    networks:
-      internal:
-        aliases:
-          - redis.internal
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-# --- POSTGRES-INIT ---
-# Motivo: criava databases para evolution e n8n (ambos removidos).
-# Se precisar de init scripts para o postgres base, crie um novo.
-
-  postgres-init:
-    build:
-      context: .
-      dockerfile: docker/postgres-init/Dockerfile
-    image: postgres-init:latest
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      POSTGRES_HOST: postgres.internal
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    networks:
-      - internal
-    restart: "no"
-
 # --- POSTGREST ---
 # Motivo: design diz "PostgREST | Nao | A API e Hono. PostgREST seria caminho duplicado."
 # ATENCAO: Supabase Storage depende internamente do PostgREST.
@@ -132,57 +89,6 @@
       timeout: 5s
       retries: 5
       start_period: 10s
-
-# --- EVOLUTION + EVOLUTION-INIT ---
-# Motivo: WhatsApp API nao consta no design de infraestrutura.
-
-  evolution:
-    image: evoapicloud/evolution-api:v2.3.7
-    restart: unless-stopped
-    depends_on:
-      redis:
-        condition: service_healthy
-      postgres-init:
-        condition: service_completed_successfully
-    environment:
-      DATABASE_PROVIDER: postgresql
-      DATABASE_CONNECTION_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres.internal:5432/evolution
-      CACHE_REDIS_ENABLED: "true"
-      CACHE_REDIS_URI: redis://redis.internal:6379
-      RABBITMQ_ENABLED: "false"
-      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
-    volumes:
-      - ./data/evolution/instances:/evolution/instances
-      - ./data/evolution/store:/evolution/store
-    networks:
-      internal:
-        aliases:
-          - evolution.internal
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/ || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-
-  evolution-init:
-    build:
-      context: .
-      dockerfile: docker/evolution-init/Dockerfile
-    image: evolution-init:latest
-    depends_on:
-      evolution:
-        condition: service_healthy
-    environment:
-      EVOLUTION_HOST: evolution.internal
-      EVOLUTION_PORT: 8080
-      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
-      EVOLUTION_INSTANCE_NAME: ${EVOLUTION_INSTANCE_NAME}
-      EVOLUTION_INSTANCE_TOKEN: ${EVOLUTION_INSTANCE_TOKEN}
-      BACKBONE_WEBHOOK_URL: ${BACKBONE_WEBHOOK_URL}
-    networks:
-      - internal
-    restart: "no"
 
 # --- MONGODB ---
 # Motivo: nao consta no design. Banco e PostgreSQL.
@@ -284,16 +190,11 @@
 
   # edge-runtime-cache: (named volume do edge-runtime)
 
-# --- PASTAS DO INIT REMOVIDAS ---
-# Estas linhas foram removidas do servico init:
-#   mkdir -p /data/redis
-#   mkdir -p /data/evolution/instances
-#   mkdir -p /data/evolution/store
+# --- PASTAS DO INIT RESTAURADAS ---
+# Redis e Evolution foram restaurados ao compose principal.
+# Pastas que continuam removidas do init:
 #   mkdir -p /data/meilisearch
 #   mkdir -p /data/mongo
 #   mkdir -p /data/n8n
-#   chmod -R 777 /data/redis
-#   chmod -R 777 /data/evolution/instances
-#   chmod -R 777 /data/evolution/store
 #   chmod -R 777 /data/meilisearch
 #   chmod -R 777 /data/mongo

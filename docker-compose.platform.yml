@@ -17,8 +17,14 @@ services:
       sh -c "
         mkdir -p /data/postgres &&
         mkdir -p /data/storage &&
+        mkdir -p /data/redis &&
+        mkdir -p /data/evolution/instances &&
+        mkdir -p /data/evolution/store &&
         chmod -R 777 /data/postgres &&
         chmod -R 777 /data/storage &&
+        chmod -R 777 /data/redis &&
+        chmod -R 777 /data/evolution/instances &&
+        chmod -R 777 /data/evolution/store &&
         echo 'Init complete'
       "
     volumes:
@@ -51,6 +57,101 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+
+  # ============================================================================
+  # REDIS
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    command: redis-server --appendonly yes
+    volumes:
+      - ./data/redis:/data
+    networks:
+      internal:
+        aliases:
+          - redis.internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================================
+  # POSTGRES-INIT - Cria databases adicionais (evolution)
+  # ============================================================================
+  postgres-init:
+    build:
+      context: .
+      dockerfile: docker/postgres-init/Dockerfile
+    image: postgres-init:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres.internal
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - internal
+    restart: "no"
+
+  # ============================================================================
+  # EVOLUTION - WhatsApp API (Evolution v2)
+  # ============================================================================
+  evolution:
+    image: evoapicloud/evolution-api:v2.3.7
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+    environment:
+      SERVER_PORT: 8080
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres.internal:5432/evolution
+      DATABASE_CONNECTION_CLIENT_NAME: evolution
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis.internal:6379
+      RABBITMQ_ENABLED: "false"
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
+      AUTHENTICATION_INSTANCE_NAME: ${EVOLUTION_INSTANCE_NAME}
+      AUTHENTICATION_INSTANCE_MODE: container
+    volumes:
+      - ./data/evolution/instances:/evolution/instances
+      - ./data/evolution/store:/evolution/store
+    networks:
+      internal:
+        aliases:
+          - evolution.internal
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  evolution-init:
+    image: curlimages/curl:8.12.1
+    depends_on:
+      evolution:
+        condition: service_healthy
+    environment:
+      EVOLUTION_URL: http://evolution.internal:8080
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
+      EVOLUTION_INSTANCE_NAME: ${EVOLUTION_INSTANCE_NAME}
+      WEBHOOK_URL: ${BACKBONE_WEBHOOK_URL}
+    volumes:
+      - ./docker/evolution/init.sh:/init.sh:ro
+    entrypoint: ["sh", "/init.sh"]
+    networks:
+      - internal
+    restart: "no"
 
   # ============================================================================
   # KONG - API Gateway (Supabase)

@@ -21,6 +21,5 @@ create_db_if_not_exists() {
 }
 
 create_db_if_not_exists "evolution"
-create_db_if_not_exists "n8n"
 
 echo "postgres-init: done."
