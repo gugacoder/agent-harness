@@ -8,7 +8,7 @@ import { useLocationSharing } from "@/hooks/useLocationSharing";
 import { useCourierEvents } from "@/hooks/useCourierEvents";
 import { Header } from "./Header";
 import { BottomNav } from "./BottomNav";
-import { LocationDeniedAlert } from "@/components/ui/LocationDeniedAlert";
+import { GpsBanner } from "@/components/status/GpsBanner";
 
 export function AppShell() {
   const { user } = useAuth();
@@ -39,8 +39,8 @@ export function AppShell() {
           )}
         </div>
       </Header>
+      <GpsBanner state={locationState} />
       <main className="p-4 pb-20">
-        {locationState === "denied" && <LocationDeniedAlert />}
         {toast && (
           <div
             className={`mb-3 flex items-center justify-between rounded-md p-3 text-sm font-medium ${
