@@ -96,3 +96,10 @@ export {
   ShopPricingOverrideSchema,
   type ShopPricingOverride,
 } from "./shop-pricing-override.js";
+
+export {
+  OnboardingFlowEnum,
+  OnboardingStepSchema,
+  type OnboardingFlow,
+  type OnboardingStep,
+} from "./onboarding.js";

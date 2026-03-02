@@ -80,3 +80,12 @@ export {
   UpdateCompanyConfigRequestSchema,
   type UpdateCompanyConfigRequest,
 } from "./company-config.js";
+
+export {
+  GetOnboardingProgressQuerySchema,
+  CompleteOnboardingStepRequestSchema,
+  OnboardingProgressResponseSchema,
+  type GetOnboardingProgressQuery,
+  type CompleteOnboardingStepRequest,
+  type OnboardingProgressResponse,
+} from "./onboarding.js";
