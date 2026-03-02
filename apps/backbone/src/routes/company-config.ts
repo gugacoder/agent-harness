@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import type { AppType } from "../types.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { companyMiddleware } from "../middleware/company.js";
+import { requireRole } from "../middleware/role.js";
 import { db } from "../db.js";
 import { companyConfigs } from "../../db/schema/index.js";
 
@@ -51,9 +52,10 @@ const companyConfigRouter = new OpenAPIHono<AppType>({
   },
 });
 
-// Apply auth + company middleware
+// Apply auth + company + role middleware
 companyConfigRouter.use("/*", authMiddleware);
 companyConfigRouter.use("/*", companyMiddleware);
+companyConfigRouter.use("/*", requireRole("operator", "super_admin"));
 
 // --- Helper: ensure config exists (upsert with defaults) ---
 

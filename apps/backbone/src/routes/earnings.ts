@@ -3,6 +3,7 @@ import { eq, and, gte, lte, sql, desc, count, sum } from "drizzle-orm";
 import type { AppType } from "../types.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { companyMiddleware } from "../middleware/company.js";
+import { requireRole } from "../middleware/role.js";
 import { db } from "../db.js";
 import {
   deliveries,
@@ -74,8 +75,10 @@ const earningsRouter = new OpenAPIHono<AppType>({
 
 earningsRouter.use("/couriers/me/earnings/*", authMiddleware);
 earningsRouter.use("/couriers/me/earnings/*", companyMiddleware);
+earningsRouter.use("/couriers/me/earnings/*", requireRole("courier", "super_admin"));
 earningsRouter.use("/couriers/me/earnings", authMiddleware);
 earningsRouter.use("/couriers/me/earnings", companyMiddleware);
+earningsRouter.use("/couriers/me/earnings", requireRole("courier", "super_admin"));
 
 // --- Helper: find courier by profile_id (JWT sub) ---
 

@@ -2,6 +2,7 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import type { AppType } from "../types.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { companyMiddleware } from "../middleware/company.js";
+import { requireRole } from "../middleware/role.js";
 import { uploadProof, getProof } from "../services/pod.service.js";
 
 // --- Schemas ---
@@ -50,6 +51,7 @@ const deliveryProofRouter = new OpenAPIHono<AppType>({
 
 deliveryProofRouter.use("/*", authMiddleware);
 deliveryProofRouter.use("/*", companyMiddleware);
+deliveryProofRouter.use("/*", requireRole("courier", "super_admin"));
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];

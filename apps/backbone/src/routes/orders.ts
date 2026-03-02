@@ -2,6 +2,7 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import type { AppType } from "../types.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { companyMiddleware } from "../middleware/company.js";
+import { requireRole } from "../middleware/role.js";
 import {
   createOrder,
   getOrderById,
@@ -87,6 +88,10 @@ const ordersRouter = new OpenAPIHono<AppType>({
 // Apply auth + company middleware
 ordersRouter.use("/*", authMiddleware);
 ordersRouter.use("/*", companyMiddleware);
+
+// Role guards (PRP-002 §4)
+ordersRouter.use("/orders", requireRole("operator", "shop", "courier", "super_admin"));
+ordersRouter.use("/orders/*", requireRole("operator", "shop", "courier", "super_admin"));
 
 // --- GET /api/orders ---
 

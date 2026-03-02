@@ -3,6 +3,7 @@ import { eq, and } from "drizzle-orm";
 import type { AppType } from "../types.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { companyMiddleware } from "../middleware/company.js";
+import { requireRole } from "../middleware/role.js";
 import { db } from "../db.js";
 import { shops } from "../../db/schema/index.js";
 
@@ -58,9 +59,10 @@ const shopsRouter = new OpenAPIHono<AppType>({
   },
 });
 
-// Apply auth + company middleware
+// Apply auth + company + role middleware
 shopsRouter.use("/*", authMiddleware);
 shopsRouter.use("/*", companyMiddleware);
+shopsRouter.use("/*", requireRole("operator", "super_admin"));
 
 // --- GET /api/shops ---
 

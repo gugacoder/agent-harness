@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import { verify } from "hono/jwt";
 import type { AppType, Role } from "../types.js";
+import { requireRole } from "../middleware/role.js";
 import { sseManager } from "../sse/manager.js";
 import { companyChannel, courierChannel, orderChannel } from "../sse/channels.js";
 import { getCourierById } from "../services/courier.service.js";
@@ -75,6 +76,9 @@ eventsRouter.use("/*", async (c, next) => {
     );
   }
 });
+
+// Role guard — all authenticated roles can access SSE events
+eventsRouter.use("/*", requireRole("operator", "shop", "courier", "super_admin"));
 
 /**
  * GET /events/company/:companyId — Company channel SSE stream.

@@ -2,6 +2,7 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import type { AppType } from "../types.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { companyMiddleware } from "../middleware/company.js";
+import { requireRole } from "../middleware/role.js";
 
 const UserRoleEnum = z.enum(["operator", "shop", "courier"]);
 
@@ -31,9 +32,10 @@ const authRouter = new OpenAPIHono<AppType>({
   },
 });
 
-// Apply auth + company middleware to all auth routes
+// Apply auth + company + role middleware to all auth routes
 authRouter.use("/*", authMiddleware);
 authRouter.use("/*", companyMiddleware);
+authRouter.use("/*", requireRole("operator", "super_admin"));
 
 const InviteResponseSchema = z.object({
   message: z.string(),

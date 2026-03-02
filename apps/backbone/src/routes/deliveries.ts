@@ -2,6 +2,7 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import type { AppType } from "../types.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { companyMiddleware } from "../middleware/company.js";
+import { requireRole } from "../middleware/role.js";
 import {
   listDeliveries,
   assignCourier,
@@ -84,6 +85,9 @@ const deliveriesRouter = new OpenAPIHono<AppType>({
 // Apply auth + company middleware
 deliveriesRouter.use("/*", authMiddleware);
 deliveriesRouter.use("/*", companyMiddleware);
+
+// Role guards (PRP-002 §4)
+deliveriesRouter.use("/*", requireRole("operator", "shop", "courier", "super_admin"));
 
 // --- GET /api/deliveries ---
 
