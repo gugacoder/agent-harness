@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Loader2,
   MoreVertical,
+  LogIn,
 } from "lucide-react";
 import {
   useAdminCompanies,
@@ -17,6 +18,7 @@ import {
 } from "@/hooks/useAdmin";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useImpersonation } from "@/contexts/ImpersonationContext";
 import type { AdminCompany, CompanyStatus } from "@/types/api";
 import { cn } from "@/lib/utils";
 
@@ -266,9 +268,10 @@ function CreateCompanyDialog({ onClose }: CreateDialogProps) {
 interface ActionMenuProps {
   company: AdminCompany;
   onToggleStatus: () => void;
+  onImpersonate: () => void;
 }
 
-function ActionMenu({ company, onToggleStatus }: ActionMenuProps) {
+function ActionMenu({ company, onToggleStatus, onImpersonate }: ActionMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -295,6 +298,19 @@ function ActionMenu({ company, onToggleStatus }: ActionMenuProps) {
       </button>
       {open && (
         <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-md border bg-card py-1 shadow-lg">
+          {company.status === "active" && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpen(false);
+                onImpersonate();
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-muted"
+            >
+              <LogIn className="h-4 w-4" />
+              Entrar como
+            </button>
+          )}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -320,9 +336,11 @@ function ActionMenu({ company, onToggleStatus }: ActionMenuProps) {
 function CompanyCard({
   company,
   onToggleStatus,
+  onImpersonate,
 }: {
   company: AdminCompany;
   onToggleStatus: () => void;
+  onImpersonate: () => void;
 }) {
   return (
     <div className="flex items-start gap-3 border-b px-4 py-3 last:border-b-0">
@@ -343,7 +361,7 @@ function CompanyCard({
           <span>{company.total_orders} pedidos</span>
         </div>
       </div>
-      <ActionMenu company={company} onToggleStatus={onToggleStatus} />
+      <ActionMenu company={company} onToggleStatus={onToggleStatus} onImpersonate={onImpersonate} />
     </div>
   );
 }
@@ -351,6 +369,8 @@ function CompanyCard({
 // --- Main Page ---
 
 export function AdminEmpresasPage() {
+  const { startImpersonation } = useImpersonation();
+
   // Filters
   const [statusFilter, setStatusFilter] = useState<
     "all" | CompanyStatus
@@ -560,6 +580,9 @@ export function AdminEmpresasPage() {
                         onToggleStatus={() =>
                           setConfirmAction({ type: "toggle", company })
                         }
+                        onImpersonate={() =>
+                          startImpersonation(company.id, company.name)
+                        }
                       />
                     </div>
                   </li>
@@ -575,6 +598,9 @@ export function AdminEmpresasPage() {
                   company={company}
                   onToggleStatus={() =>
                     setConfirmAction({ type: "toggle", company })
+                  }
+                  onImpersonate={() =>
+                    startImpersonation(company.id, company.name)
                   }
                 />
               ))}

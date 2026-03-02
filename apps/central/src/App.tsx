@@ -1,6 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import {
+  ImpersonationProvider,
+  useImpersonation,
+} from "@/contexts/ImpersonationContext";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { AppShell } from "@/components/layout/AppShell";
 import { AdminShell } from "@/components/layout/AdminShell";
@@ -31,13 +35,14 @@ const queryClient = new QueryClient({
 
 function AppRoutes() {
   const { user } = useAuth();
+  const { isImpersonating } = useImpersonation();
   const isSuperAdmin = user?.role === "super_admin";
 
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route element={<RequireAuth />}>
-        {/* Admin routes for super_admin */}
+        {/* Admin routes for super_admin (not impersonating) */}
         {isSuperAdmin && (
           <Route element={<AdminShell />}>
             <Route path="admin/dashboard" element={<AdminDashboard />} />
@@ -46,10 +51,12 @@ function AppRoutes() {
           </Route>
         )}
 
-        {/* Normal operator routes */}
+        {/* Normal operator routes (or super_admin impersonating a company) */}
         <Route element={<AppShell />}>
           <Route index element={
-            isSuperAdmin ? <Navigate to="/admin/dashboard" replace /> : <DashboardPage />
+            isSuperAdmin && !isImpersonating
+              ? <Navigate to="/admin/dashboard" replace />
+              : <DashboardPage />
           } />
           <Route path="pedidos" element={<PedidosPage />} />
           <Route path="motoboys" element={<MotoboysPage />} />
@@ -73,7 +80,9 @@ export function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
-          <AppRoutes />
+          <ImpersonationProvider>
+            <AppRoutes />
+          </ImpersonationProvider>
         </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>

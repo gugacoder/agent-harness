@@ -1,15 +1,16 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, ArrowLeft } from "lucide-react";
 import { AvatarDisplay } from "../avatar/AvatarDisplay";
 
 interface HeaderProps {
   userName?: string;
   avatarUrl?: string | null;
   onLogout?: () => void;
+  impersonating?: { companyName: string; onStop: () => void } | null;
 }
 
-export function Header({ userName = "Operador", avatarUrl, onLogout }: HeaderProps) {
+export function Header({ userName = "Operador", avatarUrl, onLogout, impersonating }: HeaderProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -31,7 +32,23 @@ export function Header({ userName = "Operador", avatarUrl, onLogout }: HeaderPro
         <span className="text-sm font-semibold text-primary">Chega.la</span>
       </div>
 
-      <div className="hidden md:block" />
+      {impersonating ? (
+        <div className="hidden items-center gap-2 md:flex">
+          <span className="rounded-md bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800">
+            Impersonando: {impersonating.companyName}
+          </span>
+          <button
+            type="button"
+            onClick={impersonating.onStop}
+            className="flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Voltar para admin
+          </button>
+        </div>
+      ) : (
+        <div className="hidden md:block" />
+      )}
 
       <div className="relative" ref={menuRef}>
         <button
@@ -53,6 +70,19 @@ export function Header({ userName = "Operador", avatarUrl, onLogout }: HeaderPro
               <User className="h-4 w-4" />
               Meu Perfil
             </Link>
+            {impersonating && (
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  impersonating.onStop();
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-amber-700 transition-colors hover:bg-muted md:hidden"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Voltar para admin
+              </button>
+            )}
             <button
               type="button"
               onClick={() => {
