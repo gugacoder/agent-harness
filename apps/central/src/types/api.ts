@@ -341,6 +341,20 @@ export interface CompanyConfig {
   updated_at: string;
 }
 
+// --- Registration Requests ---
+
+export interface RegistrationRequest {
+  id: string;
+  company_id: string;
+  full_name: string;
+  phone: string;
+  email: string | null;
+  requested_role: string;
+  status: string;
+  extra_data: Record<string, string> | null;
+  requested_at: string;
+}
+
 export interface UpdateCompanyConfigData {
   pod_required?: boolean;
   default_closing_period?: string;

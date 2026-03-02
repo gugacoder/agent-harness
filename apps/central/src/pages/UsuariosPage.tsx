@@ -11,6 +11,9 @@ import {
   Loader2,
   MoreVertical,
   UserPlus,
+  Clock,
+  Check,
+  XCircle,
 } from "lucide-react";
 import { Link } from "react-router";
 import {
@@ -19,10 +22,15 @@ import {
   useToggleUserStatus,
   useResetPassword,
 } from "@/hooks/useUsers";
+import {
+  usePendingRegistrations,
+  useApproveRegistration,
+  useRejectRegistration,
+} from "@/hooks/useRegistration";
 import { AvatarDisplay } from "@/components/avatar/AvatarDisplay";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import type { User, UserRole } from "@/types/api";
+import type { User, UserRole, RegistrationRequest } from "@/types/api";
 import { cn } from "@/lib/utils";
 
 // --- Constants ---
@@ -421,9 +429,291 @@ function UserCard({
   );
 }
 
+// --- Pending Registrations Section ---
+
+function PendingRegistrationsSection() {
+  const { data: requests, isLoading } = usePendingRegistrations();
+  const approve = useApproveRegistration();
+  const reject = useRejectRegistration();
+
+  const [confirmAction, setConfirmAction] = useState<{
+    type: "approve" | "reject";
+    request: RegistrationRequest;
+  } | null>(null);
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (feedback) {
+      const timer = setTimeout(() => setFeedback(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [feedback]);
+
+  function handleApprove(request: RegistrationRequest) {
+    approve.mutate(request.id, {
+      onSuccess: () => {
+        setConfirmAction(null);
+        setFeedback({
+          type: "success",
+          message: `${request.full_name} aprovado com sucesso`,
+        });
+      },
+      onError: () => {
+        setConfirmAction(null);
+        setFeedback({
+          type: "error",
+          message: "Erro ao aprovar cadastro",
+        });
+      },
+    });
+  }
+
+  function handleReject(request: RegistrationRequest) {
+    reject.mutate(request.id, {
+      onSuccess: () => {
+        setConfirmAction(null);
+        setFeedback({
+          type: "success",
+          message: `Cadastro de ${request.full_name} rejeitado`,
+        });
+      },
+      onError: () => {
+        setConfirmAction(null);
+        setFeedback({
+          type: "error",
+          message: "Erro ao rejeitar cadastro",
+        });
+      },
+    });
+  }
+
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+  return (
+    <div className="space-y-4">
+      {/* Feedback */}
+      {feedback && (
+        <div
+          className={cn(
+            "flex items-center gap-2 rounded-md p-3 text-sm",
+            feedback.type === "success"
+              ? "bg-green-50 text-green-800"
+              : "bg-destructive/10 text-destructive"
+          )}
+        >
+          {feedback.type === "success" ? (
+            <CheckCircle2 className="h-4 w-4 shrink-0" />
+          ) : (
+            <AlertCircle className="h-4 w-4 shrink-0" />
+          )}
+          {feedback.message}
+        </div>
+      )}
+
+      <div className="rounded-lg border bg-card shadow-sm">
+        {isLoading ? (
+          <div className="space-y-3 p-4">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-16" />
+            ))}
+          </div>
+        ) : !requests || requests.length === 0 ? (
+          <EmptyState
+            icon={Clock}
+            title="Nenhum cadastro pendente"
+            description="Novos cadastros de motoboys e lojistas aparecerao aqui"
+          />
+        ) : (
+          <>
+            {/* Desktop Table */}
+            <div className="hidden md:block">
+              <div className="grid grid-cols-12 items-center gap-4 border-b px-4 py-2 text-xs font-medium text-muted-foreground">
+                <div className="col-span-3">Nome</div>
+                <div className="col-span-2">Telefone</div>
+                <div className="col-span-2">E-mail</div>
+                <div className="col-span-1">Papel</div>
+                <div className="col-span-2">Data</div>
+                <div className="col-span-2" />
+              </div>
+              <ul className="divide-y">
+                {requests.map((req) => (
+                  <li
+                    key={req.id}
+                    className="grid grid-cols-12 items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/50"
+                  >
+                    <div className="col-span-3">
+                      <span className="font-medium">{req.full_name}</span>
+                      {req.extra_data && (
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {req.extra_data.vehicle_type &&
+                            `Veiculo: ${req.extra_data.vehicle_type}`}
+                          {req.extra_data.trade_name &&
+                            `Loja: ${req.extra_data.trade_name}`}
+                        </p>
+                      )}
+                    </div>
+                    <div className="col-span-2 text-sm text-muted-foreground">
+                      {req.phone}
+                    </div>
+                    <div className="col-span-2 truncate text-sm text-muted-foreground">
+                      {req.email ?? "—"}
+                    </div>
+                    <div className="col-span-1">
+                      <span
+                        className={cn(
+                          "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                          req.requested_role === "courier"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-purple-100 text-purple-800"
+                        )}
+                      >
+                        {req.requested_role === "courier"
+                          ? "Motoboy"
+                          : "Lojista"}
+                      </span>
+                    </div>
+                    <div className="col-span-2 text-sm text-muted-foreground">
+                      {formatDate(req.requested_at)}
+                    </div>
+                    <div className="col-span-2 flex justify-end gap-2">
+                      <button
+                        onClick={() =>
+                          setConfirmAction({ type: "approve", request: req })
+                        }
+                        className="flex items-center gap-1.5 rounded-md bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                        Aprovar
+                      </button>
+                      <button
+                        onClick={() =>
+                          setConfirmAction({ type: "reject", request: req })
+                        }
+                        className="flex items-center gap-1.5 rounded-md border border-destructive px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10"
+                      >
+                        <XCircle className="h-3.5 w-3.5" />
+                        Rejeitar
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden">
+              {requests.map((req) => (
+                <div
+                  key={req.id}
+                  className="border-b px-4 py-3 last:border-b-0"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{req.full_name}</span>
+                        <span
+                          className={cn(
+                            "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+                            req.requested_role === "courier"
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-purple-100 text-purple-800"
+                          )}
+                        >
+                          {req.requested_role === "courier"
+                            ? "Motoboy"
+                            : "Lojista"}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-sm text-muted-foreground">
+                        {req.phone}
+                        {req.email && ` · ${req.email}`}
+                      </p>
+                      {req.extra_data && (
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {req.extra_data.vehicle_type &&
+                            `Veiculo: ${req.extra_data.vehicle_type}`}
+                          {req.extra_data.trade_name &&
+                            `Loja: ${req.extra_data.trade_name}`}
+                        </p>
+                      )}
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {formatDate(req.requested_at)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      onClick={() =>
+                        setConfirmAction({ type: "approve", request: req })
+                      }
+                      className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700"
+                    >
+                      <Check className="h-4 w-4" />
+                      Aprovar
+                    </button>
+                    <button
+                      onClick={() =>
+                        setConfirmAction({ type: "reject", request: req })
+                      }
+                      className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-destructive px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10"
+                    >
+                      <XCircle className="h-4 w-4" />
+                      Rejeitar
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Confirmation Dialogs */}
+      {confirmAction?.type === "approve" && (
+        <ConfirmDialog
+          title="Aprovar Cadastro"
+          message={`Tem certeza que deseja aprovar o cadastro de ${confirmAction.request.full_name}? Um usuario sera criado automaticamente.`}
+          confirmLabel="Aprovar"
+          confirmClass="bg-green-600 text-white hover:bg-green-700"
+          loading={approve.isPending}
+          onConfirm={() => handleApprove(confirmAction.request)}
+          onCancel={() => setConfirmAction(null)}
+        />
+      )}
+
+      {confirmAction?.type === "reject" && (
+        <ConfirmDialog
+          title="Rejeitar Cadastro"
+          message={`Tem certeza que deseja rejeitar o cadastro de ${confirmAction.request.full_name}?`}
+          confirmLabel="Rejeitar"
+          confirmClass="bg-destructive text-white hover:bg-destructive/90"
+          loading={reject.isPending}
+          onConfirm={() => handleReject(confirmAction.request)}
+          onCancel={() => setConfirmAction(null)}
+        />
+      )}
+    </div>
+  );
+}
+
 // --- Main Page ---
 
 export function UsuariosPage() {
+  // Tab state
+  const [activeTab, setActiveTab] = useState<"users" | "pending">("users");
+  const { data: pendingRequests } = usePendingRegistrations();
+  const pendingCount = pendingRequests?.length ?? 0;
+
   // Filters
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
   const [statusFilter, setStatusFilter] = useState<
@@ -603,6 +893,40 @@ export function UsuariosPage() {
         </Link>
       </div>
 
+      {/* Tabs */}
+      <div className="flex gap-1 border-b border-border">
+        <button
+          onClick={() => setActiveTab("users")}
+          className={cn(
+            "px-4 py-2 text-sm font-medium transition-colors",
+            activeTab === "users"
+              ? "border-b-2 border-primary text-primary"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Usuários
+        </button>
+        <button
+          onClick={() => setActiveTab("pending")}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors",
+            activeTab === "pending"
+              ? "border-b-2 border-primary text-primary"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Pendentes
+          {pendingCount > 0 && (
+            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1.5 text-xs font-bold text-white">
+              {pendingCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {activeTab === "pending" && <PendingRegistrationsSection />}
+
+      {activeTab === "users" && <>
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
         <select
@@ -852,6 +1176,7 @@ export function UsuariosPage() {
           onCancel={() => setConfirmAction(null)}
         />
       )}
+      </>}
     </div>
   );
 }

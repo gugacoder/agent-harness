@@ -13,6 +13,7 @@ import {
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePendingRegistrations } from "@/hooks/useRegistration";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -33,6 +34,9 @@ interface SidebarProps {
 }
 
 export function Sidebar({ collapsed = false }: SidebarProps) {
+  const { data: pendingRequests } = usePendingRegistrations();
+  const pendingCount = pendingRequests?.length ?? 0;
+
   return (
     <aside
       className={cn(
@@ -64,7 +68,21 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
             }
           >
             <item.icon className="h-5 w-5 shrink-0" />
-            {!collapsed && <span>{item.label}</span>}
+            {!collapsed && (
+              <span className="flex flex-1 items-center justify-between">
+                {item.label}
+                {item.to === "/usuarios" && pendingCount > 0 && (
+                  <span className="ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1.5 text-xs font-bold text-white">
+                    {pendingCount}
+                  </span>
+                )}
+              </span>
+            )}
+            {collapsed && item.to === "/usuarios" && pendingCount > 0 && (
+              <span className="absolute right-1 top-0 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-bold text-white">
+                {pendingCount}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>

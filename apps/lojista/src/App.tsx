@@ -7,6 +7,7 @@ import { PedidosPage } from "@/pages/PedidosPage";
 import { NovaEntregaPage } from "@/pages/NovaEntregaPage";
 import { HistoricoPage } from "@/pages/HistoricoPage";
 import { LoginPage } from "@/pages/LoginPage";
+import { CadastroPage } from "@/pages/CadastroPage";
 import { FaturasPage } from "@/pages/faturas/FaturasPage";
 import { PerfilPage } from "@/pages/PerfilPage";
 
@@ -26,6 +27,7 @@ export function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/cadastro" element={<CadastroPage />} />
             <Route element={<RequireAuth />}>
               <Route element={<AppShell />}>
                 <Route index element={<PedidosPage />} />

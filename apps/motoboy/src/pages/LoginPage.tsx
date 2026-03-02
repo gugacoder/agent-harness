@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Navigate } from "react-router";
+import { Navigate, Link } from "react-router";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOtpLogin } from "@/hooks/useOtpLogin";
 import { PhoneInput } from "@/components/auth/PhoneInput";
@@ -180,6 +180,16 @@ export function LoginPage() {
           </form>
         )}
       </div>
+
+      <p className="mt-4 text-center text-sm text-muted-foreground">
+        Nao tem conta?{" "}
+        <Link
+          to="/cadastro"
+          className="font-medium text-primary hover:underline"
+        >
+          Criar conta
+        </Link>
+      </p>
     </div>
   );
 }

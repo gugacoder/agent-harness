@@ -9,6 +9,7 @@ import { HistoricoPage } from "@/pages/HistoricoPage";
 import { ExtratoPage } from "@/pages/ExtratoPage";
 import { StatusPage } from "@/pages/StatusPage";
 import { LoginPage } from "@/pages/LoginPage";
+import { CadastroPage } from "@/pages/CadastroPage";
 import { PerfilPage } from "@/pages/PerfilPage";
 
 const queryClient = new QueryClient({
@@ -27,6 +28,7 @@ export function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/cadastro" element={<CadastroPage />} />
             <Route element={<RequireAuth />}>
               <Route
                 element={
