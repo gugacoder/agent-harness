@@ -6,22 +6,21 @@ import {
   ChevronLeft,
   User,
   Phone,
-  Mail,
-  Camera,
   AlertCircle,
   Loader2,
   Power,
-  Package,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCouriers } from "@/hooks/useCouriers";
-import { useOrders } from "@/hooks/useOrders";
+import { useCourierDetail } from "@/hooks/useCourierDetail";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CourierStatusBadge } from "@/components/ui/StatusBadge";
+import { CourierDetailView } from "@/components/couriers/CourierDetailView";
+import { CourierEditForm } from "@/components/couriers/CourierEditForm";
 import type { Courier, CourierStatus } from "@/types/api";
 
 // --- New Courier Form ---
@@ -243,179 +242,6 @@ function NewCourierForm({ onClose, onSuccess }: NewCourierFormProps) {
   );
 }
 
-// --- Courier Detail ---
-
-interface CourierDetailProps {
-  courier: Courier;
-  onBack: () => void;
-  onToggleActive: () => void;
-  toggling: boolean;
-}
-
-function CourierDetail({
-  courier,
-  onBack,
-  onToggleActive,
-  toggling,
-}: CourierDetailProps) {
-  const { data: orders } = useOrders();
-
-  // Count delivered orders for this courier (via deliveries)
-  // Since we don't have a deliveries-by-courier endpoint, use total_deliveries from courier data
-  const deliveredCount = courier.total_deliveries;
-
-  // Try to find active orders assigned to this courier
-  // Orders don't have courier_id directly, so we show total_deliveries as the metric
-  const formatDate = (iso: string) =>
-    new Date(iso).toLocaleString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-  return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="rounded-md p-1 hover:bg-muted"
-          aria-label="Voltar"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold">{courier.full_name}</h2>
-            <CourierStatusBadge status={courier.status} />
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        {/* Info Card */}
-        <div className="rounded-lg border bg-card shadow-sm">
-          <div className="border-b px-4 py-3">
-            <h3 className="font-semibold">Informações</h3>
-          </div>
-          <div className="space-y-3 p-4">
-            {courier.photo_url && (
-              <div className="flex justify-center pb-2">
-                <img
-                  src={courier.photo_url}
-                  alt={courier.full_name}
-                  className="h-20 w-20 rounded-full object-cover border"
-                />
-              </div>
-            )}
-            <div className="flex items-start gap-2">
-              <User className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Nome</p>
-                <p className="text-sm">{courier.full_name}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <Phone className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Telefone</p>
-                <p className="text-sm">{courier.phone}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <Bike className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Status</p>
-                <div className="mt-0.5">
-                  <CourierStatusBadge status={courier.status} />
-                </div>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <Power className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Ativo</p>
-                <p className="text-sm">
-                  {courier.active ? "Sim" : "Não"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <Package className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">
-                  Entregas Concluídas
-                </p>
-                <p className="text-sm font-medium">{deliveredCount}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-2 border-t px-4 py-3">
-            <button
-              onClick={onToggleActive}
-              disabled={toggling}
-              className={`flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium ${
-                courier.active
-                  ? "border border-destructive text-destructive hover:bg-destructive/10"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90"
-              } disabled:opacity-50`}
-            >
-              {toggling ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Power className="h-4 w-4" />
-              )}
-              {courier.active ? "Desativar" : "Ativar"}
-            </button>
-          </div>
-        </div>
-
-        {/* Delivery History Card */}
-        <div className="rounded-lg border bg-card shadow-sm">
-          <div className="border-b px-4 py-3">
-            <h3 className="font-semibold">Histórico de Entregas</h3>
-          </div>
-          <div className="p-4">
-            <div className="mb-4 grid grid-cols-2 gap-4">
-              <div className="rounded-lg bg-muted/50 p-3 text-center">
-                <p className="text-2xl font-bold text-primary">
-                  {deliveredCount}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Total de Entregas
-                </p>
-              </div>
-              <div className="rounded-lg bg-muted/50 p-3 text-center">
-                <p className="text-2xl font-bold text-primary">
-                  {courier.status === "busy" ? "1" : "0"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Em Andamento
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span>Cadastrado em</span>
-                <span>{formatDate(courier.created_at)}</span>
-              </div>
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span>Última atualização</span>
-                <span>{formatDate(courier.updated_at)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // --- Main Page ---
 
 type View =
@@ -425,6 +251,7 @@ type View =
 
 export function MotoboysPage() {
   const [view, setView] = useState<View>({ type: "list" });
+  const [editCourierId, setEditCourierId] = useState<string | null>(null);
   const [toggling, setToggling] = useState(false);
   const [statusFilter, setStatusFilter] = useState<
     CourierStatus | "all" | "inactive"
@@ -468,7 +295,7 @@ export function MotoboysPage() {
     setToggling(true);
     try {
       await api
-        .patch(`api/couriers/${courier.id}`, {
+        .patch(`api/couriers/${courier.id}/active`, {
           json: { active: !courier.active },
         })
         .json();
@@ -480,13 +307,8 @@ export function MotoboysPage() {
     }
   };
 
-  // Get current courier for detail view
-  const currentCourier = useMemo(() => {
-    if (view.type === "detail") {
-      return couriers?.find((c) => c.id === view.courierId) ?? null;
-    }
-    return null;
-  }, [couriers, view]);
+  // Courier detail for edit form drawer
+  const { data: editCourierData } = useCourierDetail(editCourierId);
 
   // --- Render New Courier Form ---
   if (view.type === "new") {
@@ -514,14 +336,22 @@ export function MotoboysPage() {
   }
 
   // --- Render Courier Detail ---
-  if (view.type === "detail" && currentCourier) {
+  if (view.type === "detail") {
     return (
-      <CourierDetail
-        courier={currentCourier}
-        onBack={() => setView({ type: "list" })}
-        onToggleActive={() => handleToggleActive(currentCourier)}
-        toggling={toggling}
-      />
+      <>
+        <CourierDetailView
+          courierId={view.courierId}
+          onBack={() => setView({ type: "list" })}
+          onEdit={() => setEditCourierId(view.courierId)}
+        />
+        {editCourierData && (
+          <CourierEditForm
+            courier={editCourierData}
+            open={editCourierId === view.courierId}
+            onClose={() => setEditCourierId(null)}
+          />
+        )}
+      </>
     );
   }
 

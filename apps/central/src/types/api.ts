@@ -283,6 +283,54 @@ export interface TrendDataPoint {
   total_deliveries: number;
 }
 
+// --- Courier Detail ---
+
+export interface CourierDetail extends Courier {
+  vehicle_type: string | null;
+  plate_number: string | null;
+  last_location: {
+    lat: string;
+    lng: string;
+    accuracy: string;
+    recorded_at: string;
+  } | null;
+}
+
+export interface CourierDeliveryItem {
+  id: string;
+  order_id: string;
+  courier_id: string;
+  company_id: string;
+  status: string;
+  assigned_at: string;
+  accepted_at: string | null;
+  picked_up_at: string | null;
+  delivered_at: string | null;
+  actual_distance_km: string | null;
+  actual_duration_min: number | null;
+  created_at: string;
+  updated_at: string;
+  order_number: number;
+  pickup_address: string;
+  delivery_address: string;
+  recipient_name: string;
+}
+
+export interface CourierDeliveriesResponse {
+  data: CourierDeliveryItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface CourierMetrics {
+  deliveries_today: number;
+  deliveries_month: number;
+  avg_delivery_time_min: number;
+  completion_rate: number;
+  total_distance_km: string;
+}
+
 // --- Saved Addresses ---
 
 export interface SavedAddress {
