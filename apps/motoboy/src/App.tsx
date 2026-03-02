@@ -9,6 +9,7 @@ import { EntregasPage } from "@/pages/EntregasPage";
 import { HistoricoPage } from "@/pages/HistoricoPage";
 import { ExtratoPage } from "@/pages/ExtratoPage";
 import { StatusPage } from "@/pages/StatusPage";
+import { DocsPage } from "@/pages/DocsPage";
 import { LoginPage } from "@/pages/LoginPage";
 
 const queryClient = new QueryClient({
@@ -40,6 +41,7 @@ export function App() {
                 <Route path="historico" element={<HistoricoPage />} />
                 <Route path="extrato" element={<ExtratoPage />} />
                 <Route path="status" element={<StatusPage />} />
+                <Route path="docs" element={<DocsPage />} />
               </Route>
             </Route>
           </Routes>
