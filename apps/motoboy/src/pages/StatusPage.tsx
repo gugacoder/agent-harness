@@ -1,11 +1,26 @@
+import { useQuery } from "@tanstack/react-query";
 import { useCourierStatus } from "@/hooks/useCourierStatus";
 import { StatusToggle } from "@/components/ui/StatusToggle";
+import { StatusContext } from "@/components/status/StatusContext";
 import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
+import { api } from "@/lib/api";
 
 export function StatusPage() {
   const { status, isLoading, isToggling, toggleStatus, error } =
     useCourierStatus();
+
+  const isOnline = status === "available" || status === "busy";
+
+  const pendingOrdersQuery = useQuery({
+    queryKey: ["orders", "pending"],
+    queryFn: () =>
+      api.get("api/orders", { searchParams: { status: "pending" } }).json<unknown[]>(),
+    enabled: isOnline,
+    refetchInterval: isOnline ? 30_000 : false,
+  });
+
+  const pendingOrdersCount = pendingOrdersQuery.data?.length ?? 0;
 
   if (isLoading) {
     return (
@@ -31,6 +46,11 @@ export function StatusPage() {
         status={status}
         isToggling={isToggling}
         onToggle={toggleStatus}
+      />
+
+      <StatusContext
+        status={status}
+        pendingOrdersCount={pendingOrdersCount}
       />
 
       {status === "busy" && (
