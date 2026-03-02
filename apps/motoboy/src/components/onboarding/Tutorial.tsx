@@ -279,8 +279,17 @@ export function Tutorial({ onComplete, onSkip, reviewMode = false }: TutorialPro
           </div>
         </div>
 
-        {/* Dots indicator */}
-        <div className="pb-8">
+        {/* Next button + Dots indicator */}
+        <div className="pb-8 flex flex-col items-center gap-4">
+          {currentSlide < SLIDE_KEYS.length - 1 && (
+            <button
+              type="button"
+              onClick={() => goToSlide(currentSlide + 1)}
+              className="rounded-md bg-primary px-8 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Avançar
+            </button>
+          )}
           <DotsIndicator total={SLIDE_KEYS.length} current={currentSlide} />
         </div>
       </div>
