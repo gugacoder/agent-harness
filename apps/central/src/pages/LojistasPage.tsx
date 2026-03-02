@@ -584,12 +584,24 @@ export function LojistasPage() {
             title={
               statusFilter !== "all"
                 ? `Nenhum lojista ${statusFilter === "active" ? "ativo" : "inativo"}`
-                : "Nenhum lojista cadastrado"
+                : "Nenhuma loja cadastrada"
             }
             description={
               statusFilter !== "all"
                 ? "Tente outro filtro ou cadastre um novo lojista"
-                : "Cadastre o primeiro lojista clicando em 'Novo Lojista'"
+                : "Cadastre sua primeira loja para começar a receber pedidos."
+            }
+            action={
+              statusFilter === "all" ? (
+                <button
+                  type="button"
+                  onClick={() => setView({ type: "new" })}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                >
+                  <Plus className="h-4 w-4" />
+                  Cadastrar loja
+                </button>
+              ) : undefined
             }
           />
         ) : (

@@ -846,12 +846,24 @@ export function PedidosPage() {
             title={
               statusFilter
                 ? `Nenhum pedido com status "${ORDER_STATUS_LABELS[statusFilter]}"`
-                : "Nenhum pedido encontrado"
+                : "Nenhum pedido ainda"
             }
             description={
               statusFilter
                 ? "Tente outro filtro ou crie um novo pedido"
-                : "Crie o primeiro pedido clicando em 'Novo Pedido'"
+                : "Seus lojistas podem criar pedidos pelo app ou você pode criar manualmente."
+            }
+            action={
+              !statusFilter ? (
+                <button
+                  type="button"
+                  onClick={() => setView({ type: "new" })}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                >
+                  <Plus className="h-4 w-4" />
+                  Criar pedido
+                </button>
+              ) : undefined
             }
           />
         ) : (

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { Link } from "react-router";
 import {
   Clock,
   ChevronLeft,
@@ -6,6 +7,7 @@ import {
   User,
   Phone,
   FileText,
+  Plus,
 } from "lucide-react";
 import { useOrders } from "@/hooks/useOrders";
 import { OrderStatusBadge } from "@/components/ui/StatusBadge";
@@ -207,8 +209,17 @@ export function HistoricoPage() {
         ) : historyOrders.length === 0 ? (
           <EmptyState
             icon={Clock}
-            title="Nenhum pedido no histórico"
-            description="Pedidos entregues ou cancelados aparecerão aqui"
+            title="Nenhuma entrega no histórico"
+            description="Crie seu primeiro pedido para começar."
+            action={
+              <Link
+                to="/nova"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                <Plus className="h-4 w-4" />
+                Criar pedido
+              </Link>
+            }
           />
         ) : (
           <>

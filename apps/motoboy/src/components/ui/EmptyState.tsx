@@ -4,12 +4,14 @@ interface EmptyStateProps {
   icon?: React.ComponentType<{ className?: string }>;
   title: string;
   description?: string;
+  action?: React.ReactNode;
 }
 
 export function EmptyState({
   icon: Icon = Package,
   title,
   description,
+  action,
 }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -22,6 +24,7 @@ export function EmptyState({
           {description}
         </p>
       )}
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }

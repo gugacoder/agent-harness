@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
-import { Package, Camera, SkipForward } from "lucide-react";
+import { Link } from "react-router";
+import { Package, Camera, SkipForward, Power } from "lucide-react";
 import { useActiveDeliveryContext } from "@/contexts/ActiveDeliveryContext";
 import { useCompanyConfig } from "@/hooks/useCompanyConfig";
 import { DeliveryNotification } from "@/components/ui/DeliveryNotification";
@@ -125,8 +126,17 @@ export function EntregasPage() {
       {!activeDelivery && !pendingDelivery && (
         <EmptyState
           icon={Package}
-          title="Nenhuma entrega no momento"
-          description="Mantenha-se disponivel para receber novas entregas."
+          title="Nenhuma entrega ainda"
+          description="Fique online para começar a receber entregas."
+          action={
+            <Link
+              to="/status"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              <Power className="h-4 w-4" />
+              Ficar online
+            </Link>
+          }
         />
       )}
 

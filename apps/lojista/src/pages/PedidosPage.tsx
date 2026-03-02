@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { useLocation } from "react-router";
+import { useLocation, Link } from "react-router";
 import {
   Package,
   ChevronLeft,
@@ -12,6 +12,7 @@ import {
   WifiOff,
   Check,
   X,
+  Plus,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
@@ -393,7 +394,16 @@ export function PedidosPage() {
           <EmptyState
             icon={Package}
             title="Nenhum pedido ativo"
-            description="Seus pedidos em andamento aparecerão aqui"
+            description="Crie seu primeiro pedido de entrega."
+            action={
+              <Link
+                to="/nova"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                <Plus className="h-4 w-4" />
+                Criar pedido
+              </Link>
+            }
           />
         ) : (
           <div className="divide-y">
