@@ -10,6 +10,7 @@ import {
   FileText,
   BarChart3,
   Settings,
+  MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +24,7 @@ const navItems = [
   { to: "/financeiro", label: "Financeiro", icon: Wallet },
   { to: "/faturas", label: "Faturas", icon: FileText },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
+  { to: "/enderecos", label: "Endereços", icon: MapPin },
   { to: "/configuracao", label: "Config", icon: Settings },
 ] as const;
 
