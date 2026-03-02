@@ -80,3 +80,10 @@ export {
   UpdateCompanyConfigRequestSchema,
   type UpdateCompanyConfigRequest,
 } from "./company-config.js";
+
+export {
+  SendOtpSchema,
+  VerifyOtpSchema,
+  type SendOtpRequest,
+  type VerifyOtpRequest,
+} from "./otp.js";
