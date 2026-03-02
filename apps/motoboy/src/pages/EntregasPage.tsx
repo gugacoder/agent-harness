@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { Package, Camera, SkipForward } from "lucide-react";
 import { useActiveDeliveryContext } from "@/contexts/ActiveDeliveryContext";
 import { useCompanyConfig } from "@/hooks/useCompanyConfig";
-import { DeliveryNotification } from "@/components/ui/DeliveryNotification";
+import { DeliveryPreview } from "@/components/delivery/DeliveryPreview";
 import { DeliveryCard } from "@/components/ui/DeliveryCard";
 import { DeliveryTimeline } from "@/components/ui/DeliveryTimeline";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -98,9 +98,10 @@ export function EntregasPage() {
 
   return (
     <div className="space-y-4 p-4">
-      {/* Pending delivery notification */}
+      {/* Pending delivery preview */}
       {pendingDelivery && pendingOrder && (
-        <DeliveryNotification
+        <DeliveryPreview
+          delivery={pendingDelivery}
           order={pendingOrder}
           onAccept={() => acceptDelivery(pendingDelivery.delivery_id)}
           onReject={() => rejectDelivery(pendingDelivery.delivery_id)}
