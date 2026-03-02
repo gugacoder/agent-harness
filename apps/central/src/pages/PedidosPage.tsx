@@ -11,6 +11,7 @@ import {
   Bike,
   AlertCircle,
   Loader2,
+  Users,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useOrders } from "@/hooks/useOrders";
@@ -28,6 +29,7 @@ import type { Order, OrderStatus, Courier, Delivery } from "@/types/api";
 import { OrderProofSection } from "@/components/delivery-proof/OrderProofSection";
 import { OrderProofBadge } from "@/components/delivery-proof/OrderProofBadge";
 import { OrderTimeline } from "@/components/orders/OrderTimeline";
+import { BulkAssignDialog } from "@/components/orders/BulkAssignDialog";
 
 const ALL_STATUSES: OrderStatus[] = [
   "pending",
@@ -510,6 +512,8 @@ export function PedidosPage() {
   const [view, setView] = useState<View>({ type: "list" });
   const [statusFilter, setStatusFilter] = useState<OrderStatus | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
+  const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
 
   const queryClient = useQueryClient();
   const { data: orders, isLoading: ordersLoading } = useOrders();
@@ -561,6 +565,18 @@ export function PedidosPage() {
   const invalidateOrders = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["orders"] });
   }, [queryClient]);
+
+  const toggleOrderSelection = useCallback((orderId: string) => {
+    setSelectedOrders((prev) => {
+      const next = new Set(prev);
+      if (next.has(orderId)) {
+        next.delete(orderId);
+      } else {
+        next.add(orderId);
+      }
+      return next;
+    });
+  }, []);
 
   const handleCancelOrder = async (orderId: string) => {
     setCancelling(true);
@@ -671,13 +687,27 @@ export function PedidosPage() {
             Gerenciamento de pedidos
           </p>
         </div>
-        <button
-          onClick={() => setView({ type: "new" })}
-          className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          <Plus className="h-4 w-4" />
-          Novo Pedido
-        </button>
+        <div className="flex items-center gap-2">
+          {selectedOrders.size > 0 && (
+            <button
+              onClick={() => setBulkAssignOpen(true)}
+              className="flex items-center gap-2 rounded-md border border-primary bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20"
+            >
+              <Users className="h-4 w-4" />
+              Atribuir Selecionados
+              <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
+                {selectedOrders.size}
+              </span>
+            </button>
+          )}
+          <button
+            onClick={() => setView({ type: "new" })}
+            className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            <Plus className="h-4 w-4" />
+            Novo Pedido
+          </button>
+        </div>
       </div>
 
       {/* Status Filter Badges */}
@@ -735,9 +765,10 @@ export function PedidosPage() {
           <>
             {/* Table header - desktop only */}
             <div className="hidden border-b px-4 py-2 text-xs font-medium text-muted-foreground sm:grid sm:grid-cols-12 sm:gap-4">
+              <div className="col-span-1"></div>
               <div className="col-span-2">Número</div>
               <div className="col-span-2">Status</div>
-              <div className="col-span-3">Lojista</div>
+              <div className="col-span-2">Lojista</div>
               <div className="col-span-3">Destinatário</div>
               <div className="col-span-2">Criado em</div>
             </div>
@@ -754,6 +785,15 @@ export function PedidosPage() {
                   <div className="sm:hidden">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
+                        {order.status === "pending" && (
+                          <input
+                            type="checkbox"
+                            checked={selectedOrders.has(order.id)}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={() => toggleOrderSelection(order.id)}
+                            className="h-4 w-4 rounded border-gray-300"
+                          />
+                        )}
                         <span className="font-medium">
                           #{order.order_number}
                         </span>
@@ -781,6 +821,17 @@ export function PedidosPage() {
                   </div>
 
                   {/* Desktop layout */}
+                  <div className="col-span-1 hidden sm:flex sm:items-center sm:justify-center">
+                    {order.status === "pending" && (
+                      <input
+                        type="checkbox"
+                        checked={selectedOrders.has(order.id)}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={() => toggleOrderSelection(order.id)}
+                        className="h-4 w-4 rounded border-gray-300"
+                      />
+                    )}
+                  </div>
                   <div className="col-span-2 hidden sm:block">
                     <span className="font-medium">#{order.order_number}</span>
                   </div>
@@ -790,7 +841,7 @@ export function PedidosPage() {
                       <OrderProofBadge orderId={order.id} />
                     )}
                   </div>
-                  <div className="col-span-3 hidden truncate text-sm sm:block">
+                  <div className="col-span-2 hidden truncate text-sm sm:block">
                     {order.shop_id
                       ? shopMap.get(order.shop_id) ?? "—"
                       : "—"}
@@ -812,6 +863,19 @@ export function PedidosPage() {
           </>
         )}
       </div>
+
+      <BulkAssignDialog
+        open={bulkAssignOpen}
+        orderIds={Array.from(selectedOrders)}
+        onClose={() => {
+          setBulkAssignOpen(false);
+          setSelectedOrders(new Set());
+        }}
+        onSuccess={() => {
+          invalidateOrders();
+          queryClient.invalidateQueries({ queryKey: ["couriers"] });
+        }}
+      />
     </div>
   );
 }
