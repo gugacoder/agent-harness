@@ -12,6 +12,7 @@ import { Bike, MapPin, Wifi, WifiOff } from "lucide-react";
 import { useCouriers } from "@/hooks/useCouriers";
 import { useCompanyEventsContext } from "@/contexts/CompanyEventsContext";
 import { COURIER_STATUS_LABELS } from "@/components/ui/StatusBadge";
+import { CourierGpsBadge } from "@/components/couriers/CourierGpsBadge";
 import type { CourierLocation } from "@/hooks/useCourierLocations";
 import type { Courier, CourierStatus } from "@/types/api";
 
@@ -65,6 +66,7 @@ function CourierMarkerItem({
           <div className="flex items-center gap-2">
             <Bike className="h-4 w-4" style={{ color }} />
             <span className="font-semibold">{courier.full_name}</span>
+            <CourierGpsBadge lastRecordedAt={location.timestamp} />
           </div>
           <div className="mt-1 text-xs text-gray-600">
             <span

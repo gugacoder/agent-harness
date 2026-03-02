@@ -34,6 +34,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { CourierStatusBadge, COURIER_STATUS_LABELS } from "@/components/ui/StatusBadge";
 import { CourierDetailView } from "@/components/couriers/CourierDetailView";
 import { CourierEditForm } from "@/components/couriers/CourierEditForm";
+import { CourierGpsBadge } from "@/components/couriers/CourierGpsBadge";
 import type { Courier, CourierStatus } from "@/types/api";
 import type { CourierLocation } from "@/hooks/useCourierLocations";
 
@@ -500,6 +501,7 @@ export function MotoboysPage() {
                     <div className="flex items-center gap-2">
                       <Bike className="h-4 w-4" style={{ color: MARKER_COLORS[courier.status] }} />
                       <span className="font-semibold">{courier.full_name}</span>
+                      <CourierGpsBadge lastRecordedAt={location.timestamp} />
                     </div>
                     <div className="mt-1 text-xs text-gray-600">
                       <span
@@ -624,6 +626,7 @@ export function MotoboysPage() {
                         <span className="font-medium">
                           {courier.full_name}
                         </span>
+                        <CourierGpsBadge lastRecordedAt={locations.get(courier.id)?.timestamp ?? null} />
                       </div>
                       <CourierStatusBadge status={courier.status} />
                     </div>
@@ -675,6 +678,7 @@ export function MotoboysPage() {
                     <span className="truncate font-medium">
                       {courier.full_name}
                     </span>
+                    <CourierGpsBadge lastRecordedAt={locations.get(courier.id)?.timestamp ?? null} />
                   </div>
                   <div className="col-span-2 hidden text-sm sm:block">
                     {courier.phone}

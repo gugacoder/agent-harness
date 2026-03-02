@@ -23,6 +23,7 @@ import {
   useToggleCourierActive,
 } from "@/hooks/useCourierDetail";
 import { CourierStatusBadge } from "@/components/ui/StatusBadge";
+import { CourierGpsBadge } from "@/components/couriers/CourierGpsBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -141,7 +142,10 @@ export function CourierDetailView({ courierId, onBack, onEdit }: CourierDetailVi
               </div>
             )}
             <div>
-              <h2 className="text-xl font-bold">{courier.full_name}</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-bold">{courier.full_name}</h2>
+                <CourierGpsBadge lastRecordedAt={courier.last_location?.recorded_at ?? null} />
+              </div>
               <div className="flex items-center gap-2">
                 <CourierStatusBadge status={courier.status} />
                 <span
