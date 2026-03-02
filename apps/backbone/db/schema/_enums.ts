@@ -77,3 +77,9 @@ export const closingPeriodEnum = pgEnum("closing_period", [
   "weekly",
   "monthly",
 ]);
+
+export const onboardingFlowEnum = pgEnum("onboarding_flow", [
+  "wizard",
+  "tutorial",
+  "guided_overlay",
+]);

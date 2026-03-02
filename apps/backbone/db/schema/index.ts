@@ -11,6 +11,7 @@ export {
   closingStatusEnum,
   invoiceStatusEnum,
   closingPeriodEnum,
+  onboardingFlowEnum,
 } from "./_enums";
 
 export { companies } from "./companies";
@@ -27,3 +28,4 @@ export { invoices, invoiceItems } from "./invoices";
 export { deliveryProofs } from "./delivery-proof";
 export { deliveryPrices } from "./delivery-price";
 export { companyConfigs } from "./company-config";
+export { onboardingProgress } from "./onboarding";
