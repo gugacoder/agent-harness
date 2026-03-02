@@ -9,6 +9,7 @@ import {
   updateOrderStatus,
   cancelOrder,
 } from "../services/order.service.js";
+import { autoSaveAddress } from "../services/address.service.js";
 import { sseManager } from "../sse/manager.js";
 import { companyChannel, orderChannel } from "../sse/channels.js";
 
@@ -277,6 +278,15 @@ ordersRouter.openapi(createOrderRoute, async (c) => {
     notes: body.notes,
     createdBy: user.id,
   });
+
+  // Auto-save delivery address (fire-and-forget)
+  autoSaveAddress(
+    user.id,
+    companyId,
+    body.delivery_address,
+    body.delivery_lat,
+    body.delivery_lng
+  ).catch(() => {});
 
   // SSE: broadcast order_created to company channel
   sseManager.broadcast(companyChannel(companyId), {
