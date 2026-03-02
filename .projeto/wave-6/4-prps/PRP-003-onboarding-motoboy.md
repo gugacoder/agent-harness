@@ -1,5 +1,6 @@
 ---
-status: current
+status: finished
+finished_at: 2026-03-03T00:25:00Z
 wave: 6
 depends_on: [PRP-001-onboarding-infra]
 ---
