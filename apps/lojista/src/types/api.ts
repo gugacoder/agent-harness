@@ -123,3 +123,11 @@ export interface InvoiceItem {
 export interface InvoiceWithItems extends Invoice {
   items: InvoiceItem[];
 }
+
+// --- Order Estimate ---
+
+export interface OrderEstimate {
+  estimated_distance_km: number;
+  estimated_price: number;
+  pricing_table_name: string;
+}

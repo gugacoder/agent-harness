@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { SavedAddressPicker } from "@/components/address/SavedAddressPicker";
 import { AddressAutocomplete } from "@/components/address/AddressAutocomplete";
 import { AddressPinDrop } from "@/components/address/AddressPinDrop";
+import { CostEstimate } from "@/components/orders/CostEstimate";
 
 const formSchema = z.object({
   pickup_address: z.string().min(1, "Endereço de coleta é obrigatório"),
@@ -214,6 +215,15 @@ export function NovaEntregaPage() {
             lng={deliveryLng}
             onPositionChange={handlePinDropChange}
             height="200px"
+          />
+
+          {/* Cost estimate */}
+          <CostEstimate
+            pickupLat={shop?.lat ? Number(shop.lat) : 0}
+            pickupLng={shop?.lng ? Number(shop.lng) : 0}
+            deliveryLat={deliveryLat}
+            deliveryLng={deliveryLng}
+            enabled={!!shop?.lat && !!shop?.lng}
           />
         </div>
 

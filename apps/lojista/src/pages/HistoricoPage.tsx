@@ -14,6 +14,11 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { OrderTimeline } from "@/components/ui/OrderTimeline";
 import { OrderProofBadge } from "@/components/delivery-proof/OrderProofBadge";
 import { OrderProofSection } from "@/components/delivery-proof/OrderProofSection";
+import {
+  OrderHistoryFilters,
+  DEFAULT_FILTERS,
+  type HistoryFilters,
+} from "@/components/orders/OrderHistoryFilters";
 import type { Order, OrderStatus } from "@/types/api";
 
 const HISTORY_STATUSES: OrderStatus[] = ["delivered", "cancelled"];
@@ -153,19 +158,37 @@ type View = { type: "list" } | { type: "detail"; orderId: string };
 export function HistoricoPage() {
   const [view, setView] = useState<View>({ type: "list" });
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [filters, setFilters] = useState<HistoryFilters>(DEFAULT_FILTERS);
 
   const { data: orders, isLoading } = useOrders();
 
-  // Filter to history orders (delivered + cancelled), sort by date descending
+  // Filter to history orders (delivered + cancelled), apply user filters, sort by date descending
   const historyOrders = useMemo(() => {
     if (!orders) return [];
     return orders
-      .filter((o) => HISTORY_STATUSES.includes(o.status))
+      .filter((o) => {
+        // Base filter: only history statuses
+        if (!HISTORY_STATUSES.includes(o.status)) return false;
+
+        // Status filter
+        if (
+          filters.statuses.length > 0 &&
+          !filters.statuses.includes(o.status)
+        )
+          return false;
+
+        // Date filter
+        const orderDate = o.created_at.slice(0, 10);
+        if (filters.dateFrom && orderDate < filters.dateFrom) return false;
+        if (filters.dateTo && orderDate > filters.dateTo) return false;
+
+        return true;
+      })
       .sort(
         (a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       );
-  }, [orders]);
+  }, [orders, filters]);
 
   const visibleOrders = useMemo(
     () => historyOrders.slice(0, visibleCount),
@@ -196,6 +219,12 @@ export function HistoricoPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-bold">Histórico</h1>
+
+      <OrderHistoryFilters
+        filters={filters}
+        onChange={setFilters}
+        resultCount={historyOrders.length}
+      />
 
       <div className="rounded-lg border bg-card shadow-sm">
         {isLoading ? (
