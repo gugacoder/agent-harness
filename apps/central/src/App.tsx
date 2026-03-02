@@ -15,6 +15,7 @@ import { FaturasPage } from "@/pages/FaturasPage";
 import { AnalyticsPage } from "@/pages/AnalyticsPage";
 import { ConfiguracaoPage } from "@/pages/ConfiguracaoPage";
 import { LoginPage } from "@/pages/LoginPage";
+import { EnderecosPage } from "@/pages/enderecos/EnderecosPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +45,7 @@ export function App() {
                 <Route path="financeiro" element={<FinanceiroPage />} />
                 <Route path="faturas" element={<FaturasPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
+                <Route path="enderecos" element={<EnderecosPage />} />
                 <Route path="configuracao" element={<ConfiguracaoPage />} />
               </Route>
             </Route>

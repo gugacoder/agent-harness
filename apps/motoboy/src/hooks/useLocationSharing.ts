@@ -3,6 +3,7 @@ import { api } from "@/lib/api";
 import type { CourierStatus } from "@/components/ui/StatusBadge";
 
 export type LocationState = "sharing" | "paused" | "denied";
+export type DeniedReason = "permission_denied" | "unavailable" | null;
 
 interface UseLocationSharingOptions {
   courierId: string | null;
@@ -10,7 +11,7 @@ interface UseLocationSharingOptions {
   hasActiveDelivery: boolean;
 }
 
-const INTERVAL_AVAILABLE = 30_000; // 30s when available
+const INTERVAL_AVAILABLE = 15_000; // 15s when available (was 30s)
 const INTERVAL_ACTIVE = 15_000; // 15s when in active delivery
 
 async function sendLocation(
@@ -32,8 +33,10 @@ export function useLocationSharing({
   hasActiveDelivery,
 }: UseLocationSharingOptions) {
   const [state, setState] = useState<LocationState>("paused");
+  const [deniedReason, setDeniedReason] = useState<DeniedReason>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const deniedRef = useRef(false);
+  const prevStatusRef = useRef<CourierStatus>(status);
 
   const shouldShare = status === "available" || status === "busy";
   const interval = hasActiveDelivery ? INTERVAL_ACTIVE : INTERVAL_AVAILABLE;
@@ -45,11 +48,15 @@ export function useLocationSharing({
     }
   }, []);
 
-  const markDenied = useCallback(() => {
-    deniedRef.current = true;
-    setState("denied");
-    clearTracking();
-  }, [clearTracking]);
+  const markDenied = useCallback(
+    (reason: DeniedReason) => {
+      deniedRef.current = true;
+      setState("denied");
+      setDeniedReason(reason);
+      clearTracking();
+    },
+    [clearTracking],
+  );
 
   const sendCurrentLocation = useCallback(
     (cId: string) => {
@@ -59,9 +66,12 @@ export function useLocationSharing({
             // Silently fail on network errors — will retry on next interval
           });
         },
-        () => {
-          // Position error — permission may have been revoked
-          markDenied();
+        (error) => {
+          if (error.code === error.PERMISSION_DENIED) {
+            markDenied("permission_denied");
+          } else {
+            markDenied("unavailable");
+          }
         },
         { enableHighAccuracy: true, timeout: 10_000, maximumAge: 5_000 },
       );
@@ -69,6 +79,7 @@ export function useLocationSharing({
     [markDenied],
   );
 
+  // Main effect: start/stop sharing based on status
   useEffect(() => {
     if (!courierId || !shouldShare) {
       clearTracking();
@@ -83,6 +94,7 @@ export function useLocationSharing({
       (position) => {
         // Permission granted — send immediately
         deniedRef.current = false;
+        setDeniedReason(null);
         setState("sharing");
         sendLocation(courierId, position).catch(() => {});
 
@@ -95,10 +107,9 @@ export function useLocationSharing({
       },
       (error) => {
         if (error.code === error.PERMISSION_DENIED) {
-          markDenied();
+          markDenied("permission_denied");
         } else {
-          // Position unavailable or timeout — still try to share
-          setState("paused");
+          markDenied("unavailable");
         }
       },
       { enableHighAccuracy: true, timeout: 10_000, maximumAge: 5_000 },
@@ -109,5 +120,28 @@ export function useLocationSharing({
     };
   }, [courierId, shouldShare, interval, clearTracking, sendCurrentLocation, markDenied]);
 
-  return { state };
+  // Immediate location send on transition to "available"
+  useEffect(() => {
+    const prevStatus = prevStatusRef.current;
+    prevStatusRef.current = status;
+
+    if (
+      status === "available" &&
+      prevStatus !== "available" &&
+      courierId &&
+      !deniedRef.current
+    ) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          sendLocation(courierId, position).catch(() => {});
+        },
+        () => {
+          // Ignore — main effect handles errors
+        },
+        { enableHighAccuracy: true, timeout: 10_000, maximumAge: 5_000 },
+      );
+    }
+  }, [status, courierId]);
+
+  return { state, deniedReason };
 }

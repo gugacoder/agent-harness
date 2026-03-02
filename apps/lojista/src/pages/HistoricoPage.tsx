@@ -1,19 +1,16 @@
 import { useState, useMemo } from "react";
-import {
-  Clock,
-  ChevronLeft,
-  MapPin,
-  User,
-  Phone,
-  FileText,
-} from "lucide-react";
+import { Clock } from "lucide-react";
 import { useOrders } from "@/hooks/useOrders";
 import { OrderStatusBadge } from "@/components/ui/StatusBadge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { OrderTimeline } from "@/components/ui/OrderTimeline";
 import { OrderProofBadge } from "@/components/delivery-proof/OrderProofBadge";
-import { OrderProofSection } from "@/components/delivery-proof/OrderProofSection";
+import { OrderDetailView } from "@/components/orders/OrderDetailView";
+import {
+  OrderHistoryFilters,
+  DEFAULT_FILTERS,
+  type HistoryFilters,
+} from "@/components/orders/OrderHistoryFilters";
 import type { Order, OrderStatus } from "@/types/api";
 
 const HISTORY_STATUSES: OrderStatus[] = ["delivered", "cancelled"];
@@ -56,96 +53,6 @@ function HistoryOrderCard({
   );
 }
 
-// --- History Order Detail ---
-
-function HistoryOrderDetail({
-  order,
-  onBack,
-}: {
-  order: Order;
-  onBack: () => void;
-}) {
-  return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="rounded-md p-1 hover:bg-muted"
-          aria-label="Voltar"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-bold">Pedido #{order.order_number}</h2>
-          <OrderStatusBadge status={order.status} />
-        </div>
-      </div>
-
-      {/* Order Info */}
-      <div className="rounded-lg border bg-card shadow-sm">
-        <div className="border-b px-4 py-3">
-          <h3 className="font-semibold">Informações</h3>
-        </div>
-        <div className="space-y-3 p-4">
-          <div className="flex items-start gap-2">
-            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-            <div>
-              <p className="text-xs text-muted-foreground">Coleta</p>
-              <p className="text-sm">{order.pickup_address}</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-            <div>
-              <p className="text-xs text-muted-foreground">Entrega</p>
-              <p className="text-sm">{order.delivery_address}</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <User className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-            <div>
-              <p className="text-xs text-muted-foreground">Destinatário</p>
-              <p className="text-sm">{order.recipient_name}</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-2">
-            <Phone className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-            <div>
-              <p className="text-xs text-muted-foreground">Telefone</p>
-              <p className="text-sm">{order.recipient_phone}</p>
-            </div>
-          </div>
-          {order.notes && (
-            <div className="flex items-start gap-2">
-              <FileText className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Observações</p>
-                <p className="text-sm">{order.notes}</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Timeline */}
-      <div className="rounded-lg border bg-card shadow-sm">
-        <div className="border-b px-4 py-3">
-          <h3 className="font-semibold">Timeline</h3>
-        </div>
-        <div className="p-4">
-          <OrderTimeline order={order} />
-        </div>
-      </div>
-
-      {/* Proof of Delivery */}
-      {order.status === "delivered" && (
-        <OrderProofSection orderId={order.id} />
-      )}
-    </div>
-  );
-}
-
 // --- Main Page ---
 
 type View = { type: "list" } | { type: "detail"; orderId: string };
@@ -153,19 +60,37 @@ type View = { type: "list" } | { type: "detail"; orderId: string };
 export function HistoricoPage() {
   const [view, setView] = useState<View>({ type: "list" });
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [filters, setFilters] = useState<HistoryFilters>(DEFAULT_FILTERS);
 
   const { data: orders, isLoading } = useOrders();
 
-  // Filter to history orders (delivered + cancelled), sort by date descending
+  // Filter to history orders (delivered + cancelled), apply user filters, sort by date descending
   const historyOrders = useMemo(() => {
     if (!orders) return [];
     return orders
-      .filter((o) => HISTORY_STATUSES.includes(o.status))
+      .filter((o) => {
+        // Base filter: only history statuses
+        if (!HISTORY_STATUSES.includes(o.status)) return false;
+
+        // Status filter
+        if (
+          filters.statuses.length > 0 &&
+          !filters.statuses.includes(o.status)
+        )
+          return false;
+
+        // Date filter
+        const orderDate = o.created_at.slice(0, 10);
+        if (filters.dateFrom && orderDate < filters.dateFrom) return false;
+        if (filters.dateTo && orderDate > filters.dateTo) return false;
+
+        return true;
+      })
       .sort(
         (a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       );
-  }, [orders]);
+  }, [orders, filters]);
 
   const visibleOrders = useMemo(
     () => historyOrders.slice(0, visibleCount),
@@ -174,19 +99,11 @@ export function HistoricoPage() {
 
   const hasMore = visibleCount < historyOrders.length;
 
-  // Get current order for detail view
-  const currentOrder = useMemo(() => {
-    if (view.type === "detail") {
-      return orders?.find((o) => o.id === view.orderId) ?? null;
-    }
-    return null;
-  }, [orders, view]);
-
   // --- Render Order Detail ---
-  if (view.type === "detail" && currentOrder) {
+  if (view.type === "detail") {
     return (
-      <HistoryOrderDetail
-        order={currentOrder}
+      <OrderDetailView
+        orderId={view.orderId}
         onBack={() => setView({ type: "list" })}
       />
     );
@@ -196,6 +113,12 @@ export function HistoricoPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-bold">Histórico</h1>
+
+      <OrderHistoryFilters
+        filters={filters}
+        onChange={setFilters}
+        resultCount={historyOrders.length}
+      />
 
       <div className="rounded-lg border bg-card shadow-sm">
         {isLoading ? (

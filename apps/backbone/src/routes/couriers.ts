@@ -5,9 +5,13 @@ import { companyMiddleware } from "../middleware/company.js";
 import {
   listCouriers,
   createCourier,
+  getCourierById,
   getCourierByProfileId,
   updateCourierStatus,
   updateCourierActive,
+  updateCourier,
+  getCourierDeliveries,
+  getCourierMetrics,
   recordLocation,
 } from "../services/courier.service.js";
 import { getDeliveryById } from "../services/delivery.service.js";
@@ -459,11 +463,200 @@ couriersRouter.openapi(sendLocationRoute, async (c) => {
   );
 });
 
+// --- Schemas for new routes ---
+
+const CourierDetailResponseSchema = CourierResponseSchema.extend({
+  vehicle_type: z.string().nullable(),
+  plate_number: z.string().nullable(),
+  last_location: z
+    .object({
+      lat: z.string(),
+      lng: z.string(),
+      accuracy: z.string(),
+      recorded_at: z.string(),
+    })
+    .nullable(),
+});
+
+const UpdateCourierFieldsRequestSchema = z.object({
+  full_name: z.string().min(1).optional(),
+  phone: z.string().min(1).optional(),
+  vehicle_type: z.string().nullable().optional(),
+  plate_number: z.string().nullable().optional(),
+  photo_url: z.string().nullable().optional(),
+});
+
+const DeliveryItemSchema = z.object({
+  id: z.string().uuid(),
+  order_id: z.string().uuid(),
+  courier_id: z.string().uuid(),
+  company_id: z.string().uuid(),
+  status: z.string(),
+  assigned_at: z.string(),
+  accepted_at: z.string().nullable(),
+  picked_up_at: z.string().nullable(),
+  delivered_at: z.string().nullable(),
+  actual_distance_km: z.string().nullable(),
+  actual_duration_min: z.number().int().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  order_number: z.number().int(),
+  pickup_address: z.string(),
+  delivery_address: z.string(),
+  recipient_name: z.string(),
+});
+
+const PaginatedDeliveriesResponseSchema = z.object({
+  data: z.array(DeliveryItemSchema),
+  total: z.number().int(),
+  limit: z.number().int(),
+  offset: z.number().int(),
+});
+
+const CourierMetricsResponseSchema = z.object({
+  deliveries_today: z.number().int(),
+  deliveries_month: z.number().int(),
+  avg_delivery_time_min: z.number(),
+  completion_rate: z.number(),
+  total_distance_km: z.string(),
+});
+
+// --- GET /api/couriers/:id ---
+
+const getCourierRoute = createRoute({
+  method: "get",
+  path: "/couriers/{id}",
+  tags: ["Couriers"],
+  summary: "Get courier details",
+  description:
+    "Get courier details including vehicle info and last known location.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": { schema: CourierDetailResponseSchema },
+      },
+      description: "Courier details",
+    },
+    401: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Missing or invalid authentication",
+    },
+    404: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Courier not found",
+    },
+  },
+});
+
+couriersRouter.openapi(getCourierRoute, async (c) => {
+  const { id } = c.req.valid("param");
+  const companyId = c.get("companyId");
+
+  const courier = await getCourierById(id, companyId);
+  if (!courier) {
+    return c.json(
+      { error: "Not Found", message: "Courier not found", statusCode: 404 },
+      404
+    );
+  }
+
+  return c.json(
+    {
+      id: courier.id,
+      company_id: courier.company_id,
+      profile_id: courier.profile_id,
+      full_name: courier.full_name,
+      phone: courier.phone,
+      photo_url: courier.photo_url,
+      status: courier.status,
+      total_deliveries: courier.total_deliveries,
+      active: courier.active,
+      vehicle_type: courier.vehicle_type,
+      plate_number: courier.plate_number,
+      created_at: courier.created_at,
+      updated_at: courier.updated_at,
+      last_location: courier.last_location,
+    },
+    200
+  );
+});
+
 // --- PATCH /api/couriers/:id ---
 
-const updateCourierRoute = createRoute({
+const updateCourierFieldsRoute = createRoute({
   method: "patch",
   path: "/couriers/{id}",
+  tags: ["Couriers"],
+  summary: "Update courier fields",
+  description:
+    "Update courier fields: full_name, phone, vehicle_type, plate_number, photo_url.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+    body: {
+      content: {
+        "application/json": { schema: UpdateCourierFieldsRequestSchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      content: { "application/json": { schema: CourierResponseSchema } },
+      description: "Courier updated",
+    },
+    400: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Invalid request data",
+    },
+    401: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Missing or invalid authentication",
+    },
+    404: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Courier not found",
+    },
+  },
+});
+
+couriersRouter.openapi(updateCourierFieldsRoute, async (c) => {
+  const { id } = c.req.valid("param");
+  const body = c.req.valid("json");
+  const companyId = c.get("companyId");
+
+  const updated = await updateCourier(id, companyId, body);
+  if (!updated) {
+    return c.json(
+      { error: "Not Found", message: "Courier not found", statusCode: 404 },
+      404
+    );
+  }
+
+  return c.json(
+    {
+      id: updated.id,
+      company_id: updated.company_id,
+      profile_id: updated.profile_id,
+      full_name: updated.full_name,
+      phone: updated.phone,
+      photo_url: updated.photo_url,
+      status: updated.status,
+      total_deliveries: updated.total_deliveries,
+      active: updated.active,
+      created_at: updated.created_at,
+      updated_at: updated.updated_at,
+    },
+    200
+  );
+});
+
+// --- PATCH /api/couriers/:id/active ---
+
+const toggleCourierActiveRoute = createRoute({
+  method: "patch",
+  path: "/couriers/{id}/active",
   tags: ["Couriers"],
   summary: "Activate/deactivate courier",
   description:
@@ -481,7 +674,7 @@ const updateCourierRoute = createRoute({
   responses: {
     200: {
       content: { "application/json": { schema: CourierResponseSchema } },
-      description: "Courier updated",
+      description: "Courier active status updated",
     },
     401: {
       content: { "application/json": { schema: ErrorResponseSchema } },
@@ -494,7 +687,7 @@ const updateCourierRoute = createRoute({
   },
 });
 
-couriersRouter.openapi(updateCourierRoute, async (c) => {
+couriersRouter.openapi(toggleCourierActiveRoute, async (c) => {
   const { id } = c.req.valid("param");
   const { active } = c.req.valid("json");
   const companyId = c.get("companyId");
@@ -528,6 +721,113 @@ couriersRouter.openapi(updateCourierRoute, async (c) => {
     },
     200
   );
+});
+
+// --- GET /api/couriers/:id/deliveries ---
+
+const getCourierDeliveriesRoute = createRoute({
+  method: "get",
+  path: "/couriers/{id}/deliveries",
+  tags: ["Couriers"],
+  summary: "Get courier deliveries",
+  description: "Get paginated delivery history for a courier.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+    query: z.object({
+      limit: z.coerce.number().int().min(1).max(100).default(20).optional(),
+      offset: z.coerce.number().int().min(0).default(0).optional(),
+      status: z.string().optional(),
+      period: z.coerce.number().int().min(1).default(30).optional(),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": { schema: PaginatedDeliveriesResponseSchema },
+      },
+      description: "Paginated deliveries",
+    },
+    401: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Missing or invalid authentication",
+    },
+  },
+});
+
+couriersRouter.openapi(getCourierDeliveriesRoute, async (c) => {
+  const { id } = c.req.valid("param");
+  const query = c.req.valid("query");
+  const companyId = c.get("companyId");
+
+  const result = await getCourierDeliveries(id, companyId, {
+    limit: query.limit,
+    offset: query.offset,
+    status: query.status,
+    period: query.period,
+  });
+
+  return c.json(
+    {
+      data: result.data.map((d) => ({
+        id: d.id,
+        order_id: d.order_id,
+        courier_id: d.courier_id,
+        company_id: d.company_id,
+        status: d.status,
+        assigned_at: d.assigned_at,
+        accepted_at: d.accepted_at,
+        picked_up_at: d.picked_up_at,
+        delivered_at: d.delivered_at,
+        actual_distance_km: d.actual_distance_km,
+        actual_duration_min: d.actual_duration_min,
+        created_at: d.created_at,
+        updated_at: d.updated_at,
+        order_number: d.order_number,
+        pickup_address: d.pickup_address,
+        delivery_address: d.delivery_address,
+        recipient_name: d.recipient_name,
+      })),
+      total: result.total,
+      limit: result.limit,
+      offset: result.offset,
+    },
+    200
+  );
+});
+
+// --- GET /api/couriers/:id/metrics ---
+
+const getCourierMetricsRoute = createRoute({
+  method: "get",
+  path: "/couriers/{id}/metrics",
+  tags: ["Couriers"],
+  summary: "Get courier metrics",
+  description:
+    "Get aggregated courier metrics: deliveries today/month, avg time, completion rate, total distance.",
+  request: {
+    params: z.object({ id: z.string().uuid() }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": { schema: CourierMetricsResponseSchema },
+      },
+      description: "Courier metrics",
+    },
+    401: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Missing or invalid authentication",
+    },
+  },
+});
+
+couriersRouter.openapi(getCourierMetricsRoute, async (c) => {
+  const { id } = c.req.valid("param");
+  const companyId = c.get("companyId");
+
+  const metrics = await getCourierMetrics(id, companyId);
+
+  return c.json(metrics, 200);
 });
 
 export { couriersRouter };

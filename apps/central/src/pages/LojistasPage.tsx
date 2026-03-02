@@ -4,24 +4,25 @@ import {
   Plus,
   X,
   ChevronLeft,
-  Phone,
-  Mail,
-  MapPin,
   AlertCircle,
   Loader2,
-  Power,
-  Package,
+  Search,
+  Pencil,
+  PowerOff,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useShops } from "@/hooks/useShops";
 import { useOrders } from "@/hooks/useOrders";
+import { useShopDetail, useToggleShopStatus } from "@/hooks/useShopDetail";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { OrderStatusBadge, ORDER_STATUS_LABELS } from "@/components/ui/StatusBadge";
-import type { Shop, Order } from "@/types/api";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { ShopDetailView } from "@/components/shops/ShopDetailView";
+import { ShopEditForm } from "@/components/shops/ShopEditForm";
+import type { Shop } from "@/types/api";
 
 // --- New Shop Form ---
 
@@ -246,183 +247,6 @@ function NewShopForm({ onClose, onSuccess }: NewShopFormProps) {
   );
 }
 
-// --- Shop Detail ---
-
-interface ShopDetailProps {
-  shop: Shop;
-  orders: Order[];
-  onBack: () => void;
-}
-
-function ShopDetail({ shop, orders, onBack }: ShopDetailProps) {
-  const shopOrders = useMemo(
-    () => orders.filter((o) => o.shop_id === shop.id),
-    [orders, shop.id],
-  );
-
-  const formatDate = (iso: string) =>
-    new Date(iso).toLocaleString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-  return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="rounded-md p-1 hover:bg-muted"
-          aria-label="Voltar"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        <div className="flex-1">
-          <h2 className="text-xl font-bold">{shop.trade_name}</h2>
-        </div>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        {/* Info Card */}
-        <div className="rounded-lg border bg-card shadow-sm">
-          <div className="border-b px-4 py-3">
-            <h3 className="font-semibold">Informações</h3>
-          </div>
-          <div className="space-y-3 p-4">
-            <div className="flex items-start gap-2">
-              <Store className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Nome Fantasia</p>
-                <p className="text-sm">{shop.trade_name}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <Phone className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Telefone</p>
-                <p className="text-sm">{shop.phone}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Endereço</p>
-                <p className="text-sm">{shop.address}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <Power className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Status</p>
-                <p className="text-sm">
-                  <span
-                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                      shop.active
-                        ? "bg-cs-success/10 text-cs-success"
-                        : "bg-cs-error/10 text-cs-error"
-                    }`}
-                  >
-                    {shop.active ? "Ativo" : "Inativo"}
-                  </span>
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <Package className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Total de Pedidos</p>
-                <p className="text-sm font-medium">{shopOrders.length}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2 border-t px-4 py-3 text-sm">
-            <div className="flex items-center justify-between text-muted-foreground">
-              <span>Cadastrado em</span>
-              <span>{formatDate(shop.created_at)}</span>
-            </div>
-            <div className="flex items-center justify-between text-muted-foreground">
-              <span>Última atualização</span>
-              <span>{formatDate(shop.updated_at)}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Orders Card */}
-        <div className="rounded-lg border bg-card shadow-sm">
-          <div className="border-b px-4 py-3">
-            <h3 className="font-semibold">Pedidos Associados</h3>
-          </div>
-          <div className="p-4">
-            {/* Metrics */}
-            <div className="mb-4 grid grid-cols-2 gap-4">
-              <div className="rounded-lg bg-muted/50 p-3 text-center">
-                <p className="text-2xl font-bold text-primary">
-                  {shopOrders.length}
-                </p>
-                <p className="text-xs text-muted-foreground">Total</p>
-              </div>
-              <div className="rounded-lg bg-muted/50 p-3 text-center">
-                <p className="text-2xl font-bold text-primary">
-                  {shopOrders.filter((o) => o.status === "delivered").length}
-                </p>
-                <p className="text-xs text-muted-foreground">Entregues</p>
-              </div>
-            </div>
-
-            {/* Order List */}
-            {shopOrders.length === 0 ? (
-              <EmptyState
-                icon={Package}
-                title="Nenhum pedido associado"
-              />
-            ) : (
-              <ul className="space-y-2">
-                {shopOrders
-                  .sort(
-                    (a, b) =>
-                      new Date(b.created_at).getTime() -
-                      new Date(a.created_at).getTime(),
-                  )
-                  .slice(0, 10)
-                  .map((order) => (
-                    <li
-                      key={order.id}
-                      className="flex items-center justify-between rounded-md border px-3 py-2"
-                    >
-                      <div>
-                        <span className="text-sm font-medium">
-                          #{order.order_number}
-                        </span>
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          {order.recipient_name}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <OrderStatusBadge status={order.status} />
-                        <span className="text-xs text-muted-foreground">
-                          {formatDate(order.created_at)}
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-                {shopOrders.length > 10 && (
-                  <p className="pt-1 text-center text-xs text-muted-foreground">
-                    ... e mais {shopOrders.length - 10} pedidos
-                  </p>
-                )}
-              </ul>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // --- Main Page ---
 
 type View =
@@ -433,12 +257,16 @@ type View =
 export function LojistasPage() {
   const [view, setView] = useState<View>({ type: "list" });
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [editShopId, setEditShopId] = useState<string | null>(null);
+  const [deactivateShop, setDeactivateShop] = useState<Shop | null>(null);
 
   const queryClient = useQueryClient();
   const { data: shops, isLoading } = useShops();
   const { data: orders } = useOrders();
+  const toggleStatus = useToggleShopStatus();
 
-  // Filtered shops
+  // Filtered shops (status + search)
   const filteredShops = useMemo(() => {
     if (!shops) return [];
     let list = [...shops];
@@ -447,11 +275,15 @@ export function LojistasPage() {
     } else if (statusFilter === "inactive") {
       list = list.filter((s) => !s.active);
     }
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      list = list.filter((s) => s.trade_name.toLowerCase().includes(q));
+    }
     return list.sort(
       (a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
-  }, [shops, statusFilter]);
+  }, [shops, statusFilter, searchQuery]);
 
   // Status counts
   const statusCounts = useMemo(() => {
@@ -475,17 +307,58 @@ export function LojistasPage() {
     return counts;
   }, [orders]);
 
+  // Last order date per shop
+  const lastOrderByShop = useMemo(() => {
+    if (!orders) return new Map<string, string>();
+    const dates = new Map<string, string>();
+    for (const order of orders) {
+      if (order.shop_id) {
+        const prev = dates.get(order.shop_id);
+        if (!prev || order.created_at > prev) {
+          dates.set(order.shop_id, order.created_at);
+        }
+      }
+    }
+    return dates;
+  }, [orders]);
+
+  // Count pending orders per shop (for deactivation dialog)
+  const pendingOrdersByShop = useMemo(() => {
+    if (!orders) return new Map<string, number>();
+    const counts = new Map<string, number>();
+    for (const order of orders) {
+      if (order.shop_id && order.status !== "delivered" && order.status !== "cancelled") {
+        counts.set(order.shop_id, (counts.get(order.shop_id) ?? 0) + 1);
+      }
+    }
+    return counts;
+  }, [orders]);
+
   const invalidateShops = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["shops"] });
   }, [queryClient]);
 
-  // Get current shop for detail view
-  const currentShop = useMemo(() => {
-    if (view.type === "detail") {
-      return shops?.find((s) => s.id === view.shopId) ?? null;
-    }
-    return null;
-  }, [shops, view]);
+  const formatShortDate = (iso: string) =>
+    new Date(iso).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+
+  const handleDeactivateConfirm = useCallback(() => {
+    if (!deactivateShop) return;
+    toggleStatus.mutate(
+      { shopId: deactivateShop.id, active: !deactivateShop.active },
+      {
+        onSuccess: () => {
+          setDeactivateShop(null);
+        },
+      },
+    );
+  }, [deactivateShop, toggleStatus]);
+
+  // Shop detail data for edit form
+  const { data: editShopData } = useShopDetail(editShopId);
 
   // --- Render New Shop Form ---
   if (view.type === "new") {
@@ -513,13 +386,22 @@ export function LojistasPage() {
   }
 
   // --- Render Shop Detail ---
-  if (view.type === "detail" && currentShop) {
+  if (view.type === "detail") {
     return (
-      <ShopDetail
-        shop={currentShop}
-        orders={orders ?? []}
-        onBack={() => setView({ type: "list" })}
-      />
+      <>
+        <ShopDetailView
+          shopId={view.shopId}
+          onBack={() => setView({ type: "list" })}
+          onEdit={() => setEditShopId(view.shopId)}
+        />
+        {editShopData && (
+          <ShopEditForm
+            shop={editShopData}
+            open={editShopId === view.shopId}
+            onClose={() => setEditShopId(null)}
+          />
+        )}
+      </>
     );
   }
 
@@ -549,25 +431,37 @@ export function LojistasPage() {
         </button>
       </div>
 
-      {/* Status Filter Badges */}
-      <div className="flex flex-wrap gap-2">
-        {filterButtons.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setStatusFilter(key)}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              statusFilter === key
-                ? key === "active"
-                  ? "bg-cs-success/10 text-cs-success"
-                  : key === "inactive"
-                    ? "bg-cs-error/10 text-cs-error"
-                    : "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            }`}
-          >
-            {label} ({statusCounts[key]})
-          </button>
-        ))}
+      {/* Search + Status Filter */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar por nome..."
+            className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring sm:w-64"
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {filterButtons.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setStatusFilter(key)}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                statusFilter === key
+                  ? key === "active"
+                    ? "bg-cs-success/10 text-cs-success"
+                    : key === "inactive"
+                      ? "bg-cs-error/10 text-cs-error"
+                      : "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              {label} ({statusCounts[key]})
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Shops Table/List */}
@@ -582,14 +476,18 @@ export function LojistasPage() {
           <EmptyState
             icon={Store}
             title={
-              statusFilter !== "all"
-                ? `Nenhum lojista ${statusFilter === "active" ? "ativo" : "inativo"}`
-                : "Nenhum lojista cadastrado"
+              searchQuery.trim()
+                ? `Nenhum lojista encontrado para "${searchQuery.trim()}"`
+                : statusFilter !== "all"
+                  ? `Nenhum lojista ${statusFilter === "active" ? "ativo" : "inativo"}`
+                  : "Nenhum lojista cadastrado"
             }
             description={
-              statusFilter !== "all"
-                ? "Tente outro filtro ou cadastre um novo lojista"
-                : "Cadastre o primeiro lojista clicando em 'Novo Lojista'"
+              searchQuery.trim()
+                ? "Tente outro termo de busca"
+                : statusFilter !== "all"
+                  ? "Tente outro filtro ou cadastre um novo lojista"
+                  : "Cadastre o primeiro lojista clicando em 'Novo Lojista'"
             }
           />
         ) : (
@@ -598,30 +496,98 @@ export function LojistasPage() {
             <div className="hidden border-b px-4 py-2 text-xs font-medium text-muted-foreground sm:grid sm:grid-cols-12 sm:gap-4">
               <div className="col-span-3">Nome Fantasia</div>
               <div className="col-span-2">Telefone</div>
-              <div className="col-span-3">Endereço</div>
               <div className="col-span-2">Pedidos</div>
-              <div className="col-span-2">Status</div>
+              <div className="col-span-2">Último Pedido</div>
+              <div className="col-span-1">Status</div>
+              <div className="col-span-2 text-right">Ações</div>
             </div>
             <ul className="divide-y">
-              {filteredShops.map((shop) => (
-                <li
-                  key={shop.id}
-                  onClick={() =>
-                    setView({ type: "detail", shopId: shop.id })
-                  }
-                  className="cursor-pointer px-4 py-3 transition-colors hover:bg-muted/50 sm:grid sm:grid-cols-12 sm:items-center sm:gap-4"
-                >
-                  {/* Mobile layout */}
-                  <div className="sm:hidden">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                          <Store className="h-4 w-4 text-muted-foreground" />
+              {filteredShops.map((shop) => {
+                const orderCount = orderCountByShop.get(shop.id) ?? 0;
+                const lastOrder = lastOrderByShop.get(shop.id);
+                return (
+                  <li
+                    key={shop.id}
+                    onClick={() =>
+                      setView({ type: "detail", shopId: shop.id })
+                    }
+                    className="cursor-pointer px-4 py-3 transition-colors hover:bg-muted/50 sm:grid sm:grid-cols-12 sm:items-center sm:gap-4"
+                  >
+                    {/* Mobile layout */}
+                    <div className="sm:hidden">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+                            <Store className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                          <span className="font-medium">
+                            {shop.trade_name}
+                          </span>
                         </div>
-                        <span className="font-medium">
-                          {shop.trade_name}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                              shop.active
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {shop.active ? "Ativo" : "Inativo"}
+                          </span>
+                        </div>
                       </div>
+                      <div className="mt-1 flex items-center justify-between">
+                        <p className="text-sm text-muted-foreground">
+                          {shop.phone}
+                          {orderCount > 0 && ` · ${orderCount} pedidos`}
+                          {lastOrder && ` · último ${formatShortDate(lastOrder)}`}
+                        </p>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditShopId(shop.id);
+                            }}
+                            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                            aria-label="Editar loja"
+                            title="Editar"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeactivateShop(shop);
+                            }}
+                            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                            aria-label={shop.active ? "Desativar loja" : "Reativar loja"}
+                            title={shop.active ? "Desativar" : "Reativar"}
+                          >
+                            <PowerOff className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Desktop layout */}
+                    <div className="col-span-3 hidden items-center gap-2 sm:flex">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+                        <Store className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                      <span className="truncate font-medium">
+                        {shop.trade_name}
+                      </span>
+                    </div>
+                    <div className="col-span-2 hidden text-sm sm:block">
+                      {shop.phone}
+                    </div>
+                    <div className="col-span-2 hidden text-sm sm:block">
+                      {orderCount}
+                    </div>
+                    <div className="col-span-2 hidden text-sm text-muted-foreground sm:block">
+                      {lastOrder ? formatShortDate(lastOrder) : "—"}
+                    </div>
+                    <div className="col-span-1 hidden text-sm sm:block">
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                           shop.active
@@ -632,48 +598,69 @@ export function LojistasPage() {
                         {shop.active ? "Ativo" : "Inativo"}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {shop.phone} · {shop.address}
-                      {(orderCountByShop.get(shop.id) ?? 0) > 0 &&
-                        ` · ${orderCountByShop.get(shop.id)} pedidos`}
-                    </p>
-                  </div>
-
-                  {/* Desktop layout */}
-                  <div className="col-span-3 hidden items-center gap-2 sm:flex">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                      <Store className="h-4 w-4 text-muted-foreground" />
+                    <div className="col-span-2 hidden items-center justify-end gap-1 sm:flex">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditShopId(shop.id);
+                        }}
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                        aria-label="Editar loja"
+                        title="Editar"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeactivateShop(shop);
+                        }}
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                        aria-label={shop.active ? "Desativar loja" : "Reativar loja"}
+                        title={shop.active ? "Desativar" : "Reativar"}
+                      >
+                        <PowerOff className="h-4 w-4" />
+                      </button>
                     </div>
-                    <span className="truncate font-medium">
-                      {shop.trade_name}
-                    </span>
-                  </div>
-                  <div className="col-span-2 hidden text-sm sm:block">
-                    {shop.phone}
-                  </div>
-                  <div className="col-span-3 hidden truncate text-sm sm:block">
-                    {shop.address}
-                  </div>
-                  <div className="col-span-2 hidden text-sm sm:block">
-                    {orderCountByShop.get(shop.id) ?? 0}
-                  </div>
-                  <div className="col-span-2 hidden text-sm sm:block">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        shop.active
-                          ? "bg-cs-success/10 text-cs-success"
-                          : "bg-cs-error/10 text-cs-error"
-                      }`}
-                    >
-                      {shop.active ? "Ativo" : "Inativo"}
-                    </span>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           </>
         )}
       </div>
+
+      {/* Edit drawer (from list) */}
+      {editShopId && editShopData && (
+        <ShopEditForm
+          shop={editShopData}
+          open={!!editShopId}
+          onClose={() => setEditShopId(null)}
+        />
+      )}
+
+      {/* Deactivation / Reactivation confirm dialog */}
+      <ConfirmDialog
+        open={!!deactivateShop}
+        title={
+          deactivateShop?.active
+            ? `Desativar loja ${deactivateShop?.trade_name}?`
+            : `Reativar loja ${deactivateShop?.trade_name}?`
+        }
+        description={
+          deactivateShop?.active
+            ? `${
+                (pendingOrdersByShop.get(deactivateShop?.id ?? "") ?? 0) > 0
+                  ? `Existem ${pendingOrdersByShop.get(deactivateShop?.id ?? "")} pedidos em andamento que serão mantidos.`
+                  : "Pedidos em andamento serão mantidos."
+              }`
+            : `A loja voltará a receber pedidos.`
+        }
+        confirmLabel={deactivateShop?.active ? "Desativar" : "Reativar"}
+        onConfirm={handleDeactivateConfirm}
+        onCancel={() => setDeactivateShop(null)}
+        loading={toggleStatus.isPending}
+      />
     </div>
   );
 }

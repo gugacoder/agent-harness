@@ -4,15 +4,14 @@ import {
   Plus,
   X,
   ChevronLeft,
-  Clock,
   User,
   MapPin,
   Phone,
   FileText,
   Bike,
   AlertCircle,
-  CheckCircle2,
   Loader2,
+  Users,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useOrders } from "@/hooks/useOrders";
@@ -29,6 +28,8 @@ import {
 import type { Order, OrderStatus, Courier, Delivery } from "@/types/api";
 import { OrderProofSection } from "@/components/delivery-proof/OrderProofSection";
 import { OrderProofBadge } from "@/components/delivery-proof/OrderProofBadge";
+import { OrderTimeline } from "@/components/orders/OrderTimeline";
+import { BulkAssignDialog } from "@/components/orders/BulkAssignDialog";
 
 const ALL_STATUSES: OrderStatus[] = [
   "pending",
@@ -38,40 +39,6 @@ const ALL_STATUSES: OrderStatus[] = [
   "delivered",
   "cancelled",
 ];
-
-// --- Timeline Event ---
-
-function TimelineItem({
-  icon: Icon,
-  title,
-  description,
-  time,
-  isLast,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  description?: string;
-  time: string;
-  isLast?: boolean;
-}) {
-  return (
-    <div className="flex gap-3">
-      <div className="flex flex-col items-center">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-          <Icon className="h-4 w-4" />
-        </div>
-        {!isLast && <div className="w-px flex-1 bg-border" />}
-      </div>
-      <div className={`pb-4 ${isLast ? "" : ""}`}>
-        <p className="text-sm font-medium">{title}</p>
-        {description && (
-          <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
-        )}
-        <p className="mt-0.5 text-xs text-muted-foreground">{time}</p>
-      </div>
-    </div>
-  );
-}
 
 // --- New Order Form ---
 
@@ -402,83 +369,6 @@ function OrderDetail({
   const canCancel =
     order.status === "pending" || order.status === "assigned";
 
-  // Build a timeline from the order data
-  const timelineItems = useMemo(() => {
-    const items: {
-      icon: React.ComponentType<{ className?: string }>;
-      title: string;
-      description?: string;
-      time: string;
-    }[] = [];
-
-    const formatDate = (iso: string) =>
-      new Date(iso).toLocaleString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-
-    items.push({
-      icon: Package,
-      title: "Pedido criado",
-      description: `#${order.order_number}`,
-      time: formatDate(order.created_at),
-    });
-
-    if (
-      order.status === "assigned" ||
-      order.status === "picked_up" ||
-      order.status === "in_transit" ||
-      order.status === "delivered"
-    ) {
-      items.push({
-        icon: Bike,
-        title: "Motoboy atribuído",
-        description: courierName ?? undefined,
-        time: formatDate(order.updated_at),
-      });
-    }
-
-    if (
-      order.status === "picked_up" ||
-      order.status === "in_transit" ||
-      order.status === "delivered"
-    ) {
-      items.push({
-        icon: MapPin,
-        title: "Pedido coletado",
-        time: formatDate(order.updated_at),
-      });
-    }
-
-    if (order.status === "in_transit" || order.status === "delivered") {
-      items.push({
-        icon: Clock,
-        title: "Em trânsito",
-        time: formatDate(order.updated_at),
-      });
-    }
-
-    if (order.status === "delivered") {
-      items.push({
-        icon: CheckCircle2,
-        title: "Entregue",
-        time: formatDate(order.updated_at),
-      });
-    }
-
-    if (order.status === "cancelled") {
-      items.push({
-        icon: X,
-        title: "Cancelado",
-        time: formatDate(order.updated_at),
-      });
-    }
-
-    return items;
-  }, [order, courierName]);
 
   return (
     <div className="space-y-4">
@@ -598,18 +488,7 @@ function OrderDetail({
           <div className="border-b px-4 py-3">
             <h3 className="font-semibold">Timeline</h3>
           </div>
-          <div className="p-4">
-            {timelineItems.map((item, idx) => (
-              <TimelineItem
-                key={idx}
-                icon={item.icon}
-                title={item.title}
-                description={item.description}
-                time={item.time}
-                isLast={idx === timelineItems.length - 1}
-              />
-            ))}
-          </div>
+          <OrderTimeline orderId={order.id} />
         </div>
       </div>
 
@@ -633,6 +512,8 @@ export function PedidosPage() {
   const [view, setView] = useState<View>({ type: "list" });
   const [statusFilter, setStatusFilter] = useState<OrderStatus | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
+  const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
 
   const queryClient = useQueryClient();
   const { data: orders, isLoading: ordersLoading } = useOrders();
@@ -684,6 +565,18 @@ export function PedidosPage() {
   const invalidateOrders = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["orders"] });
   }, [queryClient]);
+
+  const toggleOrderSelection = useCallback((orderId: string) => {
+    setSelectedOrders((prev) => {
+      const next = new Set(prev);
+      if (next.has(orderId)) {
+        next.delete(orderId);
+      } else {
+        next.add(orderId);
+      }
+      return next;
+    });
+  }, []);
 
   const handleCancelOrder = async (orderId: string) => {
     setCancelling(true);
@@ -794,13 +687,27 @@ export function PedidosPage() {
             Gerenciamento de pedidos
           </p>
         </div>
-        <button
-          onClick={() => setView({ type: "new" })}
-          className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          <Plus className="h-4 w-4" />
-          Novo Pedido
-        </button>
+        <div className="flex items-center gap-2">
+          {selectedOrders.size > 0 && (
+            <button
+              onClick={() => setBulkAssignOpen(true)}
+              className="flex items-center gap-2 rounded-md border border-primary bg-primary/10 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/20"
+            >
+              <Users className="h-4 w-4" />
+              Atribuir Selecionados
+              <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
+                {selectedOrders.size}
+              </span>
+            </button>
+          )}
+          <button
+            onClick={() => setView({ type: "new" })}
+            className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            <Plus className="h-4 w-4" />
+            Novo Pedido
+          </button>
+        </div>
       </div>
 
       {/* Status Filter Badges */}
@@ -858,9 +765,10 @@ export function PedidosPage() {
           <>
             {/* Table header - desktop only */}
             <div className="hidden border-b px-4 py-2 text-xs font-medium text-muted-foreground sm:grid sm:grid-cols-12 sm:gap-4">
+              <div className="col-span-1"></div>
               <div className="col-span-2">Número</div>
               <div className="col-span-2">Status</div>
-              <div className="col-span-3">Lojista</div>
+              <div className="col-span-2">Lojista</div>
               <div className="col-span-3">Destinatário</div>
               <div className="col-span-2">Criado em</div>
             </div>
@@ -877,6 +785,15 @@ export function PedidosPage() {
                   <div className="sm:hidden">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
+                        {order.status === "pending" && (
+                          <input
+                            type="checkbox"
+                            checked={selectedOrders.has(order.id)}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={() => toggleOrderSelection(order.id)}
+                            className="h-4 w-4 rounded border-gray-300"
+                          />
+                        )}
                         <span className="font-medium">
                           #{order.order_number}
                         </span>
@@ -904,6 +821,17 @@ export function PedidosPage() {
                   </div>
 
                   {/* Desktop layout */}
+                  <div className="col-span-1 hidden sm:flex sm:items-center sm:justify-center">
+                    {order.status === "pending" && (
+                      <input
+                        type="checkbox"
+                        checked={selectedOrders.has(order.id)}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={() => toggleOrderSelection(order.id)}
+                        className="h-4 w-4 rounded border-gray-300"
+                      />
+                    )}
+                  </div>
                   <div className="col-span-2 hidden sm:block">
                     <span className="font-medium">#{order.order_number}</span>
                   </div>
@@ -913,7 +841,7 @@ export function PedidosPage() {
                       <OrderProofBadge orderId={order.id} />
                     )}
                   </div>
-                  <div className="col-span-3 hidden truncate text-sm sm:block">
+                  <div className="col-span-2 hidden truncate text-sm sm:block">
                     {order.shop_id
                       ? shopMap.get(order.shop_id) ?? "—"
                       : "—"}
@@ -935,6 +863,19 @@ export function PedidosPage() {
           </>
         )}
       </div>
+
+      <BulkAssignDialog
+        open={bulkAssignOpen}
+        orderIds={Array.from(selectedOrders)}
+        onClose={() => {
+          setBulkAssignOpen(false);
+          setSelectedOrders(new Set());
+        }}
+        onSuccess={() => {
+          invalidateOrders();
+          queryClient.invalidateQueries({ queryKey: ["couriers"] });
+        }}
+      />
     </div>
   );
 }

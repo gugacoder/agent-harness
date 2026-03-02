@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -6,18 +6,17 @@ import {
   Popup,
   useMap,
 } from "react-leaflet";
-import { type LatLngBoundsExpression } from "leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Bike, MapPin, Wifi, WifiOff } from "lucide-react";
 import { useCouriers } from "@/hooks/useCouriers";
 import { useCompanyEventsContext } from "@/contexts/CompanyEventsContext";
 import { COURIER_STATUS_LABELS } from "@/components/ui/StatusBadge";
+import { CourierGpsBadge } from "@/components/couriers/CourierGpsBadge";
 import type { CourierLocation } from "@/hooks/useCourierLocations";
 import type { Courier, CourierStatus } from "@/types/api";
 
-// --- Status colors matching branding ---
-// available → secondary #1dace7 (blue)
-// busy → accent #fca322 (orange)
+// --- Constants ---
 
 function getCssColor(varName: string, fallback: string): string {
   if (typeof document === "undefined") return fallback;
@@ -31,15 +30,82 @@ const MARKER_COLORS: Record<CourierStatus, string> = {
   offline: getCssColor("--cs-muted", "#9ca3af"),
 };
 
-// --- FitBounds: auto-zoom to show all markers ---
+const STALE_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes
+const STALE_CHECK_INTERVAL_MS = 30 * 1000; // 30 seconds
+const USER_INTERACTION_COOLDOWN_MS = 60 * 1000; // 60 seconds
 
-function FitBounds({ bounds }: { bounds: LatLngBoundsExpression | null }) {
+// --- MapController: auto-fit bounds + user interaction tracking ---
+
+type MarkerData = { courier: Courier; location: CourierLocation };
+
+function MapController({ markers }: { markers: MarkerData[] }) {
   const map = useMap();
-  useMemo(() => {
-    if (bounds) {
+  const lastUserInteractionRef = useRef(0);
+  const prevMarkerIdsRef = useRef<Set<string>>(new Set());
+  const initialFitDoneRef = useRef(false);
+
+  // Track user-initiated interactions (drag, mouse wheel)
+  useEffect(() => {
+    const onUserInteraction = () => {
+      lastUserInteractionRef.current = Date.now();
+    };
+    map.on("dragstart", onUserInteraction);
+    const container = map.getContainer();
+    container.addEventListener("wheel", onUserInteraction);
+    return () => {
+      map.off("dragstart", onUserInteraction);
+      container.removeEventListener("wheel", onUserInteraction);
+    };
+  }, [map]);
+
+  // Auto-fit: initial load + new couriers outside current bounds
+  useEffect(() => {
+    if (markers.length === 0) return;
+
+    const currentIds = new Set(markers.map((m) => m.courier.id));
+    const prevIds = prevMarkerIdsRef.current;
+
+    // Initial fit on first markers
+    if (!initialFitDoneRef.current) {
+      const bounds = L.latLngBounds(
+        markers.map(
+          (m) => [m.location.lat, m.location.lng] as [number, number],
+        ),
+      );
+      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+      initialFitDoneRef.current = true;
+      prevMarkerIdsRef.current = currentIds;
+      return;
+    }
+
+    // Check for new couriers outside current map bounds
+    let hasNewOutside = false;
+    for (const m of markers) {
+      if (!prevIds.has(m.courier.id)) {
+        const pos = L.latLng(m.location.lat, m.location.lng);
+        if (!map.getBounds().contains(pos)) {
+          hasNewOutside = true;
+          break;
+        }
+      }
+    }
+
+    prevMarkerIdsRef.current = currentIds;
+
+    // Only auto-fit if user hasn't interacted recently
+    if (
+      hasNewOutside &&
+      Date.now() - lastUserInteractionRef.current > USER_INTERACTION_COOLDOWN_MS
+    ) {
+      const bounds = L.latLngBounds(
+        markers.map(
+          (m) => [m.location.lat, m.location.lng] as [number, number],
+        ),
+      );
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
     }
-  }, [map, bounds]);
+  }, [markers, map]);
+
   return null;
 }
 
@@ -71,6 +137,7 @@ function CourierMarkerItem({
           <div className="flex items-center gap-2">
             <Bike className="h-4 w-4" style={{ color }} />
             <span className="font-semibold">{courier.full_name}</span>
+            <CourierGpsBadge lastRecordedAt={location.timestamp} />
           </div>
           <div className="mt-1 text-xs text-muted-foreground">
             <span
@@ -103,6 +170,16 @@ export function MapaPage() {
   const { data: couriers, isLoading: couriersLoading } = useCouriers();
   const { courierLocations: locations, connected } = useCompanyEventsContext();
 
+  // Tick every 30s for stale marker cleanup
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const interval = setInterval(
+      () => setNow(Date.now()),
+      STALE_CHECK_INTERVAL_MS,
+    );
+    return () => clearInterval(interval);
+  }, []);
+
   // Build courier lookup for name/status
   const courierMap = useMemo(() => {
     const map = new Map<string, Courier>();
@@ -112,28 +189,18 @@ export function MapaPage() {
     return map;
   }, [couriers]);
 
-  // Markers: combine courier data + location data
+  // Markers: combine courier data + location data, filter stale (>10 min)
   const markers = useMemo(() => {
-    const result: { courier: Courier; location: CourierLocation }[] = [];
+    const result: MarkerData[] = [];
     for (const [courierId, loc] of locations) {
       const courier = courierMap.get(courierId);
-      if (courier && loc.lat !== 0 && loc.lng !== 0) {
-        result.push({ courier, location: loc });
-      }
+      if (!courier || loc.lat === 0 || loc.lng === 0) continue;
+      const age = now - new Date(loc.timestamp).getTime();
+      if (age > STALE_THRESHOLD_MS) continue;
+      result.push({ courier, location: loc });
     }
     return result;
-  }, [locations, courierMap]);
-
-  // Compute bounds from markers
-  const bounds: LatLngBoundsExpression | null = useMemo(() => {
-    if (markers.length === 0) return null;
-    const lats = markers.map((m) => m.location.lat);
-    const lngs = markers.map((m) => m.location.lng);
-    return [
-      [Math.min(...lats), Math.min(...lngs)],
-      [Math.max(...lats), Math.max(...lngs)],
-    ];
-  }, [markers]);
+  }, [locations, courierMap, now]);
 
   // Count active couriers (available or busy)
   const activeCourierCount = useMemo(() => {
@@ -208,7 +275,7 @@ export function MapaPage() {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               />
-              <FitBounds bounds={bounds} />
+              <MapController markers={markers} />
               {markers.map(({ courier, location }) => (
                 <CourierMarkerItem
                   key={courier.id}

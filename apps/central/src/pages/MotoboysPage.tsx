@@ -5,24 +5,56 @@ import {
   X,
   ChevronLeft,
   User,
-  Phone,
-  Mail,
-  Camera,
   AlertCircle,
   Loader2,
-  Power,
-  Package,
+  Search,
+  Pencil,
+  PowerOff,
+  MapPin,
 } from "lucide-react";
+import {
+  MapContainer,
+  TileLayer,
+  CircleMarker,
+  Popup,
+  useMap,
+} from "react-leaflet";
+import { type LatLngBoundsExpression } from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCouriers } from "@/hooks/useCouriers";
-import { useOrders } from "@/hooks/useOrders";
+import { useCourierDetail, useToggleCourierActive } from "@/hooks/useCourierDetail";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCompanyEventsContext } from "@/contexts/CompanyEventsContext";
 import { api } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { CourierStatusBadge } from "@/components/ui/StatusBadge";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { CourierStatusBadge, COURIER_STATUS_LABELS } from "@/components/ui/StatusBadge";
+import { CourierDetailView } from "@/components/couriers/CourierDetailView";
+import { CourierEditForm } from "@/components/couriers/CourierEditForm";
+import { CourierGpsBadge } from "@/components/couriers/CourierGpsBadge";
 import type { Courier, CourierStatus } from "@/types/api";
+import type { CourierLocation } from "@/hooks/useCourierLocations";
+
+// --- Mini Map Helpers ---
+
+const MARKER_COLORS: Record<CourierStatus, string> = {
+  available: "#1dace7",
+  busy: "#fca322",
+  offline: "#9ca3af",
+};
+
+function FitBounds({ bounds }: { bounds: LatLngBoundsExpression | null }) {
+  const map = useMap();
+  useMemo(() => {
+    if (bounds) {
+      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+    }
+  }, [map, bounds]);
+  return null;
+}
 
 // --- New Courier Form ---
 
@@ -243,179 +275,6 @@ function NewCourierForm({ onClose, onSuccess }: NewCourierFormProps) {
   );
 }
 
-// --- Courier Detail ---
-
-interface CourierDetailProps {
-  courier: Courier;
-  onBack: () => void;
-  onToggleActive: () => void;
-  toggling: boolean;
-}
-
-function CourierDetail({
-  courier,
-  onBack,
-  onToggleActive,
-  toggling,
-}: CourierDetailProps) {
-  const { data: orders } = useOrders();
-
-  // Count delivered orders for this courier (via deliveries)
-  // Since we don't have a deliveries-by-courier endpoint, use total_deliveries from courier data
-  const deliveredCount = courier.total_deliveries;
-
-  // Try to find active orders assigned to this courier
-  // Orders don't have courier_id directly, so we show total_deliveries as the metric
-  const formatDate = (iso: string) =>
-    new Date(iso).toLocaleString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-  return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="rounded-md p-1 hover:bg-muted"
-          aria-label="Voltar"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold">{courier.full_name}</h2>
-            <CourierStatusBadge status={courier.status} />
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        {/* Info Card */}
-        <div className="rounded-lg border bg-card shadow-sm">
-          <div className="border-b px-4 py-3">
-            <h3 className="font-semibold">Informações</h3>
-          </div>
-          <div className="space-y-3 p-4">
-            {courier.photo_url && (
-              <div className="flex justify-center pb-2">
-                <img
-                  src={courier.photo_url}
-                  alt={courier.full_name}
-                  className="h-20 w-20 rounded-full object-cover border"
-                />
-              </div>
-            )}
-            <div className="flex items-start gap-2">
-              <User className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Nome</p>
-                <p className="text-sm">{courier.full_name}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <Phone className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Telefone</p>
-                <p className="text-sm">{courier.phone}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <Bike className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Status</p>
-                <div className="mt-0.5">
-                  <CourierStatusBadge status={courier.status} />
-                </div>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <Power className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">Ativo</p>
-                <p className="text-sm">
-                  {courier.active ? "Sim" : "Não"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <Package className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-              <div>
-                <p className="text-xs text-muted-foreground">
-                  Entregas Concluídas
-                </p>
-                <p className="text-sm font-medium">{deliveredCount}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-2 border-t px-4 py-3">
-            <button
-              onClick={onToggleActive}
-              disabled={toggling}
-              className={`flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium ${
-                courier.active
-                  ? "border border-destructive text-destructive hover:bg-destructive/10"
-                  : "bg-primary text-primary-foreground hover:bg-primary/90"
-              } disabled:opacity-50`}
-            >
-              {toggling ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Power className="h-4 w-4" />
-              )}
-              {courier.active ? "Desativar" : "Ativar"}
-            </button>
-          </div>
-        </div>
-
-        {/* Delivery History Card */}
-        <div className="rounded-lg border bg-card shadow-sm">
-          <div className="border-b px-4 py-3">
-            <h3 className="font-semibold">Histórico de Entregas</h3>
-          </div>
-          <div className="p-4">
-            <div className="mb-4 grid grid-cols-2 gap-4">
-              <div className="rounded-lg bg-muted/50 p-3 text-center">
-                <p className="text-2xl font-bold text-primary">
-                  {deliveredCount}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Total de Entregas
-                </p>
-              </div>
-              <div className="rounded-lg bg-muted/50 p-3 text-center">
-                <p className="text-2xl font-bold text-primary">
-                  {courier.status === "busy" ? "1" : "0"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Em Andamento
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span>Cadastrado em</span>
-                <span>{formatDate(courier.created_at)}</span>
-              </div>
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span>Última atualização</span>
-                <span>{formatDate(courier.updated_at)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // --- Main Page ---
 
 type View =
@@ -425,15 +284,19 @@ type View =
 
 export function MotoboysPage() {
   const [view, setView] = useState<View>({ type: "list" });
-  const [toggling, setToggling] = useState(false);
+  const [editCourierId, setEditCourierId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [deactivateCourier, setDeactivateCourier] = useState<Courier | null>(null);
   const [statusFilter, setStatusFilter] = useState<
     CourierStatus | "all" | "inactive"
   >("all");
 
   const queryClient = useQueryClient();
   const { data: couriers, isLoading } = useCouriers();
+  const toggleActive = useToggleCourierActive();
+  const { courierLocations: locations } = useCompanyEventsContext();
 
-  // Filtered couriers
+  // Filtered couriers (status + search)
   const filteredCouriers = useMemo(() => {
     if (!couriers) return [];
     let list = [...couriers];
@@ -442,11 +305,15 @@ export function MotoboysPage() {
     } else if (statusFilter !== "all") {
       list = list.filter((c) => c.status === statusFilter && c.active);
     }
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      list = list.filter((c) => c.full_name.toLowerCase().includes(q));
+    }
     return list.sort(
       (a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
-  }, [couriers, statusFilter]);
+  }, [couriers, statusFilter, searchQuery]);
 
   // Status counts
   const statusCounts = useMemo(() => {
@@ -464,29 +331,50 @@ export function MotoboysPage() {
     queryClient.invalidateQueries({ queryKey: ["couriers"] });
   }, [queryClient]);
 
-  const handleToggleActive = async (courier: Courier) => {
-    setToggling(true);
-    try {
-      await api
-        .patch(`api/couriers/${courier.id}`, {
-          json: { active: !courier.active },
-        })
-        .json();
-      invalidateCouriers();
-    } catch {
-      // Error handling — stay on page
-    } finally {
-      setToggling(false);
+  // --- Mini Map: build markers from courier locations ---
+  const courierMap = useMemo(() => {
+    const map = new Map<string, Courier>();
+    if (couriers) {
+      for (const c of couriers) map.set(c.id, c);
     }
-  };
+    return map;
+  }, [couriers]);
 
-  // Get current courier for detail view
-  const currentCourier = useMemo(() => {
-    if (view.type === "detail") {
-      return couriers?.find((c) => c.id === view.courierId) ?? null;
+  const mapMarkers = useMemo(() => {
+    const result: { courier: Courier; location: CourierLocation }[] = [];
+    for (const [courierId, loc] of locations) {
+      const courier = courierMap.get(courierId);
+      if (courier && courier.active && loc.lat !== 0 && loc.lng !== 0) {
+        result.push({ courier, location: loc });
+      }
     }
-    return null;
-  }, [couriers, view]);
+    return result;
+  }, [locations, courierMap]);
+
+  const mapBounds: LatLngBoundsExpression | null = useMemo(() => {
+    if (mapMarkers.length === 0) return null;
+    const lats = mapMarkers.map((m) => m.location.lat);
+    const lngs = mapMarkers.map((m) => m.location.lng);
+    return [
+      [Math.min(...lats), Math.min(...lngs)],
+      [Math.max(...lats), Math.max(...lngs)],
+    ];
+  }, [mapMarkers]);
+
+  const handleDeactivateConfirm = useCallback(() => {
+    if (!deactivateCourier) return;
+    toggleActive.mutate(
+      { courierId: deactivateCourier.id, active: !deactivateCourier.active },
+      {
+        onSuccess: () => {
+          setDeactivateCourier(null);
+        },
+      },
+    );
+  }, [deactivateCourier, toggleActive]);
+
+  // Courier detail for edit form drawer
+  const { data: editCourierData } = useCourierDetail(editCourierId);
 
   // --- Render New Courier Form ---
   if (view.type === "new") {
@@ -514,14 +402,22 @@ export function MotoboysPage() {
   }
 
   // --- Render Courier Detail ---
-  if (view.type === "detail" && currentCourier) {
+  if (view.type === "detail") {
     return (
-      <CourierDetail
-        courier={currentCourier}
-        onBack={() => setView({ type: "list" })}
-        onToggleActive={() => handleToggleActive(currentCourier)}
-        toggling={toggling}
-      />
+      <>
+        <CourierDetailView
+          courierId={view.courierId}
+          onBack={() => setView({ type: "list" })}
+          onEdit={() => setEditCourierId(view.courierId)}
+        />
+        {editCourierData && (
+          <CourierEditForm
+            courier={editCourierData}
+            open={editCourierId === view.courierId}
+            onClose={() => setEditCourierId(null)}
+          />
+        )}
+      </>
     );
   }
 
@@ -553,25 +449,117 @@ export function MotoboysPage() {
         </button>
       </div>
 
-      {/* Status Filter Badges */}
-      <div className="flex flex-wrap gap-2">
-        {filterButtons.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setStatusFilter(key)}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-              statusFilter === key
-                ? key === "available"
-                  ? "bg-cs-success/10 text-cs-success"
-                  : key === "busy"
-                    ? "bg-cs-warning/10 text-cs-warning"
-                    : "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
-            }`}
+      {/* Mini Map — active couriers */}
+      <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
+        <div className="flex items-center gap-2 border-b px-4 py-2">
+          <MapPin className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium">Motoboys ativos no mapa</span>
+          <div className="ml-auto hidden items-center gap-3 text-xs sm:flex">
+            <span className="flex items-center gap-1">
+              <span
+                className="inline-block h-3 w-3 rounded-full"
+                style={{ backgroundColor: MARKER_COLORS.available }}
+              />
+              Disponível
+            </span>
+            <span className="flex items-center gap-1">
+              <span
+                className="inline-block h-3 w-3 rounded-full"
+                style={{ backgroundColor: MARKER_COLORS.busy }}
+              />
+              Ocupado
+            </span>
+          </div>
+        </div>
+        <div className="relative" style={{ height: 200 }}>
+          <MapContainer
+            center={[-15.78, -47.93]}
+            zoom={4}
+            className="h-full w-full"
+            attributionControl={false}
+            zoomControl={false}
           >
-            {label} ({statusCounts[key]})
-          </button>
-        ))}
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            />
+            <FitBounds bounds={mapBounds} />
+            {mapMarkers.map(({ courier, location }) => (
+              <CircleMarker
+                key={courier.id}
+                center={[location.lat, location.lng]}
+                radius={8}
+                pathOptions={{
+                  color: MARKER_COLORS[courier.status],
+                  fillColor: MARKER_COLORS[courier.status],
+                  fillOpacity: 0.8,
+                  weight: 2,
+                }}
+              >
+                <Popup>
+                  <div className="min-w-[140px]">
+                    <div className="flex items-center gap-2">
+                      <Bike className="h-4 w-4" style={{ color: MARKER_COLORS[courier.status] }} />
+                      <span className="font-semibold">{courier.full_name}</span>
+                      <CourierGpsBadge lastRecordedAt={location.timestamp} />
+                    </div>
+                    <div className="mt-1 text-xs text-gray-600">
+                      <span
+                        className="inline-block rounded-full px-2 py-0.5 text-white"
+                        style={{ backgroundColor: MARKER_COLORS[courier.status] }}
+                      >
+                        {COURIER_STATUS_LABELS[courier.status]}
+                      </span>
+                    </div>
+                  </div>
+                </Popup>
+              </CircleMarker>
+            ))}
+          </MapContainer>
+          {mapMarkers.length === 0 && (
+            <div className="pointer-events-none absolute inset-0 z-[1000] flex items-center justify-center">
+              <div className="rounded-lg bg-white/90 px-4 py-3 text-center shadow-sm">
+                <Bike className="mx-auto mb-1 h-6 w-6 text-muted-foreground/50" />
+                <p className="text-xs font-medium text-muted-foreground">
+                  Nenhum motoboy com localização
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Search + Status Filter */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar por nome..."
+            className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring sm:w-64"
+          />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {filterButtons.map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setStatusFilter(key)}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                statusFilter === key
+                  ? key === "available"
+                    ? "bg-green-100 text-green-800"
+                    : key === "busy"
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              {label} ({statusCounts[key]})
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Couriers Table/List */}
@@ -586,14 +574,18 @@ export function MotoboysPage() {
           <EmptyState
             icon={Bike}
             title={
-              statusFilter !== "all"
-                ? `Nenhum motoboy com status "${filterButtons.find((f) => f.key === statusFilter)?.label}"`
-                : "Nenhum motoboy cadastrado"
+              searchQuery.trim()
+                ? `Nenhum motoboy encontrado para "${searchQuery.trim()}"`
+                : statusFilter !== "all"
+                  ? `Nenhum motoboy com status "${filterButtons.find((f) => f.key === statusFilter)?.label}"`
+                  : "Nenhum motoboy cadastrado"
             }
             description={
-              statusFilter !== "all"
-                ? "Tente outro filtro ou cadastre um novo motoboy"
-                : "Cadastre o primeiro motoboy clicando em 'Novo Motoboy'"
+              searchQuery.trim()
+                ? "Tente outro termo de busca"
+                : statusFilter !== "all"
+                  ? "Tente outro filtro ou cadastre um novo motoboy"
+                  : "Cadastre o primeiro motoboy clicando em 'Novo Motoboy'"
             }
           />
         ) : (
@@ -603,9 +595,9 @@ export function MotoboysPage() {
               <div className="col-span-3">Nome</div>
               <div className="col-span-2">Telefone</div>
               <div className="col-span-2">Status</div>
-              <div className="col-span-2">Entregas</div>
+              <div className="col-span-1">Entregas</div>
               <div className="col-span-2">Ativo</div>
-              <div className="col-span-1" />
+              <div className="col-span-2 text-right">Ações</div>
             </div>
             <ul className="divide-y">
               {filteredCouriers.map((courier) => (
@@ -634,13 +626,40 @@ export function MotoboysPage() {
                         <span className="font-medium">
                           {courier.full_name}
                         </span>
+                        <CourierGpsBadge lastRecordedAt={locations.get(courier.id)?.timestamp ?? null} />
                       </div>
                       <CourierStatusBadge status={courier.status} />
                     </div>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {courier.phone} · {courier.total_deliveries} entregas
-                      {!courier.active && " · Inativo"}
-                    </p>
+                    <div className="mt-1 flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        {courier.phone} · {courier.total_deliveries} entregas
+                        {!courier.active && " · Inativo"}
+                      </p>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditCourierId(courier.id);
+                          }}
+                          className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                          aria-label="Editar motoboy"
+                          title="Editar"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeactivateCourier(courier);
+                          }}
+                          className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                          aria-label={courier.active ? "Desativar motoboy" : "Reativar motoboy"}
+                          title={courier.active ? "Desativar" : "Reativar"}
+                        >
+                          <PowerOff className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Desktop layout */}
@@ -659,6 +678,7 @@ export function MotoboysPage() {
                     <span className="truncate font-medium">
                       {courier.full_name}
                     </span>
+                    <CourierGpsBadge lastRecordedAt={locations.get(courier.id)?.timestamp ?? null} />
                   </div>
                   <div className="col-span-2 hidden text-sm sm:block">
                     {courier.phone}
@@ -666,7 +686,7 @@ export function MotoboysPage() {
                   <div className="col-span-2 hidden sm:block">
                     <CourierStatusBadge status={courier.status} />
                   </div>
-                  <div className="col-span-2 hidden text-sm sm:block">
+                  <div className="col-span-1 hidden text-sm sm:block">
                     {courier.total_deliveries}
                   </div>
                   <div className="col-span-2 hidden text-sm sm:block">
@@ -680,17 +700,28 @@ export function MotoboysPage() {
                       {courier.active ? "Ativo" : "Inativo"}
                     </span>
                   </div>
-                  <div className="col-span-1 hidden sm:flex sm:justify-end">
+                  <div className="col-span-2 hidden items-center justify-end gap-1 sm:flex">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleToggleActive(courier);
+                        setEditCourierId(courier.id);
                       }}
-                      disabled={toggling}
-                      className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
-                      title={courier.active ? "Desativar" : "Ativar"}
+                      className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      aria-label="Editar motoboy"
+                      title="Editar"
                     >
-                      <Power className="h-4 w-4" />
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeactivateCourier(courier);
+                      }}
+                      className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      aria-label={courier.active ? "Desativar motoboy" : "Reativar motoboy"}
+                      title={courier.active ? "Desativar" : "Reativar"}
+                    >
+                      <PowerOff className="h-4 w-4" />
                     </button>
                   </div>
                 </li>
@@ -699,6 +730,34 @@ export function MotoboysPage() {
           </>
         )}
       </div>
+
+      {/* Edit drawer (from list) */}
+      {editCourierId && editCourierData && (
+        <CourierEditForm
+          courier={editCourierData}
+          open={!!editCourierId}
+          onClose={() => setEditCourierId(null)}
+        />
+      )}
+
+      {/* Deactivation / Reactivation confirm dialog */}
+      <ConfirmDialog
+        open={!!deactivateCourier}
+        title={
+          deactivateCourier?.active
+            ? `Desativar motoboy ${deactivateCourier?.full_name}?`
+            : `Reativar motoboy ${deactivateCourier?.full_name}?`
+        }
+        description={
+          deactivateCourier?.active
+            ? "O motoboy não receberá novas entregas. Entregas em andamento serão mantidas."
+            : "O motoboy voltará a receber entregas."
+        }
+        confirmLabel={deactivateCourier?.active ? "Desativar" : "Reativar"}
+        onConfirm={handleDeactivateConfirm}
+        onCancel={() => setDeactivateCourier(null)}
+        loading={toggleActive.isPending}
+      />
     </div>
   );
 }

@@ -1,7 +1,10 @@
 import { MapPin, User, Phone, FileText } from "lucide-react";
 import { DeliveryStatusBadge } from "./DeliveryStatusBadge";
 import { ActionButton } from "./ActionButton";
+import { NavigateButton } from "@/components/delivery/NavigateButton";
 import { NEXT_STATUS, type ActiveDeliveryData } from "@/types/delivery";
+
+const NAVIGATE_STATUSES = new Set(["accepted", "picked_up", "in_transit"]);
 
 interface DeliveryCardProps {
   data: ActiveDeliveryData;
@@ -42,6 +45,14 @@ export function DeliveryCard({
             <p className="text-sm">{order.delivery_address}</p>
           </div>
         </div>
+
+        {NAVIGATE_STATUSES.has(delivery.status) && (
+          <NavigateButton
+            lat={Number(order.delivery_lat)}
+            lng={Number(order.delivery_lng)}
+            address={order.delivery_address}
+          />
+        )}
 
         <div className="flex items-start gap-2">
           <User className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />

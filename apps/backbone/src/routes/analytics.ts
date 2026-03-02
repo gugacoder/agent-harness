@@ -8,6 +8,7 @@ import {
   getNeighborhoodVolume,
   getRevenue,
   getTrend,
+  getTodayMetrics,
 } from "../services/analytics.service.js";
 
 // --- Schemas ---
@@ -48,6 +49,13 @@ const RevenueResponseSchema = z.object({
 const TrendItemSchema = z.object({
   date: z.string(),
   total_deliveries: z.number().int(),
+});
+
+const TodayResponseSchema = z.object({
+  deliveries_today: z.number().int(),
+  deliveries_today_completed: z.number().int(),
+  couriers_online: z.number().int(),
+  orders_pending: z.number().int(),
 });
 
 const ErrorResponseSchema = z.object({
@@ -169,6 +177,49 @@ const analyticsRouter = new OpenAPIHono<AppType>({
 
 analyticsRouter.use("/analytics/*", authMiddleware);
 analyticsRouter.use("/analytics/*", companyMiddleware);
+
+// --- GET /api/analytics/today ---
+
+const todayRoute = createRoute({
+  method: "get",
+  path: "/analytics/today",
+  tags: ["Analytics"],
+  summary: "Today's metrics",
+  description:
+    "Returns real-time metrics for today: deliveries count, couriers online, pending orders.",
+  responses: {
+    200: {
+      content: { "application/json": { schema: TodayResponseSchema } },
+      description: "Today's metrics",
+    },
+    403: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Access denied — not an operator",
+    },
+    401: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Missing or invalid authentication",
+    },
+  },
+});
+
+analyticsRouter.openapi(todayRoute, async (c) => {
+  const user = c.get("user");
+  if (user.role !== "operator") {
+    return c.json(
+      {
+        error: "Forbidden",
+        message: "Only operators can access analytics",
+        statusCode: 403,
+      },
+      403
+    );
+  }
+
+  const companyId = c.get("companyId");
+  const result = await getTodayMetrics(companyId);
+  return c.json(result, 200);
+});
 
 // --- GET /api/analytics/overview ---
 

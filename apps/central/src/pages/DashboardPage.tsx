@@ -3,12 +3,11 @@ import {
   LayoutDashboard,
   Package,
   Truck,
-  CheckCircle2,
-  Clock,
   MapPin,
   Wifi,
   WifiOff,
 } from "lucide-react";
+import { TodayCards } from "@/components/dashboard/TodayCards";
 import {
   MapContainer,
   TileLayer,
@@ -24,34 +23,6 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { OrderStatusBadge } from "@/components/ui/StatusBadge";
 import type { Order, OrderStatus, Courier, CourierStatus } from "@/types/api";
-
-// --- Metric Card ---
-
-function MetricCard({
-  title,
-  value,
-  icon: Icon,
-  color,
-}: {
-  title: string;
-  value: number;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
-}) {
-  return (
-    <div className="rounded-lg border bg-card p-4 shadow-sm">
-      <div className="flex items-center gap-3">
-        <div className={`rounded-md p-2 ${color}`}>
-          <Icon className="h-5 w-5" />
-        </div>
-        <div>
-          <p className="text-sm text-muted-foreground">{title}</p>
-          <p className="text-2xl font-bold">{value}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // --- Main Dashboard ---
 
@@ -80,27 +51,6 @@ export function DashboardPage() {
     }
     return map;
   }, [shops]);
-
-  const metrics = useMemo(() => {
-    if (!orders) return { total: 0, inProgress: 0, completed: 0 };
-    const today = new Date().toISOString().slice(0, 10);
-    const todayOrders = orders.filter(
-      (o) => o.created_at.slice(0, 10) === today,
-    );
-    const inProgressStatuses: OrderStatus[] = [
-      "pending",
-      "assigned",
-      "picked_up",
-      "in_transit",
-    ];
-    return {
-      total: todayOrders.length,
-      inProgress: todayOrders.filter((o) =>
-        inProgressStatuses.includes(o.status),
-      ).length,
-      completed: todayOrders.filter((o) => o.status === "delivered").length,
-    };
-  }, [orders]);
 
   const activeOrders = useMemo(() => {
     if (!orders) return [];
@@ -153,35 +103,8 @@ export function DashboardPage() {
         <p className="mt-1 text-muted-foreground">Visão geral da operação</p>
       </div>
 
-      {/* Metric Cards */}
-      {ordersLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <Skeleton className="h-[84px]" />
-          <Skeleton className="h-[84px]" />
-          <Skeleton className="h-[84px]" />
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <MetricCard
-            title="Pedidos Hoje"
-            value={metrics.total}
-            icon={Package}
-            color="bg-primary/10 text-primary"
-          />
-          <MetricCard
-            title="Em Andamento"
-            value={metrics.inProgress}
-            icon={Clock}
-            color="bg-secondary/10 text-secondary"
-          />
-          <MetricCard
-            title="Concluídos"
-            value={metrics.completed}
-            icon={CheckCircle2}
-            color="bg-cs-success/10 text-cs-success"
-          />
-        </div>
-      )}
+      {/* Today Metrics Cards (real-time from /api/analytics/today) */}
+      <TodayCards />
 
       {/* Main content: orders list + map */}
       <div className="grid gap-6 lg:grid-cols-2">

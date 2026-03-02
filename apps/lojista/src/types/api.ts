@@ -68,6 +68,25 @@ export interface DeliveryProof {
   created_at: string;
 }
 
+// --- Saved Addresses ---
+
+export interface SavedAddress {
+  id: string;
+  company_id: string;
+  profile_id: string;
+  label: string | null;
+  address: string;
+  lat: string;
+  lng: string;
+  complement: string | null;
+  reference: string | null;
+  is_favorite: boolean;
+  use_count: number;
+  last_used_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // --- Invoice types ---
 
 export type InvoiceStatus = "draft" | "sent" | "paid";
@@ -103,4 +122,47 @@ export interface InvoiceItem {
 
 export interface InvoiceWithItems extends Invoice {
   items: InvoiceItem[];
+}
+
+// --- Order Estimate ---
+
+export interface OrderEstimate {
+  estimated_distance_km: number;
+  estimated_price: number;
+  pricing_table_name: string;
+}
+
+// --- Timeline ---
+
+export interface TimelineEvent {
+  event_type: string;
+  old_status: string | null;
+  new_status: string | null;
+  description: string;
+  actor_name: string;
+  created_at: string;
+}
+
+// --- Courier Info ---
+
+export interface CourierInfo {
+  id: string;
+  full_name: string;
+  phone: string;
+  photo_url: string | null;
+  status: string;
+  vehicle_type: string | null;
+  plate_number: string | null;
+}
+
+// --- Delivery Price ---
+
+export interface DeliveryPrice {
+  delivery_id: string;
+  estimated_distance_km: string;
+  actual_distance_km: string | null;
+  base_price: string;
+  surcharge_amount: string;
+  total_price: string;
+  calculated_at: string;
 }
