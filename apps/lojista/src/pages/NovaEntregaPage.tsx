@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,10 +15,15 @@ import { useShop } from "@/hooks/useShop";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { SavedAddressPicker } from "@/components/address/SavedAddressPicker";
+import { AddressAutocomplete } from "@/components/address/AddressAutocomplete";
+import { AddressPinDrop } from "@/components/address/AddressPinDrop";
 
 const formSchema = z.object({
   pickup_address: z.string().min(1, "Endereço de coleta é obrigatório"),
   delivery_address: z.string().min(1, "Endereço de entrega é obrigatório"),
+  delivery_lat: z.number(),
+  delivery_lng: z.number(),
   recipient_name: z.string().min(1, "Nome do destinatário é obrigatório"),
   recipient_phone: z.string().min(1, "Telefone do destinatário é obrigatório"),
   notes: z.string().optional(),
@@ -39,6 +44,7 @@ export function NovaEntregaPage() {
     register,
     handleSubmit,
     setValue,
+    watch,
     getValues,
     formState: { errors, dirtyFields },
   } = useForm<FormData>({
@@ -47,11 +53,17 @@ export function NovaEntregaPage() {
     defaultValues: {
       pickup_address: "",
       delivery_address: "",
+      delivery_lat: 0,
+      delivery_lng: 0,
       recipient_name: "",
       recipient_phone: "",
       notes: "",
     },
   });
+
+  const deliveryAddress = watch("delivery_address");
+  const deliveryLat = watch("delivery_lat");
+  const deliveryLng = watch("delivery_lng");
 
   // Pre-fill pickup address when shop data loads (OSD101)
   useEffect(() => {
@@ -59,6 +71,43 @@ export function NovaEntregaPage() {
       setValue("pickup_address", shop.address);
     }
   }, [shop, dirtyFields.pickup_address, setValue]);
+
+  const handleSavedAddressSelect = useCallback(
+    (data: {
+      address: string;
+      lat: number;
+      lng: number;
+      complement?: string;
+      reference?: string;
+    }) => {
+      if (data.address) {
+        setValue("delivery_address", data.address, { shouldValidate: true });
+        setValue("delivery_lat", data.lat);
+        setValue("delivery_lng", data.lng);
+      }
+    },
+    [setValue],
+  );
+
+  const handleAutocompleteChange = useCallback(
+    (data: { address: string; lat: number; lng: number }) => {
+      setValue("delivery_address", data.address, { shouldValidate: true });
+      setValue("delivery_lat", data.lat);
+      setValue("delivery_lng", data.lng);
+    },
+    [setValue],
+  );
+
+  const handlePinDropChange = useCallback(
+    (data: { lat: number; lng: number; address: string }) => {
+      setValue("delivery_lat", data.lat);
+      setValue("delivery_lng", data.lng);
+      if (data.address) {
+        setValue("delivery_address", data.address, { shouldValidate: true });
+      }
+    },
+    [setValue],
+  );
 
   const onValidSubmit = () => {
     setShowConfirm(true);
@@ -76,8 +125,8 @@ export function NovaEntregaPage() {
             pickup_lat: shop?.lat ?? "0",
             pickup_lng: shop?.lng ?? "0",
             delivery_address: data.delivery_address.trim(),
-            delivery_lat: "0",
-            delivery_lng: "0",
+            delivery_lat: String(data.delivery_lat),
+            delivery_lng: String(data.delivery_lng),
             recipient_name: data.recipient_name.trim(),
             recipient_phone: data.recipient_phone.trim(),
             notes: data.notes?.trim() || undefined,
@@ -137,23 +186,35 @@ export function NovaEntregaPage() {
           )}
         </div>
 
-        {/* Endereço de entrega */}
-        <div>
+        {/* Endereço de entrega — SavedAddressPicker + Autocomplete + PinDrop */}
+        <div className="space-y-2">
           <label className="mb-1 flex items-center gap-1.5 text-sm font-medium">
             <MapPin className="h-4 w-4 text-muted-foreground" />
             Endereço de entrega
           </label>
-          <input
-            type="text"
-            {...register("delivery_address")}
-            placeholder="Rua, número, bairro"
-            className="w-full rounded-md border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+
+          {/* Saved address picker above the address field */}
+          <SavedAddressPicker onSelect={handleSavedAddressSelect} />
+
+          {/* AddressAutocomplete replaces plain text input */}
+          <AddressAutocomplete
+            value={deliveryAddress}
+            onChange={handleAutocompleteChange}
+            placeholder="Rua, número, bairro ou CEP"
           />
           {errors.delivery_address && (
             <p className="mt-1 text-xs text-red-600">
               {errors.delivery_address.message}
             </p>
           )}
+
+          {/* AddressPinDrop below autocomplete */}
+          <AddressPinDrop
+            lat={deliveryLat}
+            lng={deliveryLng}
+            onPositionChange={handlePinDropChange}
+            height="200px"
+          />
         </div>
 
         {/* Nome do destinatário */}
