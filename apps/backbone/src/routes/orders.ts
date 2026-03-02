@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { eq, and, asc } from "drizzle-orm";
+import { eq, and, asc, inArray } from "drizzle-orm";
 import type { AppType } from "../types.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { companyMiddleware } from "../middleware/company.js";
@@ -21,9 +21,12 @@ import {
   deliveries,
   deliveryEvents,
   profiles,
+  couriers,
+  orders,
 } from "../../db/schema/index.js";
+import { assignCourier } from "../services/delivery.service.js";
 import { sseManager } from "../sse/manager.js";
-import { companyChannel, orderChannel } from "../sse/channels.js";
+import { companyChannel, courierChannel, orderChannel } from "../sse/channels.js";
 
 // --- Schemas ---
 
@@ -330,6 +333,164 @@ ordersRouter.openapi(estimateRoute, async (c) => {
     },
     200
   );
+});
+
+// --- POST /api/orders/bulk-assign ---
+
+const BulkAssignRequestSchema = z.object({
+  order_ids: z.array(z.string().uuid()).min(1).max(50),
+  courier_id: z.string().uuid(),
+});
+
+const BulkAssignResultSchema = z.object({
+  results: z.array(
+    z.object({
+      order_id: z.string().uuid(),
+      success: z.boolean(),
+      error: z.string().optional(),
+    })
+  ),
+});
+
+const bulkAssignRoute = createRoute({
+  method: "post",
+  path: "/orders/bulk-assign",
+  tags: ["Orders"],
+  summary: "Bulk assign orders to courier",
+  description:
+    "Assign multiple pending orders to a courier at once. Partial success is allowed — individual failures are reported per order.",
+  request: {
+    body: {
+      content: {
+        "application/json": { schema: BulkAssignRequestSchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      content: { "application/json": { schema: BulkAssignResultSchema } },
+      description: "Bulk assign results (partial success possible)",
+    },
+    400: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Invalid request data",
+    },
+    404: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Courier not found or inactive",
+    },
+    401: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Missing or invalid authentication",
+    },
+  },
+});
+
+ordersRouter.openapi(bulkAssignRoute, async (c) => {
+  const { order_ids, courier_id } = c.req.valid("json");
+  const companyId = c.get("companyId");
+  const user = c.get("user");
+
+  // Validate courier belongs to company and is active
+  const [courier] = await db
+    .select()
+    .from(couriers)
+    .where(
+      and(
+        eq(couriers.id, courier_id),
+        eq(couriers.company_id, companyId)
+      )
+    );
+
+  if (!courier) {
+    return c.json(
+      {
+        error: "Not Found",
+        message: "Courier not found",
+        statusCode: 404,
+      },
+      404
+    );
+  }
+
+  if (!courier.active) {
+    return c.json(
+      {
+        error: "Bad Request",
+        message: "Courier is inactive",
+        statusCode: 400,
+      },
+      400
+    );
+  }
+
+  // Validate all orders belong to company
+  const companyOrders = await db
+    .select({ id: orders.id, status: orders.status })
+    .from(orders)
+    .where(
+      and(
+        inArray(orders.id, order_ids),
+        eq(orders.company_id, companyId)
+      )
+    );
+
+  const orderMap = new Map(companyOrders.map((o) => [o.id, o.status]));
+
+  // Process each order
+  const results: { order_id: string; success: boolean; error?: string }[] = [];
+
+  for (const orderId of order_ids) {
+    const status = orderMap.get(orderId);
+
+    if (status === undefined) {
+      results.push({ order_id: orderId, success: false, error: "order_not_found" });
+      continue;
+    }
+
+    if (status !== "pending") {
+      results.push({ order_id: orderId, success: false, error: "invalid_status" });
+      continue;
+    }
+
+    try {
+      const delivery = await assignCourier({
+        orderId,
+        courierId: courier_id,
+        companyId,
+        actorId: user.id,
+      });
+
+      if (!delivery) {
+        results.push({ order_id: orderId, success: false, error: "order_not_found" });
+        continue;
+      }
+
+      // SSE: broadcast delivery_assigned for this success
+      const assignEvent = {
+        type: "order_status",
+        order_id: orderId,
+        status: "assigned",
+        courier_id: courier_id,
+        delivery_id: delivery.id,
+        timestamp: delivery.assigned_at,
+      };
+      sseManager.broadcast(companyChannel(companyId), assignEvent).catch(() => {});
+      sseManager.broadcast(orderChannel(orderId), assignEvent).catch(() => {});
+      sseManager.broadcast(courierChannel(courier_id), {
+        type: "delivery_assigned",
+        delivery_id: delivery.id,
+        order_id: orderId,
+        timestamp: delivery.assigned_at,
+      }).catch(() => {});
+
+      results.push({ order_id: orderId, success: true });
+    } catch {
+      results.push({ order_id: orderId, success: false, error: "already_assigned" });
+    }
+  }
+
+  return c.json({ results }, 200);
 });
 
 // --- GET /api/orders/:id/timeline ---
