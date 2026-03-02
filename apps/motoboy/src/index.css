@@ -159,3 +159,23 @@
   button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
   html { transition: background-color 0.15s ease, color 0.15s ease; }
 }
+
+@keyframes scale-in {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
