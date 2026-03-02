@@ -1,0 +1,72 @@
+{
+  "wave": 4,
+  "decision": "go",
+  "decision_rationale": "Wave 4 expoe um dominio fundamental negligenciado (seguranca, identidade, acesso). 4 discoveries score 9 (D-027 rotas sem role-check, D-030 login email-only, G-022 RBAC, G-025 OTP WhatsApp). Vulnerabilidade de seguranca critica: qualquer usuario autenticado pode executar qualquer operacao via curl. Login e 2 geracoes atras dos concorrentes. Zero gestao de perfil. Score medio 8.0 das novas discoveries — o mais alto de todas as waves.",
+  "previous_wave": {
+    "wave": 3,
+    "decision": "stop",
+    "total_discoveries": 44,
+    "implemented": 29,
+    "remaining": 13,
+    "partial": 2
+  },
+  "summary": {
+    "total_discoveries": 60,
+    "new_discoveries_this_wave": 16,
+    "pains": 34,
+    "gains": 26,
+    "avg_score": 7.3,
+    "score_gte_8": 33,
+    "score_gte_9": 14,
+    "score_10": 2,
+    "implemented": 29,
+    "not_implemented": 29,
+    "partial": 2,
+    "profiles_covered": ["empresario", "operador", "lojista", "motoboy", "super_admin"],
+    "wave4_new_discoveries": [
+      "D-027 (rotas sem role-check, score 9)",
+      "D-028 (sem super admin, score 8)",
+      "D-029 (sem gestao times, score 8)",
+      "D-030 (login email-only, score 9)",
+      "D-031 (sem self-registration, score 7)",
+      "D-032 (sem edicao perfil, score 8)",
+      "D-033 (sem avatar, score 7)",
+      "D-034 (sem config OTP, score 7)",
+      "G-022 (RBAC granular, score 9)",
+      "G-023 (super admin, score 8)",
+      "G-024 (gestao usuarios, score 8)",
+      "G-025 (OTP WhatsApp, score 9)",
+      "G-026 (OTP Email, score 7)",
+      "G-027 (edicao perfil, score 8)",
+      "G-028 (avatar crop, score 7)",
+      "G-029 (config canais OTP, score 7)"
+    ],
+    "wave4_score_distribution": {
+      "score_9": 4,
+      "score_8": 6,
+      "score_7": 6,
+      "below_7": 0
+    },
+    "diminishing_returns_trend": {
+      "wave1_avg_new": 7.6,
+      "wave2_avg_new": 7.2,
+      "wave3_avg_new": 6.3,
+      "wave4_avg_new": 8.0,
+      "note": "Score subiu porque wave-4 expoe dominio negligenciado (seguranca/identidade), nao feature creep"
+    }
+  },
+  "priority_tiers": {
+    "tier_1_critical": {
+      "description": "Score 8-9, seguranca e acesso — DEVE estar na wave 4",
+      "items": ["D-027", "D-030", "G-022", "G-025", "D-028", "D-029", "D-032", "G-023", "G-024", "G-027"],
+      "count": 10,
+      "themes": ["RBAC", "Super Admin", "OTP Login", "Profile Management", "User Management"]
+    },
+    "tier_2_important": {
+      "description": "Score 7, deve estar se possivel",
+      "items": ["D-031", "D-033", "D-034", "G-026", "G-028", "G-029"],
+      "count": 6,
+      "themes": ["Self-registration", "Avatar", "OTP Email", "Config canais"]
+    }
+  }
+}
