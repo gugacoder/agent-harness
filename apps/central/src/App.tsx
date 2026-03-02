@@ -23,6 +23,7 @@ import { PerfilPage } from "@/pages/PerfilPage";
 import { UsuariosPage } from "@/pages/UsuariosPage";
 import { AdminDashboard } from "@/pages/AdminDashboard";
 import { AdminEmpresasPage } from "@/pages/AdminEmpresasPage";
+import { DocsPage } from "@/pages/DocsPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { EnderecosPage } from "@/pages/enderecos/EnderecosPage";
 
@@ -72,6 +73,7 @@ function AppRoutes() {
           <Route path="usuarios" element={<UsuariosPage />} />
           <Route path="perfil" element={<PerfilPage />} />
           <Route path="enderecos" element={<EnderecosPage />} />
+          <Route path="docs" element={<DocsPage />} />
         </Route>
       </Route>
     </Routes>

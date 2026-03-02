@@ -12,6 +12,7 @@ import { CadastroPage } from "@/pages/CadastroPage";
 import { FaturasPage } from "@/pages/faturas/FaturasPage";
 import { EnderecosPage } from "@/pages/EnderecosPage";
 import { PerfilPage } from "@/pages/PerfilPage";
+import { DocsPage } from "@/pages/DocsPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,6 +40,7 @@ export function App() {
                 <Route path="historico" element={<HistoricoPage />} />
                 <Route path="enderecos" element={<EnderecosPage />} />
                 <Route path="perfil" element={<PerfilPage />} />
+                <Route path="docs" element={<DocsPage />} />
               </Route>
             </Route>
           </Routes>

@@ -9,6 +9,7 @@ import { EntregasPage } from "@/pages/EntregasPage";
 import { HistoricoPage } from "@/pages/HistoricoPage";
 import { ExtratoPage } from "@/pages/ExtratoPage";
 import { StatusPage } from "@/pages/StatusPage";
+import { DocsPage } from "@/pages/DocsPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { CadastroPage } from "@/pages/CadastroPage";
 import { PerfilPage } from "@/pages/PerfilPage";
@@ -44,6 +45,7 @@ export function App() {
                 <Route path="extrato" element={<ExtratoPage />} />
                 <Route path="status" element={<StatusPage />} />
                 <Route path="perfil" element={<PerfilPage />} />
+                <Route path="docs" element={<DocsPage />} />
               </Route>
             </Route>
           </Routes>

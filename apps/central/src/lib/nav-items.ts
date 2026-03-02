@@ -9,6 +9,7 @@ import {
   FileText,
   BarChart3,
   Settings,
+  HelpCircle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -32,6 +33,7 @@ export const navItems: NavItem[] = [
   { to: "/faturas", label: "Faturas", menuLabel: "Faturas", description: "Cobranças dos lojistas", icon: FileText, group: "Financeiro" },
   { to: "/analytics", label: "Analytics", menuLabel: "Analytics", description: "Métricas e tendências", icon: BarChart3, group: "Financeiro" },
   { to: "/configuracao", label: "Config", menuLabel: "Configurações", description: "Parâmetros da empresa", icon: Settings, group: "Sistema" },
+  { to: "/docs", label: "Ajuda", menuLabel: "Ajuda", description: "Guia de uso da Central", icon: HelpCircle, group: "Sistema" },
 ];
 
 /** Group order for the drawer menu */

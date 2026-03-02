@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { LogOut } from "lucide-react";
+import { Link } from "react-router";
+import { LogOut, HelpCircle } from "lucide-react";
 import { StatusBadge, type CourierStatus } from "@/components/ui/StatusBadge";
 import { AvatarDisplay } from "../avatar/AvatarDisplay";
 
@@ -22,6 +23,9 @@ export function Header({ userName = "Motoboy", avatarUrl, status = "offline", ch
 
       <div className="flex items-center gap-3">
         {children}
+        <Link to="/docs" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Ajuda">
+          <HelpCircle className="h-5 w-5" />
+        </Link>
         <AvatarDisplay src={avatarUrl} name={userName} size="sm" />
         <span className="text-sm text-muted-foreground">{userName}</span>
         <StatusBadge status={status} />
