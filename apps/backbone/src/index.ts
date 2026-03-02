@@ -6,7 +6,7 @@ import { logger } from "hono/logger";
 import type { AppType } from "./types.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { healthRouter } from "./routes/health.js";
-import { authRouter } from "./routes/auth.js";
+import { authRouter, otpAuthRouter } from "./routes/auth.js";
 import { companiesRouter } from "./routes/companies.js";
 import { shopsRouter } from "./routes/shops.js";
 import { ordersRouter } from "./routes/orders.js";
@@ -59,6 +59,7 @@ app.use(
 
 // Routes — public
 app.route("/", healthRouter);
+app.route("/", otpAuthRouter);
 
 // OpenAPI doc endpoint (F-012) — public, lazily generates spec from all routes
 app.get("/doc", (c) => {

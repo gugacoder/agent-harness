@@ -3,6 +3,8 @@ import type { AppType } from "../types.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { companyMiddleware } from "../middleware/company.js";
 import { requireRole } from "../middleware/role.js";
+import { generateAndSend, verify, OtpError } from "../services/otp.service.js";
+import { SendOtpSchema, VerifyOtpSchema } from "@chegala/schemas";
 
 const UserRoleEnum = z.enum(["operator", "shop", "courier"]);
 
@@ -175,4 +177,147 @@ authRouter.openapi(inviteRoute, async (c) => {
   );
 });
 
-export { authRouter };
+// =============================================================================
+// OTP Auth Routes — Public (no auth middleware)
+// =============================================================================
+
+const otpAuthRouter = new OpenAPIHono<AppType>({
+  defaultHook: (result, c) => {
+    if (!result.success) {
+      return c.json(
+        {
+          error: "Bad Request",
+          message: "Validation failed",
+          statusCode: 400,
+          details: result.error.errors.map((e) => ({
+            path: e.path.join("."),
+            message: e.message,
+          })),
+        },
+        400
+      );
+    }
+  },
+});
+
+const OtpSendRequestSchema = SendOtpSchema.openapi("OtpSendRequest");
+const OtpVerifyRequestSchema = VerifyOtpSchema.openapi("OtpVerifyRequest");
+
+const OtpSendResponseSchema = z
+  .object({
+    message: z.string(),
+  })
+  .openapi("OtpSendResponse");
+
+const OtpVerifyResponseSchema = z
+  .object({
+    access_token: z.string(),
+    refresh_token: z.string(),
+    user: z.object({
+      id: z.string(),
+      email: z.string(),
+      role: z.string(),
+      companyId: z.string(),
+    }),
+  })
+  .openapi("OtpVerifyResponse");
+
+const otpSendRoute = createRoute({
+  method: "post",
+  path: "/auth/otp/send",
+  tags: ["Auth"],
+  summary: "Send OTP code via WhatsApp or Email",
+  description: "Public endpoint — sends a 6-digit OTP code to the specified phone or email",
+  request: {
+    body: {
+      content: {
+        "application/json": { schema: OtpSendRequestSchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      content: { "application/json": { schema: OtpSendResponseSchema } },
+      description: "OTP sent successfully",
+    },
+    400: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Invalid request or channel not configured",
+    },
+    429: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Rate limit exceeded",
+    },
+    500: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Internal server error",
+    },
+  },
+});
+
+otpAuthRouter.openapi(otpSendRoute, async (c) => {
+  const body = c.req.valid("json");
+
+  try {
+    await generateAndSend(body.phone_or_email, body.channel, undefined);
+    return c.json({ message: "Codigo enviado com sucesso" }, 200);
+  } catch (err) {
+    if (err instanceof OtpError) {
+      const status = err.statusCode as 400 | 429 | 500;
+      return c.json(
+        { error: "OTP Error", message: err.message, statusCode: err.statusCode },
+        status
+      );
+    }
+    throw err;
+  }
+});
+
+const otpVerifyRoute = createRoute({
+  method: "post",
+  path: "/auth/otp/verify",
+  tags: ["Auth"],
+  summary: "Verify OTP code and obtain auth tokens",
+  description: "Public endpoint — verifies the OTP code and returns JWT access/refresh tokens",
+  request: {
+    body: {
+      content: {
+        "application/json": { schema: OtpVerifyRequestSchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      content: { "application/json": { schema: OtpVerifyResponseSchema } },
+      description: "OTP verified, tokens returned",
+    },
+    400: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Invalid or expired code",
+    },
+    500: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Internal server error",
+    },
+  },
+});
+
+otpAuthRouter.openapi(otpVerifyRoute, async (c) => {
+  const body = c.req.valid("json");
+
+  try {
+    const result = await verify(body.phone_or_email, body.code);
+    return c.json(result, 200);
+  } catch (err) {
+    if (err instanceof OtpError) {
+      const status = err.statusCode as 400 | 500;
+      return c.json(
+        { error: "OTP Error", message: err.message, statusCode: err.statusCode },
+        status
+      );
+    }
+    throw err;
+  }
+});
+
+export { authRouter, otpAuthRouter };

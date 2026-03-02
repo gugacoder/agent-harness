@@ -68,6 +68,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      REDIS_URL: redis://redis.internal:6379
     volumes:
       - .:/app
     command: ["npm", "run", "-w", "apps/backbone", "dev"]
