@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { useCourierStatus } from "@/hooks/useCourierStatus";
 import { StatusToggle } from "@/components/ui/StatusToggle";
 import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
+import { Tutorial } from "@/components/onboarding/Tutorial";
 
 export function StatusPage() {
   const { status, isLoading, isToggling, toggleStatus, error } =
     useCourierStatus();
+  const [showReviewTutorial, setShowReviewTutorial] = useState(false);
 
   if (isLoading) {
     return (
@@ -42,6 +45,22 @@ export function StatusPage() {
 
       {error && (
         <ErrorAlert message="Não foi possível atualizar seu status. Tente novamente." />
+      )}
+
+      <button
+        type="button"
+        onClick={() => setShowReviewTutorial(true)}
+        className="text-sm text-muted-foreground underline"
+      >
+        Rever tutorial
+      </button>
+
+      {showReviewTutorial && (
+        <Tutorial
+          reviewMode
+          onComplete={() => setShowReviewTutorial(false)}
+          onSkip={() => setShowReviewTutorial(false)}
+        />
       )}
     </div>
   );

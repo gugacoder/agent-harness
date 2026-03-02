@@ -1,18 +1,22 @@
 import { useEffect } from "react";
-import { Outlet } from "react-router";
+import { Outlet, useNavigate } from "react-router";
 import { Wifi, WifiOff, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useActiveDeliveryContext } from "@/contexts/ActiveDeliveryContext";
 import { useCourierStatus } from "@/hooks/useCourierStatus";
 import { useLocationSharing } from "@/hooks/useLocationSharing";
 import { useCourierEvents } from "@/hooks/useCourierEvents";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import { Header } from "./Header";
 import { BottomNav } from "./BottomNav";
 import { LocationDeniedAlert } from "@/components/ui/LocationDeniedAlert";
+import { Tutorial } from "@/components/onboarding/Tutorial";
 
 export function AppShell() {
   const { user } = useAuth();
-  const { courierId, status } = useCourierStatus();
+  const navigate = useNavigate();
+  const { shouldShowOnboarding } = useOnboarding("tutorial");
+  const { courierId, status, setStatus } = useCourierStatus();
   const { activeDelivery } = useActiveDeliveryContext();
   const { connected, toast, dismissToast } = useCourierEvents(courierId);
   const { state: locationState } = useLocationSharing({
@@ -63,6 +67,16 @@ export function AppShell() {
         <Outlet />
       </main>
       <BottomNav />
+
+      {shouldShowOnboarding && (
+        <Tutorial
+          onComplete={(wentOnline) => {
+            if (wentOnline) setStatus("available");
+            navigate("/status");
+          }}
+          onSkip={() => navigate("/status")}
+        />
+      )}
     </div>
   );
 }
