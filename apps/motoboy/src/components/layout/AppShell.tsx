@@ -6,6 +6,7 @@ import { useActiveDeliveryContext } from "@/contexts/ActiveDeliveryContext";
 import { useCourierStatus } from "@/hooks/useCourierStatus";
 import { useLocationSharing } from "@/hooks/useLocationSharing";
 import { useCourierEvents } from "@/hooks/useCourierEvents";
+import { useDeliveryNotification } from "@/components/notifications/DeliveryNotification";
 import { Header } from "./Header";
 import { BottomNav } from "./BottomNav";
 import { GpsBanner } from "@/components/status/GpsBanner";
@@ -20,6 +21,7 @@ export function AppShell() {
     status,
     hasActiveDelivery: !!activeDelivery,
   });
+  useDeliveryNotification();
 
   // Auto-dismiss toast after 4 seconds
   useEffect(() => {
