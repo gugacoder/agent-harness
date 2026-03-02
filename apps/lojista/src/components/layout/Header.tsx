@@ -1,11 +1,13 @@
 import { LogOut } from "lucide-react";
+import { AvatarDisplay } from "../avatar/AvatarDisplay";
 
 interface HeaderProps {
   userName?: string;
+  avatarUrl?: string | null;
   onLogout?: () => void;
 }
 
-export function Header({ userName = "Lojista", onLogout }: HeaderProps) {
+export function Header({ userName = "Lojista", avatarUrl, onLogout }: HeaderProps) {
   return (
     <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border bg-background px-4">
       <div className="flex items-center gap-2">
@@ -14,6 +16,7 @@ export function Header({ userName = "Lojista", onLogout }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-3">
+        <AvatarDisplay src={avatarUrl} name={userName} size="sm" />
         <span className="text-sm text-muted-foreground">{userName}</span>
         <button
           onClick={onLogout}

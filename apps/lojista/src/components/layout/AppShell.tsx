@@ -7,11 +7,14 @@ import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 import { BottomNav } from "./BottomNav";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useProfile } from "@/hooks/useProfile";
 
 export function AppShell() {
   const { user, logout } = useAuth();
   const isDesktop = useMediaQuery("(min-width: 1024px)");
   const isTablet = useMediaQuery("(min-width: 768px)");
+  const { data: profileData } = useProfile();
+  const profile = profileData?.profile;
   const location = useLocation();
   const navigate = useNavigate();
   const { invoiceToast, dismissInvoiceToast } = useCompanyEventsContext();
@@ -38,7 +41,11 @@ export function AppShell() {
               : "mx-auto max-w-[480px]"
         }
       >
-        <Header userName={user?.fullName || user?.email || "Lojista"} onLogout={logout} />
+        <Header
+          userName={profile?.full_name || user?.fullName || user?.email || "Lojista"}
+          avatarUrl={profile?.avatar_url}
+          onLogout={logout}
+        />
         <main className="p-4 pb-20 md:p-6 md:pb-6">
           <Outlet />
         </main>

@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { Package, FileText, Plus, Clock } from "lucide-react";
+import { Package, FileText, Plus, Clock, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -7,6 +7,7 @@ const navItems = [
   { to: "/faturas", label: "Faturas", icon: FileText },
   { to: "/nova", label: "Nova Entrega", icon: Plus },
   { to: "/historico", label: "Histórico", icon: Clock },
+  { to: "/perfil", label: "Meu Perfil", icon: User },
 ] as const;
 
 interface SidebarProps {
