@@ -8,8 +8,16 @@ interface Courier {
   status: CourierStatus;
 }
 
-async function fetchMyCourier(): Promise<Courier> {
-  return api.get("api/couriers/me").json();
+async function fetchMyCourier(): Promise<Courier | null> {
+  try {
+    return await api.get("api/couriers/me").json();
+  } catch (err: unknown) {
+    if (err instanceof Error && "response" in err) {
+      const status = (err as { response: { status: number } }).response.status;
+      if (status === 404) return null;
+    }
+    throw err;
+  }
 }
 
 async function updateCourierStatus(
@@ -25,26 +33,33 @@ export function useCourierStatus() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
+  const isCourier = user?.role === "courier";
+
   const courierQuery = useQuery({
     queryKey: ["courier", "me"],
     queryFn: fetchMyCourier,
-    enabled: !!user,
+    enabled: !!user && isCourier,
     refetchInterval: 30_000,
   });
 
   const courierId = courierQuery.data?.id ?? null;
 
   const statusMutation = useMutation({
-    mutationFn: (newStatus: CourierStatus) =>
-      updateCourierStatus(courierId!, newStatus),
+    mutationFn: (newStatus: CourierStatus) => {
+      if (!courierId) return Promise.resolve(null);
+      return updateCourierStatus(courierId, newStatus);
+    },
     onSuccess: (updatedCourier) => {
-      queryClient.setQueryData(["courier", "me"], updatedCourier);
+      if (updatedCourier) {
+        queryClient.setQueryData(["courier", "me"], updatedCourier);
+      }
     },
   });
 
   const status: CourierStatus = courierQuery.data?.status ?? "offline";
 
   const toggleStatus = () => {
+    if (!courierId) return;
     const next: CourierStatus = status === "available" ? "offline" : "available";
     statusMutation.mutate(next);
   };
@@ -55,7 +70,9 @@ export function useCourierStatus() {
     isLoading: courierQuery.isLoading,
     isToggling: statusMutation.isPending,
     toggleStatus,
-    setStatus: (s: CourierStatus) => statusMutation.mutate(s),
+    setStatus: (s: CourierStatus) => {
+      if (courierId) statusMutation.mutate(s);
+    },
     error: statusMutation.error,
   };
 }

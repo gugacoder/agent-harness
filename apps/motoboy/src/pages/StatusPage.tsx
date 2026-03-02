@@ -11,7 +11,7 @@ import { Tutorial } from "@/components/onboarding/Tutorial";
 import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 export function StatusPage() {
-  const { status, isLoading, isToggling, toggleStatus, error } =
+  const { courierId, status, isLoading, isToggling, toggleStatus, error } =
     useCourierStatus();
   const [showReviewTutorial, setShowReviewTutorial] = useState(false);
 
@@ -50,11 +50,22 @@ export function StatusPage() {
         <PageHelpLink url="/docs#status" />
       </div>
 
-      <StatusToggle
-        status={status}
-        isToggling={isToggling}
-        onToggle={toggleStatus}
-      />
+      {!courierId && !isLoading ? (
+        <div className="rounded-lg border border-border bg-muted/50 p-4 text-center">
+          <p className="text-sm font-medium text-foreground">
+            Conta não registrada como motoboy
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Fale com o administrador da empresa para ativar seu cadastro de entregador.
+          </p>
+        </div>
+      ) : (
+        <StatusToggle
+          status={status}
+          isToggling={isToggling}
+          onToggle={toggleStatus}
+        />
+      )}
 
       <StatusContext
         status={status}
