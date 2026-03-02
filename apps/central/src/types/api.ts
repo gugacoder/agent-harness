@@ -264,6 +264,45 @@ export interface TrendDataPoint {
   total_deliveries: number;
 }
 
+// --- Admin ---
+
+export type CompanyStatus = "active" | "suspended";
+
+export interface AdminCompany {
+  id: string;
+  name: string;
+  cnpj: string | null;
+  status: CompanyStatus;
+  created_at: string;
+  total_users: number;
+  total_deliveries: number;
+  total_orders: number;
+}
+
+export interface AdminCompanyDetail {
+  id: string;
+  name: string;
+  cnpj: string | null;
+  phone: string;
+  email: string;
+  address: string;
+  lat: string;
+  lng: string;
+  logo_url: string | null;
+  status: CompanyStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminMetrics {
+  total_companies: number;
+  total_deliveries_today: number;
+  total_deliveries_week: number;
+  total_deliveries_month: number;
+  total_users: number;
+  deliveries_per_day: { date: string; count: number }[];
+}
+
 // --- Users ---
 
 export type UserRole = "operator" | "shop" | "courier";

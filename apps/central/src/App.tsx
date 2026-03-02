@@ -1,8 +1,9 @@
-import { BrowserRouter, Routes, Route } from "react-router";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RequireAuth } from "@/components/auth/RequireAuth";
 import { AppShell } from "@/components/layout/AppShell";
+import { AdminShell } from "@/components/layout/AdminShell";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { PedidosPage } from "@/pages/PedidosPage";
 import { MotoboysPage } from "@/pages/MotoboysPage";
@@ -15,6 +16,8 @@ import { AnalyticsPage } from "@/pages/AnalyticsPage";
 import { ConfiguracaoPage } from "@/pages/ConfiguracaoPage";
 import { PerfilPage } from "@/pages/PerfilPage";
 import { UsuariosPage } from "@/pages/UsuariosPage";
+import { AdminDashboard } from "@/pages/AdminDashboard";
+import { AdminEmpresasPage } from "@/pages/AdminEmpresasPage";
 import { LoginPage } from "@/pages/LoginPage";
 
 const queryClient = new QueryClient({
@@ -26,30 +29,51 @@ const queryClient = new QueryClient({
   },
 });
 
+function AppRoutes() {
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === "super_admin";
+
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<RequireAuth />}>
+        {/* Admin routes for super_admin */}
+        {isSuperAdmin && (
+          <Route element={<AdminShell />}>
+            <Route path="admin/dashboard" element={<AdminDashboard />} />
+            <Route path="admin/empresas" element={<AdminEmpresasPage />} />
+            <Route path="admin/perfil" element={<PerfilPage />} />
+          </Route>
+        )}
+
+        {/* Normal operator routes */}
+        <Route element={<AppShell />}>
+          <Route index element={
+            isSuperAdmin ? <Navigate to="/admin/dashboard" replace /> : <DashboardPage />
+          } />
+          <Route path="pedidos" element={<PedidosPage />} />
+          <Route path="motoboys" element={<MotoboysPage />} />
+          <Route path="lojistas" element={<LojistasPage />} />
+          <Route path="mapa" element={<MapaPage />} />
+          <Route path="precos" element={<PrecosPage />} />
+          <Route path="financeiro" element={<FinanceiroPage />} />
+          <Route path="faturas" element={<FaturasPage />} />
+          <Route path="analytics" element={<AnalyticsPage />} />
+          <Route path="configuracao" element={<ConfiguracaoPage />} />
+          <Route path="usuarios" element={<UsuariosPage />} />
+          <Route path="perfil" element={<PerfilPage />} />
+        </Route>
+      </Route>
+    </Routes>
+  );
+}
+
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route element={<RequireAuth />}>
-              <Route element={<AppShell />}>
-                <Route index element={<DashboardPage />} />
-                <Route path="pedidos" element={<PedidosPage />} />
-                <Route path="motoboys" element={<MotoboysPage />} />
-                <Route path="lojistas" element={<LojistasPage />} />
-                <Route path="mapa" element={<MapaPage />} />
-                <Route path="precos" element={<PrecosPage />} />
-                <Route path="financeiro" element={<FinanceiroPage />} />
-                <Route path="faturas" element={<FaturasPage />} />
-                <Route path="analytics" element={<AnalyticsPage />} />
-                <Route path="configuracao" element={<ConfiguracaoPage />} />
-                <Route path="usuarios" element={<UsuariosPage />} />
-                <Route path="perfil" element={<PerfilPage />} />
-              </Route>
-            </Route>
-          </Routes>
+          <AppRoutes />
         </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>
