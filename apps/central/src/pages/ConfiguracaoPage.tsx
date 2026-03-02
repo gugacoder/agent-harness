@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import {
   Settings,
   Loader2,
@@ -11,6 +12,7 @@ import {
   Mail,
   Shield,
   AlertCircle,
+  RotateCcw,
 } from "lucide-react";
 import {
   useCompanyConfig,
@@ -19,6 +21,7 @@ import {
   useTestSmtp,
   useDetectTls,
 } from "@/hooks/useCompanyConfig";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import { Skeleton } from "@/components/ui/Skeleton";
 import type { CompanyConfig, UpdateCompanyConfigData } from "@/types/api";
 
@@ -439,7 +442,21 @@ function SmtpSection({
 export function ConfiguracaoPage() {
   const { data: config, isLoading, error, refetch } = useCompanyConfig();
   const updateConfig = useUpdateCompanyConfig();
+  const { resetProgress } = useOnboarding("wizard");
+  const navigate = useNavigate();
   const [toggling, setToggling] = useState(false);
+  const [resetting, setResetting] = useState(false);
+
+  const handleResetOnboarding = async () => {
+    if (resetting) return;
+    setResetting(true);
+    try {
+      await resetProgress();
+      navigate("/");
+    } finally {
+      setResetting(false);
+    }
+  };
 
   const handleTogglePodRequired = async () => {
     if (!config || toggling) return;
@@ -556,6 +573,29 @@ export function ConfiguracaoPage() {
           saving={updateConfig.isPending}
         />
       )}
+
+      {/* Onboarding Reset Section */}
+      <div className="rounded-lg border bg-card shadow-sm">
+        <div className="border-b px-6 py-4">
+          <div className="flex items-center gap-2">
+            <RotateCcw className="h-5 w-5 text-muted-foreground" />
+            <h2 className="text-lg font-semibold">Configuracao Inicial</h2>
+          </div>
+        </div>
+        <div className="px-6 py-5">
+          <p className="text-sm text-muted-foreground">
+            Reexecute o assistente de configuracao inicial para revisar ou atualizar suas preferencias.
+          </p>
+          <button
+            type="button"
+            onClick={handleResetOnboarding}
+            disabled={resetting}
+            className="mt-3 rounded-lg border border-primary px-4 py-2 text-sm font-medium text-primary hover:bg-primary/5 transition-colors disabled:opacity-50"
+          >
+            {resetting ? "Reiniciando..." : "Reexecutar configuracao inicial"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

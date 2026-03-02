@@ -1,4 +1,4 @@
-import { Outlet } from "react-router";
+import { Outlet, useNavigate } from "react-router";
 import { Sidebar } from "./Sidebar";
 import { BottomNav } from "./BottomNav";
 import { Header } from "./Header";
@@ -6,6 +6,8 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useImpersonation } from "@/contexts/ImpersonationContext";
+import { useOnboarding } from "@/hooks/useOnboarding";
+import { SetupWizard } from "@/components/onboarding/SetupWizard";
 
 export function AppShell() {
   const isDesktop = useMediaQuery("(min-width: 1024px)");
@@ -14,6 +16,8 @@ export function AppShell() {
   const { data: profileData } = useProfile();
   const profile = profileData?.profile;
   const { isImpersonating, companyName, stopImpersonation } = useImpersonation();
+  const { shouldShowOnboarding } = useOnboarding("wizard");
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background">
@@ -47,6 +51,14 @@ export function AppShell() {
 
       {/* BottomNav: mobile only */}
       {!isTablet && <BottomNav />}
+
+      {/* Onboarding wizard overlay */}
+      {shouldShowOnboarding && (
+        <SetupWizard
+          onComplete={() => navigate("/")}
+          onSkip={() => navigate("/")}
+        />
+      )}
     </div>
   );
 }
