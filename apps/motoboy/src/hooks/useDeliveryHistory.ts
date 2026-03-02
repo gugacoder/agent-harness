@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { useAuth } from "@/contexts/AuthContext";
 import type { Delivery, Order } from "@/types/delivery";
 
 export interface DeliveryWithOrder {
@@ -38,12 +37,10 @@ async function fetchDeliveryHistory(
   });
 }
 
-export function useDeliveryHistory() {
-  const { user } = useAuth();
-
+export function useDeliveryHistory(courierId: string | null) {
   return useQuery({
-    queryKey: ["delivery-history", user?.id],
-    queryFn: () => fetchDeliveryHistory(user!.id),
-    enabled: !!user?.id,
+    queryKey: ["delivery-history", courierId],
+    queryFn: () => fetchDeliveryHistory(courierId!),
+    enabled: !!courierId,
   });
 }

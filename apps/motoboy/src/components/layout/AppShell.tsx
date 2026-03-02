@@ -12,11 +12,11 @@ import { LocationDeniedAlert } from "@/components/ui/LocationDeniedAlert";
 
 export function AppShell() {
   const { user } = useAuth();
-  const { status } = useCourierStatus();
+  const { courierId, status } = useCourierStatus();
   const { activeDelivery } = useActiveDeliveryContext();
-  const { connected, toast, dismissToast } = useCourierEvents();
+  const { connected, toast, dismissToast } = useCourierEvents(courierId);
   const { state: locationState } = useLocationSharing({
-    courierId: user?.id ?? null,
+    courierId,
     status,
     hasActiveDelivery: !!activeDelivery,
   });

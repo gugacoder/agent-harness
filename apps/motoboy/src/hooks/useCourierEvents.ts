@@ -1,5 +1,4 @@
 import { useMemo, useCallback, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
 import { useActiveDeliveryContext } from "@/contexts/ActiveDeliveryContext";
 import { useSSE, type SSEEventHandler } from "@/hooks/useSSE";
 
@@ -11,13 +10,11 @@ import { useSSE, type SSEEventHandler } from "@/hooks/useSSE";
  * - delivery_assigned → sets pending delivery for accept/reject
  * - delivery_cancelled → clears active delivery and fires toast
  */
-export function useCourierEvents() {
-  const { user } = useAuth();
+export function useCourierEvents(courierId: string | null) {
   const { onDeliveryAssigned, onDeliveryCancelled } =
     useActiveDeliveryContext();
   const [toast, setToast] = useState<string | null>(null);
 
-  const courierId = user?.id ?? null;
   const channel = courierId ? `courier/${courierId}` : null;
 
   const handleDeliveryAssigned: SSEEventHandler = useCallback(

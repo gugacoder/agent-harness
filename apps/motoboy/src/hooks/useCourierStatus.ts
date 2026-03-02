@@ -8,8 +8,8 @@ interface Courier {
   status: CourierStatus;
 }
 
-async function fetchCourier(courierId: string): Promise<Courier> {
-  return api.get(`api/couriers/${courierId}`).json();
+async function fetchMyCourier(): Promise<Courier> {
+  return api.get("api/couriers/me").json();
 }
 
 async function updateCourierStatus(
@@ -24,20 +24,21 @@ async function updateCourierStatus(
 export function useCourierStatus() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const courierId = user?.id ?? null;
 
   const courierQuery = useQuery({
-    queryKey: ["courier", courierId],
-    queryFn: () => fetchCourier(courierId!),
-    enabled: !!courierId,
+    queryKey: ["courier", "me"],
+    queryFn: fetchMyCourier,
+    enabled: !!user,
     refetchInterval: 30_000,
   });
+
+  const courierId = courierQuery.data?.id ?? null;
 
   const statusMutation = useMutation({
     mutationFn: (newStatus: CourierStatus) =>
       updateCourierStatus(courierId!, newStatus),
     onSuccess: (updatedCourier) => {
-      queryClient.setQueryData(["courier", courierId], updatedCourier);
+      queryClient.setQueryData(["courier", "me"], updatedCourier);
     },
   });
 
@@ -49,6 +50,7 @@ export function useCourierStatus() {
   };
 
   return {
+    courierId,
     status,
     isLoading: courierQuery.isLoading,
     isToggling: statusMutation.isPending,

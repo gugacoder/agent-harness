@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Clock, ChevronLeft, MapPin, Timer } from "lucide-react";
 import { useDeliveryHistory } from "@/hooks/useDeliveryHistory";
 import type { DeliveryWithOrder } from "@/hooks/useDeliveryHistory";
+import { useCourierStatus } from "@/hooks/useCourierStatus";
 import { DeliveryStatusBadge } from "@/components/ui/DeliveryStatusBadge";
 import { DeliveryTimeline } from "@/components/ui/DeliveryTimeline";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -176,7 +177,8 @@ export function HistoricoPage() {
   const [view, setView] = useState<View>({ type: "list" });
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  const { data: history, isLoading } = useDeliveryHistory();
+  const { courierId } = useCourierStatus();
+  const { data: history, isLoading } = useDeliveryHistory(courierId);
 
   const todayCount = useMemo(() => {
     if (!history) return 0;
