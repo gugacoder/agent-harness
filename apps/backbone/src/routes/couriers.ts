@@ -5,6 +5,7 @@ import { companyMiddleware } from "../middleware/company.js";
 import {
   listCouriers,
   createCourier,
+  getCourierByProfileId,
   updateCourierStatus,
   updateCourierActive,
   recordLocation,
@@ -93,6 +94,66 @@ const couriersRouter = new OpenAPIHono<AppType>({
 // Apply auth + company middleware
 couriersRouter.use("/*", authMiddleware);
 couriersRouter.use("/*", companyMiddleware);
+
+// --- GET /api/couriers/me ---
+
+const getMeRoute = createRoute({
+  method: "get",
+  path: "/couriers/me",
+  tags: ["Couriers"],
+  summary: "Get current courier profile",
+  description:
+    "Return the courier record linked to the authenticated user's profile_id.",
+  responses: {
+    200: {
+      content: { "application/json": { schema: CourierResponseSchema } },
+      description: "Courier profile",
+    },
+    401: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Missing or invalid authentication",
+    },
+    404: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Courier not found for this user",
+    },
+  },
+});
+
+couriersRouter.openapi(getMeRoute, async (c) => {
+  const user = c.get("user");
+  const companyId = c.get("companyId");
+
+  const courier = await getCourierByProfileId(user.id, companyId);
+
+  if (!courier) {
+    return c.json(
+      {
+        error: "Not Found",
+        message: "Courier not found for this user",
+        statusCode: 404,
+      },
+      404
+    );
+  }
+
+  return c.json(
+    {
+      id: courier.id,
+      company_id: courier.company_id,
+      profile_id: courier.profile_id,
+      full_name: courier.full_name,
+      phone: courier.phone,
+      photo_url: courier.photo_url,
+      status: courier.status,
+      total_deliveries: courier.total_deliveries,
+      active: courier.active,
+      created_at: courier.created_at,
+      updated_at: courier.updated_at,
+    },
+    200
+  );
+});
 
 // --- GET /api/couriers ---
 

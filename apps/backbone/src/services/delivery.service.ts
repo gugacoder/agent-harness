@@ -1,6 +1,33 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { db } from "../db.js";
 import { deliveries, deliveryEvents, orders } from "../../db/schema/index.js";
+
+/**
+ * List deliveries for a company, optionally filtered by courier_id and/or status.
+ */
+type DeliveryStatus = "assigned" | "accepted" | "picked_up" | "in_transit" | "delivered" | "failed";
+
+export async function listDeliveries(params: {
+  companyId: string;
+  courierId?: string;
+  status?: string;
+}) {
+  const conditions = [eq(deliveries.company_id, params.companyId)];
+
+  if (params.courierId) {
+    conditions.push(eq(deliveries.courier_id, params.courierId));
+  }
+
+  if (params.status) {
+    conditions.push(eq(deliveries.status, params.status as DeliveryStatus));
+  }
+
+  return db
+    .select()
+    .from(deliveries)
+    .where(and(...conditions))
+    .orderBy(desc(deliveries.created_at));
+}
 
 /**
  * Valid delivery status transitions.

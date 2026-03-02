@@ -3,6 +3,7 @@ import type { AppType } from "../types.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { companyMiddleware } from "../middleware/company.js";
 import {
+  listDeliveries,
   assignCourier,
   acceptDelivery,
   rejectDelivery,
@@ -82,6 +83,65 @@ const deliveriesRouter = new OpenAPIHono<AppType>({
 // Apply auth + company middleware
 deliveriesRouter.use("/*", authMiddleware);
 deliveriesRouter.use("/*", companyMiddleware);
+
+// --- GET /api/deliveries ---
+
+const listDeliveriesRoute = createRoute({
+  method: "get",
+  path: "/deliveries",
+  tags: ["Deliveries"],
+  summary: "List deliveries",
+  description:
+    "List deliveries for the authenticated user's company. Optionally filter by courier_id and/or status.",
+  request: {
+    query: z.object({
+      courier_id: z.string().uuid().optional(),
+      status: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": { schema: z.array(DeliveryResponseSchema) },
+      },
+      description: "List of deliveries",
+    },
+    401: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Missing or invalid authentication",
+    },
+  },
+});
+
+deliveriesRouter.openapi(listDeliveriesRoute, async (c) => {
+  const companyId = c.get("companyId");
+  const query = c.req.valid("query");
+
+  const result = await listDeliveries({
+    companyId,
+    courierId: query.courier_id,
+    status: query.status,
+  });
+
+  return c.json(
+    result.map((d) => ({
+      id: d.id,
+      order_id: d.order_id,
+      courier_id: d.courier_id,
+      company_id: d.company_id,
+      status: d.status,
+      assigned_at: d.assigned_at,
+      accepted_at: d.accepted_at,
+      picked_up_at: d.picked_up_at,
+      delivered_at: d.delivered_at,
+      actual_distance_km: d.actual_distance_km,
+      actual_duration_min: d.actual_duration_min,
+      created_at: d.created_at,
+      updated_at: d.updated_at,
+    })),
+    200
+  );
+});
 
 // --- POST /api/orders/:id/assign ---
 

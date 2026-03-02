@@ -4,6 +4,7 @@ import { verify } from "hono/jwt";
 import type { AppType } from "../types.js";
 import { sseManager } from "../sse/manager.js";
 import { companyChannel, courierChannel, orderChannel } from "../sse/channels.js";
+import { getCourierById } from "../services/courier.service.js";
 
 /**
  * SSE event routes — real-time event streams per channel (OSD120-OSD126).
@@ -119,17 +120,20 @@ eventsRouter.get("/company/:companyId", (c) => {
  * Events: delivery_assigned, delivery_cancelled
  * Auth: user must be the courier or belong to the same company.
  */
-eventsRouter.get("/courier/:courierId", (c) => {
+eventsRouter.get("/courier/:courierId", async (c) => {
   const user = c.get("user");
   const courierId = c.req.param("courierId");
 
-  // Courier can subscribe to their own channel, or operator from same company
-  // The courier's profile_id matches their user id
-  if (user.id !== courierId && user.role !== "operator") {
-    return c.json(
-      { error: "Forbidden", message: "Access denied to this courier channel", statusCode: 403 },
-      403
-    );
+  // Operator from same company can subscribe to any courier channel.
+  // Couriers can only subscribe to their own channel — verify via DB lookup.
+  if (user.role !== "operator") {
+    const courier = await getCourierById(courierId, user.companyId);
+    if (!courier || courier.profile_id !== user.id) {
+      return c.json(
+        { error: "Forbidden", message: "Access denied to this courier channel", statusCode: 403 },
+        403
+      );
+    }
   }
 
   const channel = courierChannel(courierId);

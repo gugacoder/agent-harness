@@ -79,7 +79,7 @@ app.route("/", ordersRouter);
 app.route("/", deliveriesRouter);
 app.route("/", couriersRouter);
 
-const port = parseInt(process.env.BACKBONE_PORT || "3205", 10);
+const port = parseInt(process.env.BACKBONE_PORT!, 10);
 
 serve({ fetch: app.fetch, port }, (info) => {
   console.log(`Backbone listening on http://localhost:${info.port}`);

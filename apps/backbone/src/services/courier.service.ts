@@ -44,6 +44,20 @@ export async function getCourierById(courierId: string, companyId: string) {
 }
 
 /**
+ * Get a courier by profile_id (Supabase auth user UUID), scoped to company.
+ */
+export async function getCourierByProfileId(profileId: string, companyId: string) {
+  const [courier] = await db
+    .select()
+    .from(couriers)
+    .where(
+      and(eq(couriers.profile_id, profileId), eq(couriers.company_id, companyId))
+    );
+
+  return courier || null;
+}
+
+/**
  * Create a new courier under a company.
  */
 export async function createCourier(params: {
