@@ -240,7 +240,7 @@ export async function updateCourier(
     full_name?: string;
     phone?: string;
     vehicle_type?: string | null;
-    plate_number?: string | null;
+    plate?: string | null;
     photo_url?: string | null;
   }
 ) {
@@ -248,7 +248,7 @@ export async function updateCourier(
   if (data.full_name !== undefined) updateValues.full_name = data.full_name;
   if (data.phone !== undefined) updateValues.phone = data.phone;
   if (data.vehicle_type !== undefined) updateValues.vehicle_type = data.vehicle_type;
-  if (data.plate_number !== undefined) updateValues.plate_number = data.plate_number;
+  if (data.plate !== undefined) updateValues.plate = data.plate;
   if (data.photo_url !== undefined) updateValues.photo_url = data.photo_url;
 
   if (Object.keys(updateValues).length === 0) return null;

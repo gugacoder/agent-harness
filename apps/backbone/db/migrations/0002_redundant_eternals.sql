@@ -37,7 +37,6 @@ ALTER TABLE "company_configs" ADD COLUMN "otp_smtp_user" text;--> statement-brea
 ALTER TABLE "company_configs" ADD COLUMN "otp_smtp_pass_encrypted" text;--> statement-breakpoint
 ALTER TABLE "company_configs" ADD COLUMN "otp_smtp_from" text;--> statement-breakpoint
 ALTER TABLE "company_configs" ADD COLUMN "otp_smtp_tls" boolean DEFAULT true NOT NULL;--> statement-breakpoint
-ALTER TABLE "couriers" ADD COLUMN "vehicle_type" text;--> statement-breakpoint
 ALTER TABLE "couriers" ADD COLUMN "plate" text;--> statement-breakpoint
 ALTER TABLE "couriers" ADD COLUMN "cnh" text;--> statement-breakpoint
 ALTER TABLE "shops" ADD COLUMN "business_hours" jsonb;--> statement-breakpoint
