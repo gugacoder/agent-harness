@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Agent Setup - wave-3-research (Wave 3 - Harness A Research)
+# Agent Setup - wave-4 (Seguranca, Login OTP, Perfil, Avatar, User Mgmt)
 # Bootstrap para o agente na worktree isolada.
 # Executar da raiz da worktree: bash .harness/agent-setup.sh
 # =============================================================================
 set -euo pipefail
 
 WT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-echo "=== Agent Setup: wave-3-research ==="
+echo "=== Agent Setup: wave-4 ==="
 echo ""
 
 # --- Carregar .env ---
@@ -65,11 +65,19 @@ echo "[4/4] Smoke test..."
 node -e "console.log('  Node OK:', process.version)" 2>&1 || echo "  WARN: Node.js nao disponivel"
 
 # Health check Kong (Supabase gateway) se portas configuradas
-KONG="${KONG_HTTP_PORT:-4630}"
+KONG="${KONG_HTTP_PORT:-3430}"
 if command -v curl &>/dev/null; then
   HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 3 "http://localhost:$KONG" 2>/dev/null || echo "000")
   echo "  Kong (port $KONG): HTTP $HTTP_CODE"
 fi
+
+# Check Drizzle schema files
+SCHEMA_COUNT=$(ls "$WT_DIR"/apps/backbone/db/schema/*.ts 2>/dev/null | wc -l)
+echo "  Drizzle schemas: $SCHEMA_COUNT files"
+
+# Check existing migrations
+MIGRATION_COUNT=$(ls "$WT_DIR"/apps/backbone/db/migrations/*.sql 2>/dev/null | wc -l)
+echo "  Existing migrations: $MIGRATION_COUNT files"
 
 echo ""
 echo "=== Resumo ==="
@@ -78,7 +86,13 @@ echo "  Branch:    $(git branch --show-current)"
 echo "  Node:      $(node --version 2>/dev/null || echo 'N/A')"
 echo "  Pkg mgr:   $PKG_MGR"
 echo "  PREFIX:    ${PREFIX:-N/A}"
-echo "  Session:   wave-3-research--cc"
-echo "  Runs dir:  .harness/runs/wave-3-research--cc/ (ROOT)"
+echo "  Session:   wave-4--cc"
+echo "  Runs dir:  .harness/runs/wave-4--cc/ (ROOT)"
+echo ""
+echo "  Dev commands:"
+echo "    npm run dev:backbone    # Hono API (port ${BACKBONE_PORT:-3405})"
+echo "    npm run dev:central     # Central (port ${CENTRAL_PORT:-3402})"
+echo "    npm run db:generate     # Generate Drizzle migration"
+echo "    npm run db:migrate      # Apply migrations"
 echo ""
 echo "=== Setup completo ==="
