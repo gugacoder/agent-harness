@@ -272,6 +272,32 @@ export interface CompanyConfig {
   pod_required: boolean;
   default_closing_period: string;
   default_invoice_period: string;
+  otp_whatsapp_enabled: boolean;
+  otp_whatsapp_url: string | null;
+  otp_whatsapp_api_key_set: boolean;
+  otp_smtp_enabled: boolean;
+  otp_smtp_host: string | null;
+  otp_smtp_port: number | null;
+  otp_smtp_user: string | null;
+  otp_smtp_pass_set: boolean;
+  otp_smtp_from: string | null;
+  otp_smtp_tls: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface UpdateCompanyConfigData {
+  pod_required?: boolean;
+  default_closing_period?: string;
+  default_invoice_period?: string;
+  otp_whatsapp_enabled?: boolean;
+  otp_whatsapp_url?: string;
+  otp_whatsapp_api_key?: string;
+  otp_smtp_enabled?: boolean;
+  otp_smtp_host?: string;
+  otp_smtp_port?: number;
+  otp_smtp_user?: string;
+  otp_smtp_pass?: string;
+  otp_smtp_from?: string;
+  otp_smtp_tls?: boolean;
 }
