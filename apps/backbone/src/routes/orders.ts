@@ -1,4 +1,5 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
+import { eq, and, asc } from "drizzle-orm";
 import type { AppType } from "../types.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { companyMiddleware } from "../middleware/company.js";
@@ -10,6 +11,14 @@ import {
   cancelOrder,
 } from "../services/order.service.js";
 import { autoSaveAddress } from "../services/address.service.js";
+import { calculateHaversineDistance } from "../services/distance.service.js";
+import { evaluateRules } from "../services/pricing.service.js";
+import { db } from "../db.js";
+import {
+  pricingTables,
+  pricingRules,
+  shopPricingOverrides,
+} from "../../db/schema/index.js";
 import { sseManager } from "../sse/manager.js";
 import { companyChannel, orderChannel } from "../sse/channels.js";
 
@@ -157,6 +166,165 @@ ordersRouter.openapi(listOrdersRoute, async (c) => {
       created_at: order.created_at,
       updated_at: order.updated_at,
     })),
+    200
+  );
+});
+
+// --- GET /api/orders/estimate ---
+
+const EstimateResponseSchema = z.object({
+  estimated_distance_km: z.number(),
+  estimated_price: z.number(),
+  pricing_table_name: z.string(),
+});
+
+const estimateRoute = createRoute({
+  method: "get",
+  path: "/orders/estimate",
+  tags: ["Orders"],
+  summary: "Estimate delivery cost",
+  description:
+    "Calculate estimated delivery cost based on pickup and delivery coordinates. Uses active pricing table for the company (or shop override if shop_id provided).",
+  request: {
+    query: z.object({
+      pickup_lat: z.string().regex(/^-?\d+(\.\d+)?$/, "Must be a number"),
+      pickup_lng: z.string().regex(/^-?\d+(\.\d+)?$/, "Must be a number"),
+      delivery_lat: z.string().regex(/^-?\d+(\.\d+)?$/, "Must be a number"),
+      delivery_lng: z.string().regex(/^-?\d+(\.\d+)?$/, "Must be a number"),
+      shop_id: z.string().uuid().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      content: { "application/json": { schema: EstimateResponseSchema } },
+      description: "Delivery cost estimate",
+    },
+    400: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Invalid coordinates",
+    },
+    403: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Access denied — role not allowed",
+    },
+    404: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "No active pricing table found",
+    },
+    401: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Missing or invalid authentication",
+    },
+  },
+});
+
+ordersRouter.openapi(estimateRoute, async (c) => {
+  const user = c.get("user");
+  if (user.role !== "operator" && user.role !== "shop") {
+    return c.json(
+      {
+        error: "Forbidden",
+        message: "Only operators and shops can access estimates",
+        statusCode: 403,
+      },
+      403
+    );
+  }
+
+  const companyId = c.get("companyId");
+  const query = c.req.valid("query");
+
+  const pickupLat = parseFloat(query.pickup_lat);
+  const pickupLng = parseFloat(query.pickup_lng);
+  const deliveryLat = parseFloat(query.delivery_lat);
+  const deliveryLng = parseFloat(query.delivery_lng);
+
+  // Calculate Haversine distance
+  const distanceKm = calculateHaversineDistance(
+    pickupLat,
+    pickupLng,
+    deliveryLat,
+    deliveryLng
+  );
+
+  // Resolve pricing table (shop override first, then company default)
+  let table = null;
+
+  if (query.shop_id) {
+    const [override] = await db
+      .select()
+      .from(shopPricingOverrides)
+      .where(eq(shopPricingOverrides.shop_id, query.shop_id));
+
+    if (override) {
+      const [overrideTable] = await db
+        .select()
+        .from(pricingTables)
+        .where(eq(pricingTables.id, override.pricing_table_id));
+      table = overrideTable || null;
+    }
+  }
+
+  if (!table) {
+    const [companyTable] = await db
+      .select()
+      .from(pricingTables)
+      .where(
+        and(
+          eq(pricingTables.company_id, companyId),
+          eq(pricingTables.active, true)
+        )
+      );
+    table = companyTable || null;
+  }
+
+  if (!table) {
+    return c.json(
+      {
+        error: "Not Found",
+        message: "Nenhuma tabela de precos ativa",
+        statusCode: 404,
+      },
+      404
+    );
+  }
+
+  // Fetch and evaluate pricing rules
+  const rules = await db
+    .select()
+    .from(pricingRules)
+    .where(eq(pricingRules.pricing_table_id, table.id))
+    .orderBy(asc(pricingRules.priority));
+
+  if (rules.length === 0) {
+    return c.json(
+      {
+        error: "Not Found",
+        message: "Nenhuma tabela de precos ativa",
+        statusCode: 404,
+      },
+      404
+    );
+  }
+
+  const result = evaluateRules(rules, distanceKm, "");
+  if (!result) {
+    return c.json(
+      {
+        error: "Not Found",
+        message: "Nenhuma tabela de precos ativa",
+        statusCode: 404,
+      },
+      404
+    );
+  }
+
+  return c.json(
+    {
+      estimated_distance_km: Math.round(distanceKm * 100) / 100,
+      estimated_price: result.totalPrice,
+      pricing_table_name: table.name,
+    },
     200
   );
 });
