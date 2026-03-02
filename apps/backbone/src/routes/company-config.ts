@@ -94,9 +94,9 @@ const companyConfigRouter = new OpenAPIHono<AppType>({
 });
 
 // Apply auth + company + role middleware
-companyConfigRouter.use("/*", authMiddleware);
-companyConfigRouter.use("/*", companyMiddleware);
-companyConfigRouter.use("/*", requireRole("operator", "super_admin"));
+companyConfigRouter.use("/company/*", authMiddleware);
+companyConfigRouter.use("/company/*", companyMiddleware);
+companyConfigRouter.use("/company/*", requireRole("operator", "courier", "super_admin"));
 
 // --- Helper: ensure config exists (upsert with defaults) ---
 
@@ -272,6 +272,10 @@ companyConfigRouter.openapi(updateCompanyConfigRoute, async (c) => {
     .returning();
 
   return c.json(buildConfigResponse(updated), 200);
+  } catch (err) {
+    console.error("Error updating company config:", err);
+    return c.json({ error: "Internal Server Error", message: "Internal server error", statusCode: 500 }, 500);
+  }
 });
 
 // --- POST /api/company/config/test-whatsapp ---

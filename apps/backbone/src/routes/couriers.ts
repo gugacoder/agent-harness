@@ -51,9 +51,9 @@ const UpdateActiveRequestSchema = z.object({
 });
 
 const SendLocationRequestSchema = z.object({
-  lat: z.string(),
-  lng: z.string(),
-  accuracy: z.string().optional().default("0"),
+  lat: z.number(),
+  lng: z.number(),
+  accuracy: z.number().optional().default(0),
   delivery_id: z.string().uuid().nullable().optional(),
 });
 
@@ -97,9 +97,9 @@ const couriersRouter = new OpenAPIHono<AppType>({
 });
 
 // Apply auth + company + role middleware
-couriersRouter.use("/*", authMiddleware);
-couriersRouter.use("/*", companyMiddleware);
-couriersRouter.use("/*", requireRole("operator", "super_admin"));
+couriersRouter.use("/couriers/*", authMiddleware);
+couriersRouter.use("/couriers/*", companyMiddleware);
+couriersRouter.use("/couriers/*", requireRole("operator", "courier", "super_admin"));
 
 // --- GET /api/couriers/me ---
 
@@ -409,9 +409,9 @@ couriersRouter.openapi(sendLocationRoute, async (c) => {
   const location = await recordLocation({
     courierId: id,
     companyId,
-    lat: body.lat,
-    lng: body.lng,
-    accuracy: body.accuracy,
+    lat: String(body.lat),
+    lng: String(body.lng),
+    accuracy: String(body.accuracy),
     deliveryId: body.delivery_id,
   });
 
@@ -469,7 +469,7 @@ couriersRouter.openapi(sendLocationRoute, async (c) => {
 
 const CourierDetailResponseSchema = CourierResponseSchema.extend({
   vehicle_type: z.string().nullable(),
-  plate_number: z.string().nullable(),
+  plate: z.string().nullable(),
   last_location: z
     .object({
       lat: z.string(),
@@ -484,7 +484,7 @@ const UpdateCourierFieldsRequestSchema = z.object({
   full_name: z.string().min(1).optional(),
   phone: z.string().min(1).optional(),
   vehicle_type: z.string().nullable().optional(),
-  plate_number: z.string().nullable().optional(),
+  plate: z.string().nullable().optional(),
   photo_url: z.string().nullable().optional(),
 });
 
@@ -577,7 +577,7 @@ couriersRouter.openapi(getCourierRoute, async (c) => {
       total_deliveries: courier.total_deliveries,
       active: courier.active,
       vehicle_type: courier.vehicle_type,
-      plate_number: courier.plate_number,
+      plate: courier.plate,
       created_at: courier.created_at,
       updated_at: courier.updated_at,
       last_location: courier.last_location,
@@ -594,7 +594,7 @@ const updateCourierFieldsRoute = createRoute({
   tags: ["Couriers"],
   summary: "Update courier fields",
   description:
-    "Update courier fields: full_name, phone, vehicle_type, plate_number, photo_url.",
+    "Update courier fields: full_name, phone, vehicle_type, plate, photo_url.",
   request: {
     params: z.object({ id: z.string().uuid() }),
     body: {
