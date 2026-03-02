@@ -7,6 +7,7 @@ import { InvoiceList } from "@/components/invoices/InvoiceList";
 import { InvoiceDetail } from "@/components/invoices/InvoiceDetail";
 import { CreateInvoiceForm } from "@/components/invoices/CreateInvoiceForm";
 import type { InvoiceStatus } from "@/types/api";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 type View = { type: "list" } | { type: "detail"; invoiceId: string };
 
@@ -78,6 +79,7 @@ export function FaturasPage() {
         <div className="flex items-center gap-3">
           <FileText className="h-8 w-8 text-primary" />
           <h1 className="text-2xl font-bold tracking-tight">Faturas</h1>
+          <PageHelpLink url="/docs#faturas" />
         </div>
         <p className="mt-1 text-muted-foreground">
           Gerencie as faturas dos lojistas.

@@ -22,6 +22,7 @@ import { SavedAddressPicker } from "@/components/address/SavedAddressPicker";
 import { AddressAutocomplete } from "@/components/address/AddressAutocomplete";
 import { AddressPinDrop } from "@/components/address/AddressPinDrop";
 import { CostEstimate } from "@/components/orders/CostEstimate";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 const formSchema = z.object({
   pickup_address: z.string().min(1, "Endereço de coleta é obrigatório"),
@@ -185,7 +186,10 @@ export function NovaEntregaPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold">Nova Entrega</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold">Nova Entrega</h1>
+        <PageHelpLink url="/docs#criar-pedido" />
+      </div>
 
       {error && (
         <div className="mt-3">

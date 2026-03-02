@@ -36,6 +36,7 @@ import { CourierDetailView } from "@/components/couriers/CourierDetailView";
 import { CourierEditForm } from "@/components/couriers/CourierEditForm";
 import { CourierGpsBadge } from "@/components/couriers/CourierGpsBadge";
 import type { Courier, CourierStatus } from "@/types/api";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 import type { CourierLocation } from "@/hooks/useCourierLocations";
 
 // --- Mini Map Helpers ---
@@ -434,11 +435,14 @@ export function MotoboysPage() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Motoboys</h1>
-          <p className="mt-1 text-muted-foreground">
-            Gerenciamento de motoboys
-          </p>
+        <div className="flex items-center gap-2">
+          <div>
+            <h1 className="text-2xl font-bold">Motoboys</h1>
+            <p className="mt-1 text-muted-foreground">
+              Gerenciamento de motoboys
+            </p>
+          </div>
+          <PageHelpLink url="/docs#motoboys" />
         </div>
         <button
           onClick={() => setView({ type: "new" })}
@@ -585,7 +589,19 @@ export function MotoboysPage() {
                 ? "Tente outro termo de busca"
                 : statusFilter !== "all"
                   ? "Tente outro filtro ou cadastre um novo motoboy"
-                  : "Cadastre o primeiro motoboy clicando em 'Novo Motoboy'"
+                  : "Convide seu primeiro motoboy para começar a operar."
+            }
+            action={
+              statusFilter === "all" && !searchQuery.trim() ? (
+                <button
+                  type="button"
+                  onClick={() => setView({ type: "new" })}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                >
+                  <Plus className="h-4 w-4" />
+                  Cadastrar motoboy
+                </button>
+              ) : undefined
             }
           />
         ) : (

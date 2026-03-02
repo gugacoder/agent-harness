@@ -15,6 +15,7 @@ import { COURIER_STATUS_LABELS } from "@/components/ui/StatusBadge";
 import { CourierGpsBadge } from "@/components/couriers/CourierGpsBadge";
 import type { CourierLocation } from "@/hooks/useCourierLocations";
 import type { Courier, CourierStatus } from "@/types/api";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 // --- Constants ---
 
@@ -239,6 +240,7 @@ export function MapaPage() {
               Ocupado
             </span>
           </div>
+          <PageHelpLink url="/docs#mapa" />
           {/* SSE status */}
           <span
             className="flex items-center gap-1 text-xs"
@@ -291,11 +293,11 @@ export function MapaPage() {
                 <div className="rounded-lg bg-card/90 px-6 py-4 text-center shadow-sm">
                   <Bike className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
                   <p className="text-sm font-medium text-muted-foreground">
-                    Nenhum motoboy com localização
+                    Nenhum motoboy online
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground/70">
                     {connected
-                      ? "Posições serão exibidas em tempo real via SSE"
+                      ? "Quando motoboys ficarem online, aparecerão aqui no mapa."
                       : "Conectando ao servidor..."}
                   </p>
                 </div>

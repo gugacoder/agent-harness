@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Loader2, AlertCircle } from "lucide-react";
 import { api } from "@/lib/api";
+import { HelpTooltip } from "@/components/ui/HelpTooltip";
 import type { PricingRule, RuleType, SurchargeType, SurchargeMode } from "@/types/api";
 
 const RULE_TYPE_LABELS: Record<RuleType, string> = {
@@ -157,9 +158,15 @@ export function PricingRuleForm({
         {ruleType === "per_km" && (
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium">
-                Valor Base (R$)
-              </label>
+              <div className="mb-1 flex items-center gap-1.5">
+                <label className="block text-sm font-medium">
+                  Valor Base (R$)
+                </label>
+                <HelpTooltip
+                  content="Valor fixo cobrado em toda entrega, independente da distância"
+                  learnMoreUrl="/docs#precos"
+                />
+              </div>
               <input
                 type="text"
                 value={baseValue}
@@ -169,9 +176,15 @@ export function PricingRuleForm({
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">
-                Valor por Km (R$)
-              </label>
+              <div className="mb-1 flex items-center gap-1.5">
+                <label className="block text-sm font-medium">
+                  Valor por Km (R$)
+                </label>
+                <HelpTooltip
+                  content="Valor adicional cobrado por quilômetro rodado"
+                  learnMoreUrl="/docs#precos"
+                />
+              </div>
               <input
                 type="text"
                 value={perKmValue}
@@ -308,10 +321,18 @@ export function PricingRuleForm({
               </div>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium">
-                Valor{" "}
-                {surchargeMode === "percentage" ? "(%)" : "(R$)"}
-              </label>
+              <div className="mb-1 flex items-center gap-1.5">
+                <label className="block text-sm font-medium">
+                  Valor{" "}
+                  {surchargeMode === "percentage" ? "(%)" : "(R$)"}
+                </label>
+                {surchargeType === "rain" && (
+                  <HelpTooltip
+                    content="Acréscimo aplicado quando chove. Ex: 20% = entrega de R$10 vira R$12"
+                    learnMoreUrl="/docs#precos"
+                  />
+                )}
+              </div>
               <input
                 type="text"
                 value={surchargeValue}

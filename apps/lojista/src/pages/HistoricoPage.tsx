@@ -1,5 +1,14 @@
 import { useState, useMemo } from "react";
-import { Clock } from "lucide-react";
+import { Link } from "react-router";
+import {
+  Clock,
+  ChevronLeft,
+  MapPin,
+  User,
+  Phone,
+  FileText,
+  Plus,
+} from "lucide-react";
 import { useOrders } from "@/hooks/useOrders";
 import { OrderStatusBadge } from "@/components/ui/StatusBadge";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -12,6 +21,7 @@ import {
   type HistoryFilters,
 } from "@/components/orders/OrderHistoryFilters";
 import type { Order, OrderStatus } from "@/types/api";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 const HISTORY_STATUSES: OrderStatus[] = ["delivered", "cancelled"];
 const PAGE_SIZE = 20;
@@ -112,7 +122,10 @@ export function HistoricoPage() {
   // --- Render Order List ---
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold">Histórico</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold">Histórico</h1>
+        <PageHelpLink url="/docs#historico" />
+      </div>
 
       <OrderHistoryFilters
         filters={filters}
@@ -130,8 +143,17 @@ export function HistoricoPage() {
         ) : historyOrders.length === 0 ? (
           <EmptyState
             icon={Clock}
-            title="Nenhum pedido no histórico"
-            description="Pedidos entregues ou cancelados aparecerão aqui"
+            title="Nenhuma entrega no histórico"
+            description="Crie seu primeiro pedido para começar."
+            action={
+              <Link
+                to="/nova"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                <Plus className="h-4 w-4" />
+                Criar pedido
+              </Link>
+            }
           />
         ) : (
           <>

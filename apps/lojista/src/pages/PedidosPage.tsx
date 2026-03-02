@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { useLocation } from "react-router";
+import { useLocation, Link } from "react-router";
 import {
   Package,
   ChevronLeft,
@@ -12,6 +12,7 @@ import {
   WifiOff,
   Check,
   X,
+  Plus,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
@@ -26,6 +27,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { OrderTimeline } from "@/components/ui/OrderTimeline";
 import type { Order, OrderStatus } from "@/types/api";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 // Fix Leaflet default marker icons
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -372,7 +374,10 @@ export function PedidosPage() {
       )}
 
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Pedidos Ativos</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold">Pedidos Ativos</h1>
+          <PageHelpLink url="/docs#acompanhar" />
+        </div>
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           {connected ? (
             <Wifi className="h-3.5 w-3.5 text-cs-success" />
@@ -393,7 +398,16 @@ export function PedidosPage() {
           <EmptyState
             icon={Package}
             title="Nenhum pedido ativo"
-            description="Seus pedidos em andamento aparecerão aqui"
+            description="Crie seu primeiro pedido de entrega."
+            action={
+              <Link
+                to="/nova"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                <Plus className="h-4 w-4" />
+                Criar pedido
+              </Link>
+            }
           />
         ) : (
           <div className="divide-y">
@@ -407,6 +421,10 @@ export function PedidosPage() {
           </div>
         )}
       </div>
+
+      <p className="text-xs text-muted-foreground text-center mt-8">
+        Precisa de ajuda? <Link to="/docs" className="text-primary underline">Guia de uso</Link> · <Link to="/docs#faq" className="text-primary underline">FAQ</Link>
+      </p>
     </div>
   );
 }

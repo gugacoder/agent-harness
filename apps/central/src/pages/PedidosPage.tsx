@@ -30,6 +30,7 @@ import { OrderProofSection } from "@/components/delivery-proof/OrderProofSection
 import { OrderProofBadge } from "@/components/delivery-proof/OrderProofBadge";
 import { OrderTimeline } from "@/components/orders/OrderTimeline";
 import { BulkAssignDialog } from "@/components/orders/BulkAssignDialog";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 const ALL_STATUSES: OrderStatus[] = [
   "pending",
@@ -681,11 +682,14 @@ export function PedidosPage() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Pedidos</h1>
-          <p className="mt-1 text-muted-foreground">
-            Gerenciamento de pedidos
-          </p>
+        <div className="flex items-center gap-2">
+          <div>
+            <h1 className="text-2xl font-bold">Pedidos</h1>
+            <p className="mt-1 text-muted-foreground">
+              Gerenciamento de pedidos
+            </p>
+          </div>
+          <PageHelpLink url="/docs#pedidos" />
         </div>
         <div className="flex items-center gap-2">
           {selectedOrders.size > 0 && (
@@ -753,12 +757,24 @@ export function PedidosPage() {
             title={
               statusFilter
                 ? `Nenhum pedido com status "${ORDER_STATUS_LABELS[statusFilter]}"`
-                : "Nenhum pedido encontrado"
+                : "Nenhum pedido ainda"
             }
             description={
               statusFilter
                 ? "Tente outro filtro ou crie um novo pedido"
-                : "Crie o primeiro pedido clicando em 'Novo Pedido'"
+                : "Seus lojistas podem criar pedidos pelo app ou você pode criar manualmente."
+            }
+            action={
+              !statusFilter ? (
+                <button
+                  type="button"
+                  onClick={() => setView({ type: "new" })}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                >
+                  <Plus className="h-4 w-4" />
+                  Criar pedido
+                </button>
+              ) : undefined
             }
           />
         ) : (

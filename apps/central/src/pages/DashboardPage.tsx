@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Link } from "react-router";
 import {
   LayoutDashboard,
   Package,
@@ -22,6 +23,7 @@ import { useCompanyEventsContext } from "@/contexts/CompanyEventsContext";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { OrderStatusBadge } from "@/components/ui/StatusBadge";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 import type { Order, OrderStatus, Courier, CourierStatus } from "@/types/api";
 
 // --- Main Dashboard ---
@@ -98,9 +100,12 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="mt-1 text-muted-foreground">Visão geral da operação</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <p className="mt-1 text-muted-foreground">Visão geral da operação</p>
+        </div>
+        <PageHelpLink url="/docs#dashboard" />
       </div>
 
       {/* Today Metrics Cards (real-time from /api/analytics/today) */}
@@ -217,6 +222,10 @@ export function DashboardPage() {
           </div>
         </div>
       </div>
+
+      <p className="text-xs text-muted-foreground text-center mt-8">
+        Precisa de ajuda? <Link to="/docs" className="text-primary underline">Guia de uso</Link> · <Link to="/docs#faq" className="text-primary underline">FAQ</Link>
+      </p>
     </div>
   );
 }

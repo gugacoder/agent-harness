@@ -14,6 +14,7 @@ import { CourierPerformanceTable } from "@/components/analytics/CourierPerforman
 import { NeighborhoodVolumeList } from "@/components/analytics/NeighborhoodVolumeList";
 import { DeliveryTrendChart } from "@/components/analytics/DeliveryTrendChart";
 import type { AnalyticsPeriod } from "@/types/api";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 export function AnalyticsPage() {
   const [period, setPeriod] = useState<AnalyticsPeriod>("month");
@@ -45,6 +46,7 @@ export function AnalyticsPage() {
         <div className="flex items-center gap-3">
           <BarChart3 className="h-8 w-8 text-primary" />
           <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
+          <PageHelpLink url="/docs#analytics" />
         </div>
         <p className="mt-1 text-muted-foreground">
           Acompanhe as métricas e performance das entregas.

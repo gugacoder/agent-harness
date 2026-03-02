@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingSkeleton } from "@/components/ui/LoadingSkeleton";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
 import type { PeriodFilter } from "@/types/earnings";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 function getPeriodDates(period: PeriodFilter): {
   start: string;
@@ -63,7 +64,10 @@ export function ExtratoPage() {
     <div className="space-y-4 p-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Extrato</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold">Extrato</h1>
+          <PageHelpLink url="/docs#ganhos" />
+        </div>
         <PeriodSelector value={period} onChange={setPeriod} />
       </div>
 

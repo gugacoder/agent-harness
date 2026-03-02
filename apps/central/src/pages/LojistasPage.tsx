@@ -23,6 +23,7 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ShopDetailView } from "@/components/shops/ShopDetailView";
 import { ShopEditForm } from "@/components/shops/ShopEditForm";
 import type { Shop } from "@/types/api";
+import { PageHelpLink } from "@/components/ui/PageHelpLink";
 
 // --- New Shop Form ---
 
@@ -416,11 +417,14 @@ export function LojistasPage() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Lojistas</h1>
-          <p className="mt-1 text-muted-foreground">
-            Gerenciamento de lojistas
-          </p>
+        <div className="flex items-center gap-2">
+          <div>
+            <h1 className="text-2xl font-bold">Lojistas</h1>
+            <p className="mt-1 text-muted-foreground">
+              Gerenciamento de lojistas
+            </p>
+          </div>
+          <PageHelpLink url="/docs#lojas" />
         </div>
         <button
           onClick={() => setView({ type: "new" })}
@@ -480,14 +484,26 @@ export function LojistasPage() {
                 ? `Nenhum lojista encontrado para "${searchQuery.trim()}"`
                 : statusFilter !== "all"
                   ? `Nenhum lojista ${statusFilter === "active" ? "ativo" : "inativo"}`
-                  : "Nenhum lojista cadastrado"
+                  : "Nenhuma loja cadastrada"
             }
             description={
               searchQuery.trim()
                 ? "Tente outro termo de busca"
                 : statusFilter !== "all"
                   ? "Tente outro filtro ou cadastre um novo lojista"
-                  : "Cadastre o primeiro lojista clicando em 'Novo Lojista'"
+                  : "Cadastre sua primeira loja para começar a receber pedidos."
+            }
+            action={
+              statusFilter === "all" && !searchQuery.trim() ? (
+                <button
+                  type="button"
+                  onClick={() => setView({ type: "new" })}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                >
+                  <Plus className="h-4 w-4" />
+                  Cadastrar loja
+                </button>
+              ) : undefined
             }
           />
         ) : (
