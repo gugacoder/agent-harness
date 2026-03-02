@@ -24,6 +24,9 @@ export const couriers = pgTable("couriers", {
   status: courierStatusEnum("status").notNull().default("offline"),
   total_deliveries: integer("total_deliveries").notNull().default(0),
   active: boolean("active").notNull().default(true),
+  vehicle_type: text("vehicle_type"),
+  plate: text("plate"),
+  cnh: text("cnh"),
   created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
     .notNull()
     .defaultNow(),

@@ -4,6 +4,7 @@ import {
   text,
   numeric,
   boolean,
+  jsonb,
   timestamp,
 } from "drizzle-orm/pg-core";
 import { companies } from "./companies";
@@ -23,6 +24,7 @@ export const shops = pgTable("shops", {
   lat: numeric("lat", { precision: 10, scale: 7 }).notNull(),
   lng: numeric("lng", { precision: 10, scale: 7 }).notNull(),
   active: boolean("active").notNull().default(true),
+  business_hours: jsonb("business_hours"),
   created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
     .notNull()
     .defaultNow(),

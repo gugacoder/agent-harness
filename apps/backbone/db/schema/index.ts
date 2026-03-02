@@ -11,6 +11,8 @@ export {
   closingStatusEnum,
   invoiceStatusEnum,
   closingPeriodEnum,
+  otpChannelEnum,
+  registrationStatusEnum,
 } from "./_enums";
 
 export { companies } from "./companies";
@@ -27,3 +29,5 @@ export { invoices, invoiceItems } from "./invoices";
 export { deliveryProofs } from "./delivery-proof";
 export { deliveryPrices } from "./delivery-price";
 export { companyConfigs } from "./company-config";
+export { otpCodes } from "./otp-codes";
+export { registrationRequests } from "./registration-requests";
