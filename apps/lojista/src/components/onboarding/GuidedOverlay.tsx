@@ -12,6 +12,7 @@ interface GuidedOverlayProps {
   steps: OverlayStep[];
   onComplete: () => void;
   onSkip: () => void;
+  onStepChange?: (completedIndex: number) => void;
 }
 
 const CUTOUT_PADDING = 8;
@@ -96,6 +97,7 @@ export function GuidedOverlay({
   steps,
   onComplete,
   onSkip,
+  onStepChange,
 }: GuidedOverlayProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
@@ -118,6 +120,7 @@ export function GuidedOverlay({
   }, [recalculate]);
 
   const handleNext = () => {
+    onStepChange?.(currentStep);
     if (currentStep < steps.length - 1) {
       setCurrentStep((s) => s + 1);
     } else {
