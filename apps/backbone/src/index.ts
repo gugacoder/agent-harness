@@ -21,6 +21,7 @@ import { invoicesRouter } from "./routes/invoices.js";
 import { analyticsRouter } from "./routes/analytics.js";
 import { eventsRouter } from "./routes/events.js";
 import { profilesRouter } from "./routes/profiles.js";
+import { usersRouter } from "./routes/users.js";
 
 // Re-export for convenience
 export type { AppType };
@@ -95,6 +96,7 @@ app.route("/", deliveryProofRouter);
 app.route("/", invoicesRouter);
 app.route("/", analyticsRouter);
 app.route("/", profilesRouter);
+app.route("/", usersRouter);
 
 const port = parseInt(process.env.BACKBONE_PORT!, 10);
 

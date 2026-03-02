@@ -92,3 +92,10 @@ export {
   UpdateProfileSchema,
   type UpdateProfileRequest,
 } from "./profile.js";
+
+export {
+  ListUsersQuerySchema,
+  UpdateUserSchema,
+  type ListUsersQuery,
+  type UpdateUserRequest,
+} from "./user-management.js";
