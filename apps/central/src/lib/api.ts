@@ -1,5 +1,6 @@
 import ky from "ky";
 import { supabase } from "./supabase";
+import { getImpersonatedCompanyId } from "./impersonation-state";
 
 const backboneUrl = import.meta.env.VITE_BACKBONE_URL as string;
 
@@ -20,6 +21,11 @@ export const api = ky.create({
             "Authorization",
             `Bearer ${session.access_token}`,
           );
+        }
+
+        const impersonatedId = getImpersonatedCompanyId();
+        if (impersonatedId) {
+          request.headers.set("X-Impersonate-Company", impersonatedId);
         }
       },
     ],

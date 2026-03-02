@@ -1,5 +1,5 @@
 {
-  "id": "a44b8552-046d-4fb4-93b8-06fbb7e7d080",
+  "id": "9bb2c215-0f2a-4854-a073-3a1df64782a2",
   "prevId": "7d21ca05-0fe8-42ca-a1cc-d6b1c2235971",
   "version": "7",
   "dialect": "postgresql",
@@ -141,6 +141,69 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'monthly'"
+        },
+        "otp_whatsapp_enabled": {
+          "name": "otp_whatsapp_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "otp_whatsapp_url": {
+          "name": "otp_whatsapp_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otp_whatsapp_api_key": {
+          "name": "otp_whatsapp_api_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otp_smtp_enabled": {
+          "name": "otp_smtp_enabled",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "otp_smtp_host": {
+          "name": "otp_smtp_host",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otp_smtp_port": {
+          "name": "otp_smtp_port",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otp_smtp_user": {
+          "name": "otp_smtp_user",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otp_smtp_pass_encrypted": {
+          "name": "otp_smtp_pass_encrypted",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otp_smtp_from": {
+          "name": "otp_smtp_from",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otp_smtp_tls": {
+          "name": "otp_smtp_tls",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
         },
         "created_at": {
           "name": "created_at",
@@ -352,24 +415,30 @@
           "notNull": true,
           "default": 0
         },
-        "vehicle_type": {
-          "name": "vehicle_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "plate_number": {
-          "name": "plate_number",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "active": {
           "name": "active",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
           "default": true
+        },
+        "vehicle_type": {
+          "name": "vehicle_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "plate": {
+          "name": "plate",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cnh": {
+          "name": "cnh",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -1522,6 +1591,92 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.otp_codes": {
+      "name": "otp_codes",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "phone_or_email": {
+          "name": "phone_or_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "code_hash": {
+          "name": "code_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "channel": {
+          "name": "channel",
+          "type": "otp_channel",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "company_id": {
+          "name": "company_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "attempts": {
+          "name": "attempts",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "verified": {
+          "name": "verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "otp_codes_company_id_companies_id_fk": {
+          "name": "otp_codes_company_id_companies_id_fk",
+          "tableFrom": "otp_codes",
+          "tableTo": "companies",
+          "columnsFrom": [
+            "company_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.pricing_rules": {
       "name": "pricing_rules",
       "schema": "",
@@ -1785,8 +1940,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.saved_addresses": {
-      "name": "saved_addresses",
+    "public.registration_requests": {
+      "name": "registration_requests",
       "schema": "",
       "columns": {
         "id": {
@@ -1802,88 +1957,70 @@
           "primaryKey": false,
           "notNull": true
         },
-        "profile_id": {
-          "name": "profile_id",
+        "full_name": {
+          "name": "full_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "requested_role": {
+          "name": "requested_role",
+          "type": "user_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "registration_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "extra_data": {
+          "name": "extra_data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "requested_at": {
+          "name": "requested_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reviewed_by": {
+          "name": "reviewed_by",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
-        },
-        "label": {
-          "name": "label",
-          "type": "text",
-          "primaryKey": false,
           "notNull": false
-        },
-        "address": {
-          "name": "address",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "lat": {
-          "name": "lat",
-          "type": "numeric(10, 7)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "lng": {
-          "name": "lng",
-          "type": "numeric(10, 7)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "complement": {
-          "name": "complement",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "reference": {
-          "name": "reference",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "is_favorite": {
-          "name": "is_favorite",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "use_count": {
-          "name": "use_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "last_used_at": {
-          "name": "last_used_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "saved_addresses_company_id_companies_id_fk": {
-          "name": "saved_addresses_company_id_companies_id_fk",
-          "tableFrom": "saved_addresses",
+        "registration_requests_company_id_companies_id_fk": {
+          "name": "registration_requests_company_id_companies_id_fk",
+          "tableFrom": "registration_requests",
           "tableTo": "companies",
           "columnsFrom": [
             "company_id"
@@ -1894,17 +2031,17 @@
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
-        "saved_addresses_profile_id_profiles_id_fk": {
-          "name": "saved_addresses_profile_id_profiles_id_fk",
-          "tableFrom": "saved_addresses",
+        "registration_requests_reviewed_by_profiles_id_fk": {
+          "name": "registration_requests_reviewed_by_profiles_id_fk",
+          "tableFrom": "registration_requests",
           "tableTo": "profiles",
           "columnsFrom": [
-            "profile_id"
+            "reviewed_by"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "restrict",
           "onUpdate": "no action"
         }
       },
@@ -2060,18 +2197,18 @@
           "primaryKey": false,
           "notNull": true
         },
-        "contact_name": {
-          "name": "contact_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "active": {
           "name": "active",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
           "default": true
+        },
+        "business_hours": {
+          "name": "business_hours",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -2202,6 +2339,14 @@
         "cancelled"
       ]
     },
+    "public.otp_channel": {
+      "name": "otp_channel",
+      "schema": "public",
+      "values": [
+        "whatsapp",
+        "email"
+      ]
+    },
     "public.pricing_rule_type": {
       "name": "pricing_rule_type",
       "schema": "public",
@@ -2211,6 +2356,15 @@
         "neighborhood",
         "flat_rate",
         "surcharge"
+      ]
+    },
+    "public.registration_status": {
+      "name": "registration_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "approved",
+        "rejected"
       ]
     },
     "public.surcharge_mode": {
@@ -2236,7 +2390,8 @@
       "values": [
         "operator",
         "shop",
-        "courier"
+        "courier",
+        "super_admin"
       ]
     }
   },

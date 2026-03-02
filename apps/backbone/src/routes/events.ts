@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import { verify } from "hono/jwt";
-import type { AppType } from "../types.js";
+import type { AppType, Role } from "../types.js";
+import { requireRole } from "../middleware/role.js";
 import { sseManager } from "../sse/manager.js";
 import { companyChannel, courierChannel, orderChannel } from "../sse/channels.js";
 import { getCourierById } from "../services/courier.service.js";
@@ -62,8 +63,8 @@ eventsRouter.use("/*", async (c, next) => {
       | Record<string, unknown>
       | undefined;
 
-    const companyId = (appMetadata?.company_id as string) || "";
-    const role = (appMetadata?.role as string) || "";
+    const companyId = (appMetadata?.company_id as string) || undefined;
+    const role = (appMetadata?.role || "") as Role;
 
     c.set("user", { id: userId, companyId, role });
 
@@ -75,6 +76,9 @@ eventsRouter.use("/*", async (c, next) => {
     );
   }
 });
+
+// Role guard — all authenticated roles can access SSE events
+eventsRouter.use("/*", requireRole("operator", "shop", "courier", "super_admin"));
 
 /**
  * GET /events/company/:companyId — Company channel SSE stream.
@@ -127,7 +131,7 @@ eventsRouter.get("/courier/:courierId", async (c) => {
   // Operator from same company can subscribe to any courier channel.
   // Couriers can only subscribe to their own channel — verify via DB lookup.
   if (user.role !== "operator") {
-    const courier = await getCourierById(courierId, user.companyId);
+    const courier = await getCourierById(courierId, user.companyId!);
     if (!courier || courier.profile_id !== user.id) {
       return c.json(
         { error: "Forbidden", message: "Access denied to this courier channel", statusCode: 403 },

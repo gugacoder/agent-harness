@@ -2,6 +2,7 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import type { AppType } from "../types.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { companyMiddleware } from "../middleware/company.js";
+import { requireRole } from "../middleware/role.js";
 import {
   generateClosing,
   confirmClosing,
@@ -84,6 +85,7 @@ const financialRouter = new OpenAPIHono<AppType>({
 
 financialRouter.use("/*", authMiddleware);
 financialRouter.use("/*", companyMiddleware);
+financialRouter.use("/*", requireRole("operator", "super_admin"));
 
 // --- GET /api/financial/closings ---
 

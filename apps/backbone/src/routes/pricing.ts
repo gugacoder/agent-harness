@@ -3,6 +3,7 @@ import { eq, and, asc, ne } from "drizzle-orm";
 import type { AppType } from "../types.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { companyMiddleware } from "../middleware/company.js";
+import { requireRole } from "../middleware/role.js";
 import { db } from "../db.js";
 import {
   pricingTables,
@@ -128,9 +129,10 @@ const pricingRouter = new OpenAPIHono<AppType>({
   },
 });
 
-// Apply auth + company middleware
+// Apply auth + company + role middleware
 pricingRouter.use("/*", authMiddleware);
 pricingRouter.use("/*", companyMiddleware);
+pricingRouter.use("/*", requireRole("operator", "super_admin"));
 
 // --- GET /api/pricing-tables ---
 

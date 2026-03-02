@@ -10,9 +10,13 @@ import { useDeliveryNotification } from "@/components/notifications/DeliveryNoti
 import { Header } from "./Header";
 import { BottomNav } from "./BottomNav";
 import { GpsBanner } from "@/components/status/GpsBanner";
+import { LocationDeniedAlert } from "@/components/ui/LocationDeniedAlert";
+import { useProfile } from "@/hooks/useProfile";
 
 export function AppShell() {
   const { user, logout } = useAuth();
+  const { data: profileData } = useProfile();
+  const profile = profileData?.profile;
   const { courierId, status } = useCourierStatus();
   const { activeDelivery } = useActiveDeliveryContext();
   const { connected, toast, dismissToast } = useCourierEvents(courierId);
@@ -32,7 +36,7 @@ export function AppShell() {
 
   return (
     <div className="mx-auto min-h-screen max-w-[480px] bg-background">
-      <Header userName={user?.fullName || "Motoboy"} userEmail={user?.email} status={status} onLogout={logout}>
+      <Header userName={profile?.full_name || user?.fullName || "Motoboy"} avatarUrl={profile?.avatar_url} status={status} onLogout={logout}>
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           {connected ? (
             <Wifi className="h-3.5 w-3.5 text-cs-success" />

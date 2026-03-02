@@ -9,6 +9,7 @@ export const userRoleEnum = pgEnum("user_role", [
   "operator",
   "shop",
   "courier",
+  "super_admin",
 ]);
 
 export const courierStatusEnum = pgEnum("courier_status", [
@@ -76,4 +77,15 @@ export const closingPeriodEnum = pgEnum("closing_period", [
   "daily",
   "weekly",
   "monthly",
+]);
+
+export const otpChannelEnum = pgEnum("otp_channel", [
+  "whatsapp",
+  "email",
+]);
+
+export const registrationStatusEnum = pgEnum("registration_status", [
+  "pending",
+  "approved",
+  "rejected",
 ]);

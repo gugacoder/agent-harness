@@ -102,3 +102,36 @@ export {
   type SavedAddressResponse,
   type SavedAddressListResponse,
 } from "./saved-addresses.js";
+
+export {
+  SendOtpSchema,
+  VerifyOtpSchema,
+  type SendOtpRequest,
+  type VerifyOtpRequest,
+} from "./otp.js";
+
+export {
+  UpdateProfileSchema,
+  type UpdateProfileRequest,
+} from "./profile.js";
+
+export {
+  ListUsersQuerySchema,
+  UpdateUserSchema,
+  type ListUsersQuery,
+  type UpdateUserRequest,
+} from "./user-management.js";
+
+export {
+  ListCompaniesQuerySchema,
+  CreateCompanySchema,
+  UpdateCompanySchema,
+  type ListCompaniesQuery,
+  type CreateCompanyRequest,
+  type UpdateCompanyRequest,
+} from "./admin.js";
+
+export {
+  RegistrationRequestSchema,
+  type RegistrationRequest,
+} from "./registration.js";

@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { Package, FileText, Plus, Clock, MapPin } from "lucide-react";
+import { Package, FileText, Plus, Clock, MapPin, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -7,7 +7,8 @@ const navItems = [
   { to: "/faturas", label: "Faturas", icon: FileText },
   { to: "/nova", label: "Nova Entrega", icon: Plus },
   { to: "/historico", label: "Histórico", icon: Clock },
-  { to: "/enderecos", label: "Meus Endereços", icon: MapPin },
+  { to: "/enderecos", label: "Endereços", icon: MapPin },
+  { to: "/perfil", label: "Perfil", icon: User },
 ] as const;
 
 export function BottomNav() {

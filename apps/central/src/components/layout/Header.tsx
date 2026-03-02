@@ -1,30 +1,28 @@
 import { useState, useRef, useEffect } from "react";
-import { LogOut } from "lucide-react";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { Link } from "react-router";
+import { LogOut, User, ArrowLeft } from "lucide-react";
+import { AvatarDisplay } from "../avatar/AvatarDisplay";
 
 interface HeaderProps {
   userName?: string;
-  userEmail?: string;
+  avatarUrl?: string | null;
   onLogout?: () => void;
+  impersonating?: { companyName: string; onStop: () => void } | null;
 }
 
-function getInitials(name: string): string {
-  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
-}
-
-export function Header({ userName = "Operador", userEmail, onLogout }: HeaderProps) {
+export function Header({ userName = "Operador", avatarUrl, onLogout, impersonating }: HeaderProps) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
-    function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
   return (
@@ -35,40 +33,70 @@ export function Header({ userName = "Operador", userEmail, onLogout }: HeaderPro
         <span className="text-sm">Área <strong>Central</strong></span>
       </div>
 
-      <div className="hidden md:block" />
-
-      <div className="flex items-center gap-3">
-        <div ref={ref} className="relative">
+      {impersonating ? (
+        <div className="hidden items-center gap-2 md:flex">
+          <span className="rounded-md bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-800">
+            Impersonando: {impersonating.companyName}
+          </span>
           <button
-            onClick={() => setOpen(!open)}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-foreground"
+            type="button"
+            onClick={impersonating.onStop}
+            className="flex items-center gap-1.5 rounded-md border border-input px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            {getInitials(userName)}
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Voltar para admin
           </button>
-          {open && (
-            <div className="absolute right-0 top-full mt-1 min-w-[200px] rounded-md border border-border bg-popover p-2 shadow-lg">
-              <div className="px-2 py-1.5">
-                <p className="text-sm font-medium">{userName}</p>
-                {userEmail && (
-                  <p className="text-xs text-muted-foreground">{userEmail}</p>
-                )}
-              </div>
-              <div className="my-1 border-t border-border" />
-              <div className="flex items-center justify-between px-2 py-1.5">
-                <span className="text-sm text-muted-foreground">Tema</span>
-                <ThemeToggle />
-              </div>
-              <div className="my-1 border-t border-border" />
-              <button
-                onClick={onLogout}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <LogOut className="h-4 w-4" />
-                Sair
-              </button>
-            </div>
-          )}
         </div>
+      ) : (
+        <div className="hidden md:block" />
+      )}
+
+      <div className="relative" ref={menuRef}>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
+        >
+          <AvatarDisplay src={avatarUrl} name={userName} size="sm" />
+          <span className="text-sm text-muted-foreground">{userName}</span>
+        </button>
+
+        {open && (
+          <div className="absolute right-0 top-full mt-1 w-48 rounded-md border border-border bg-background py-1 shadow-lg">
+            <Link
+              to="/perfil"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+            >
+              <User className="h-4 w-4" />
+              Meu Perfil
+            </Link>
+            {impersonating && (
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  impersonating.onStop();
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-amber-700 transition-colors hover:bg-muted md:hidden"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Voltar para admin
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                onLogout?.();
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <LogOut className="h-4 w-4" />
+              Sair
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );

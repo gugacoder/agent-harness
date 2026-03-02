@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Agent Setup - PRP-wave-5 (Wave 5 - Enderecos, Completude, Quality Pass)
+# Agent Setup - merged (Wave 4 + Wave 5)
 # Bootstrap para o agente na worktree isolada.
 # Executar da raiz da worktree: bash .harness/agent-setup.sh
 # =============================================================================
 set -euo pipefail
 
 WT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-echo "=== Agent Setup: PRP-wave-5 ==="
+echo "=== Agent Setup ==="
 echo ""
 
 # --- Carregar .env ---
@@ -89,6 +89,14 @@ else
   echo "  pg_isready nao disponivel - skip check PostgreSQL"
 fi
 
+# Check Drizzle schema files
+SCHEMA_COUNT=$(ls "$WT_DIR"/apps/backbone/db/schema/*.ts 2>/dev/null | wc -l)
+echo "  Drizzle schemas: $SCHEMA_COUNT files"
+
+# Check existing migrations
+MIGRATION_COUNT=$(ls "$WT_DIR"/apps/backbone/db/migrations/*.sql 2>/dev/null | wc -l)
+echo "  Existing migrations: $MIGRATION_COUNT files"
+
 echo ""
 echo "=== Resumo ==="
 echo "  Worktree:  $WT_DIR"
@@ -96,7 +104,12 @@ echo "  Branch:    $(git branch --show-current)"
 echo "  Node:      $(node --version 2>/dev/null || echo 'N/A')"
 echo "  Pkg mgr:   $PKG_MGR"
 echo "  PREFIX:    ${PREFIX:-N/A}"
-echo "  Session:   PRP-wave-5--cc"
-echo "  Runs dir:  .harness/runs/PRP-wave-5--cc/ (ROOT)"
+echo "  Session:   merged"
+echo ""
+echo "  Dev commands:"
+echo "    npm run dev:backbone    # Hono API (port ${BACKBONE_PORT:-3405})"
+echo "    npm run dev:central     # Central (port ${CENTRAL_PORT:-3402})"
+echo "    npm run db:generate     # Generate Drizzle migration"
+echo "    npm run db:migrate      # Apply migrations"
 echo ""
 echo "=== Setup completo ==="

@@ -1,13 +1,26 @@
 import { useState, type FormEvent } from "react";
-import { Navigate } from "react-router";
+import { Navigate, Link } from "react-router";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOtpLogin } from "@/hooks/useOtpLogin";
+import { PhoneInput } from "@/components/auth/PhoneInput";
+import { OtpInput } from "@/components/auth/OtpInput";
+import { OtpResendTimer } from "@/components/auth/OtpResendTimer";
 import { ErrorAlert } from "@/components/ui/ErrorAlert";
+
+type LoginMode = "choose" | "otp-whatsapp" | "otp-email" | "password";
 
 export function LoginPage() {
   const { user, loading, login } = useAuth();
+  const otp = useOtpLogin();
+
+  const [mode, setMode] = useState<LoginMode>("choose");
+  const [phone, setPhone] = useState("");
+  const [otpEmail, setOtpEmail] = useState("");
+
+  // Legacy password form state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [pwError, setPwError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   if (loading) {
@@ -22,77 +35,265 @@ export function LoginPage() {
     return <Navigate to="/" replace />;
   }
 
-  async function handleSubmit(e: FormEvent) {
+  async function handlePasswordSubmit(e: FormEvent) {
     e.preventDefault();
-    setError("");
+    setPwError("");
     setSubmitting(true);
-
     try {
       await login(email, password);
     } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : "Erro ao fazer login";
-      setError(msg);
+      setPwError(err instanceof Error ? err.message : "Erro ao fazer login");
     } finally {
       setSubmitting(false);
     }
   }
 
+  function handleSendWhatsApp() {
+    if (phone.length < 11) return;
+    otp.sendCode(`+55${phone}`, "whatsapp");
+  }
+
+  function handleSendEmail() {
+    if (!otpEmail) return;
+    otp.sendCode(otpEmail, "email");
+  }
+
+  function switchMode(newMode: LoginMode) {
+    otp.goBack();
+    setMode(newMode);
+  }
+
+  const otpTarget =
+    mode === "otp-whatsapp" ? `+55 ${phone}` : otpEmail;
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted px-4">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-sm space-y-6 rounded-lg border border-border bg-background p-8 shadow-sm"
-      >
-        <div className="flex flex-col items-center gap-3">
-          <img src="/logo-brand.svg" alt="Chega.la" className="h-10" />
+      <div className="w-full max-w-sm rounded-lg border border-border bg-background p-8 shadow-sm">
+        <div className="mb-6 flex flex-col items-center gap-2">
+          <img src="/logo.svg" alt="Chega.la" className="h-12 w-12" />
+          <h1 className="text-xl font-bold text-primary">Chega.la Lojista</h1>
           <p className="text-sm text-muted-foreground">
             Área do <strong>Lojista</strong>
           </p>
         </div>
 
-        {error && <ErrorAlert message={error} />}
+        {/* Channel chooser */}
+        {mode === "choose" && (
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={() => setMode("otp-whatsapp")}
+              className="w-full rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Entrar com WhatsApp
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("otp-email")}
+              className="w-full rounded-md border border-input bg-background px-4 py-3 text-sm font-medium hover:bg-muted"
+            >
+              Entrar com email
+            </button>
+            <div className="border-t border-border pt-3 text-center">
+              <button
+                type="button"
+                onClick={() => setMode("password")}
+                className="text-sm text-muted-foreground hover:text-primary hover:underline"
+              >
+                Entrar com email e senha
+              </button>
+            </div>
+          </div>
+        )}
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">
-              E-mail
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2"
-              disabled={submitting}
-            />
+        {/* OTP WhatsApp flow */}
+        {mode === "otp-whatsapp" && (
+          <div className="space-y-4">
+            {otp.error && <ErrorAlert message={otp.error} />}
+
+            {otp.step === "phone" ? (
+              <div className="space-y-4 transition-opacity duration-200">
+                <PhoneInput
+                  value={phone}
+                  onChange={setPhone}
+                  disabled={otp.isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={handleSendWhatsApp}
+                  disabled={otp.isLoading || phone.length < 11}
+                  className="w-full rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {otp.isLoading ? "Enviando..." : "Enviar código"}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4 transition-opacity duration-200">
+                <p className="text-center text-sm text-muted-foreground">
+                  Digite o código enviado para{" "}
+                  <span className="font-medium text-foreground">
+                    {otpTarget}
+                  </span>
+                </p>
+                <OtpInput
+                  onComplete={otp.verifyCode}
+                  error={!!otp.error}
+                  disabled={otp.isLoading}
+                />
+                <OtpResendTimer onResend={otp.resendCode} />
+                <button
+                  type="button"
+                  onClick={otp.goBack}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Alterar telefone
+                </button>
+              </div>
+            )}
+
+            <div className="border-t border-border pt-3 text-center">
+              <button
+                type="button"
+                onClick={() => switchMode("choose")}
+                className="text-sm text-muted-foreground hover:text-primary hover:underline"
+              >
+                Voltar
+              </button>
+            </div>
           </div>
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">
-              Senha
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2"
-              disabled={submitting}
-            />
+        )}
+
+        {/* OTP Email flow */}
+        {mode === "otp-email" && (
+          <div className="space-y-4">
+            {otp.error && <ErrorAlert message={otp.error} />}
+
+            {otp.step === "phone" ? (
+              <div className="space-y-4 transition-opacity duration-200">
+                <div className="space-y-2">
+                  <label htmlFor="otp-email" className="text-sm font-medium">
+                    E-mail
+                  </label>
+                  <input
+                    id="otp-email"
+                    type="email"
+                    value={otpEmail}
+                    onChange={(e) => setOtpEmail(e.target.value)}
+                    placeholder="seu@email.com"
+                    className="w-full rounded-md border border-input bg-background px-3 py-3 text-sm outline-none ring-ring focus:ring-2"
+                    disabled={otp.isLoading}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSendEmail}
+                  disabled={otp.isLoading || !otpEmail}
+                  className="w-full rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {otp.isLoading ? "Enviando..." : "Enviar código"}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4 transition-opacity duration-200">
+                <p className="text-center text-sm text-muted-foreground">
+                  Digite o código enviado para{" "}
+                  <span className="font-medium text-foreground">
+                    {otpTarget}
+                  </span>
+                </p>
+                <OtpInput
+                  onComplete={otp.verifyCode}
+                  error={!!otp.error}
+                  disabled={otp.isLoading}
+                />
+                <OtpResendTimer onResend={otp.resendCode} />
+                <button
+                  type="button"
+                  onClick={otp.goBack}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Alterar email
+                </button>
+              </div>
+            )}
+
+            <div className="border-t border-border pt-3 text-center">
+              <button
+                type="button"
+                onClick={() => switchMode("choose")}
+                className="text-sm text-muted-foreground hover:text-primary hover:underline"
+              >
+                Voltar
+              </button>
+            </div>
           </div>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-          >
-            {submitting ? "Entrando..." : "Entrar"}
-          </button>
-        </div>
-      </form>
+        )}
+
+        {/* Legacy password form */}
+        {mode === "password" && (
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            {pwError && <ErrorAlert message={pwError} />}
+
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium">
+                E-mail
+              </label>
+              <input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="seu@email.com"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2"
+                disabled={submitting}
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium">
+                Senha
+              </label>
+              <input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-ring focus:ring-2"
+                disabled={submitting}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              {submitting ? "Entrando..." : "Entrar"}
+            </button>
+
+            <div className="border-t border-border pt-3 text-center">
+              <button
+                type="button"
+                onClick={() => setMode("choose")}
+                className="text-sm text-muted-foreground hover:text-primary hover:underline"
+              >
+                Voltar
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+
+      <p className="mt-4 text-center text-sm text-muted-foreground">
+        Nao tem conta?{" "}
+        <Link
+          to="/cadastro"
+          className="font-medium text-primary hover:underline"
+        >
+          Criar conta
+        </Link>
+      </p>
     </div>
   );
 }

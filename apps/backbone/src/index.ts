@@ -6,7 +6,7 @@ import { logger } from "hono/logger";
 import type { AppType } from "./types.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { healthRouter } from "./routes/health.js";
-import { authRouter } from "./routes/auth.js";
+import { authRouter, otpAuthRouter } from "./routes/auth.js";
 import { companiesRouter } from "./routes/companies.js";
 import { shopsRouter } from "./routes/shops.js";
 import { ordersRouter } from "./routes/orders.js";
@@ -22,6 +22,13 @@ import { analyticsRouter } from "./routes/analytics.js";
 import { eventsRouter } from "./routes/events.js";
 import { geocodingRouter } from "./routes/geocoding.js";
 import { savedAddressesRouter } from "./routes/saved-addresses.js";
+import { profilesRouter } from "./routes/profiles.js";
+import { usersRouter } from "./routes/users.js";
+import { adminRouter } from "./routes/admin.js";
+import {
+  publicRegistrationRouter,
+  registrationRouter,
+} from "./routes/registration.js";
 
 // Re-export for convenience
 export type { AppType };
@@ -55,12 +62,14 @@ app.use(
   cors({
     origin: "*",
     allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["Content-Type", "Authorization", "X-Impersonate-Company"],
   })
 );
 
 // Routes — public
 app.route("/", healthRouter);
+app.route("/", otpAuthRouter);
+app.route("/", publicRegistrationRouter);
 
 // OpenAPI doc endpoint (F-012) — public, lazily generates spec from all routes
 app.get("/doc", (c) => {
@@ -96,6 +105,10 @@ app.route("/", invoicesRouter);
 app.route("/", analyticsRouter);
 app.route("/", geocodingRouter);
 app.route("/", savedAddressesRouter);
+app.route("/", profilesRouter);
+app.route("/", usersRouter);
+app.route("/", adminRouter);
+app.route("/", registrationRouter);
 
 const port = parseInt(process.env.BACKBONE_PORT!, 10);
 

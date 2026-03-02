@@ -8,8 +8,10 @@ import { PedidosPage } from "@/pages/PedidosPage";
 import { NovaEntregaPage } from "@/pages/NovaEntregaPage";
 import { HistoricoPage } from "@/pages/HistoricoPage";
 import { LoginPage } from "@/pages/LoginPage";
+import { CadastroPage } from "@/pages/CadastroPage";
 import { FaturasPage } from "@/pages/faturas/FaturasPage";
 import { EnderecosPage } from "@/pages/EnderecosPage";
+import { PerfilPage } from "@/pages/PerfilPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,6 +30,7 @@ export function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/cadastro" element={<CadastroPage />} />
             <Route element={<RequireAuth />}>
               <Route element={<AppShell />}>
                 <Route index element={<PedidosPage />} />
@@ -35,6 +38,7 @@ export function App() {
                 <Route path="nova" element={<NovaEntregaPage />} />
                 <Route path="historico" element={<HistoricoPage />} />
                 <Route path="enderecos" element={<EnderecosPage />} />
+                <Route path="perfil" element={<PerfilPage />} />
               </Route>
             </Route>
           </Routes>

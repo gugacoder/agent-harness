@@ -2,6 +2,7 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import type { AppType } from "../types.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { companyMiddleware } from "../middleware/company.js";
+import { requireRole } from "../middleware/role.js";
 import {
   getOverview,
   getCourierPerformance,
@@ -177,6 +178,7 @@ const analyticsRouter = new OpenAPIHono<AppType>({
 
 analyticsRouter.use("/analytics/*", authMiddleware);
 analyticsRouter.use("/analytics/*", companyMiddleware);
+analyticsRouter.use("/analytics/*", requireRole("operator", "super_admin"));
 
 // --- GET /api/analytics/today ---
 

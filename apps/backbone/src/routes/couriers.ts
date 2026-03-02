@@ -2,6 +2,7 @@ import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import type { AppType } from "../types.js";
 import { authMiddleware } from "../middleware/auth.js";
 import { companyMiddleware } from "../middleware/company.js";
+import { requireRole } from "../middleware/role.js";
 import {
   listCouriers,
   createCourier,
@@ -95,9 +96,10 @@ const couriersRouter = new OpenAPIHono<AppType>({
   },
 });
 
-// Apply auth + company middleware
+// Apply auth + company + role middleware
 couriersRouter.use("/*", authMiddleware);
 couriersRouter.use("/*", companyMiddleware);
+couriersRouter.use("/*", requireRole("operator", "super_admin"));
 
 // --- GET /api/couriers/me ---
 
