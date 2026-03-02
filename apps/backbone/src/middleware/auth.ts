@@ -1,6 +1,6 @@
 import { createMiddleware } from "hono/factory";
 import { verify } from "hono/jwt";
-import type { AppType } from "../types.js";
+import type { AppType, Role } from "../types.js";
 
 /**
  * Auth middleware — validates JWT from GoTrue (Supabase Auth).
@@ -63,8 +63,8 @@ export const authMiddleware = createMiddleware<AppType>(async (c, next) => {
         | Record<string, unknown>
         | undefined;
 
-    const companyId = (appMetadata?.company_id as string) || "";
-    const role = (appMetadata?.role as string) || "";
+    const companyId = (appMetadata?.company_id as string) || undefined;
+    const role = (appMetadata?.role || "") as Role;
 
     c.set("user", { id: userId, companyId, role });
 

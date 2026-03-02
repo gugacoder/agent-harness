@@ -13,6 +13,16 @@ import type { AppType } from "../types.js";
 export const companyMiddleware = createMiddleware<AppType>(async (c, next) => {
   const user = c.get("user");
 
+  // Super admin bypass: doesn't require companyId, can impersonate via header
+  if (user.role === "super_admin") {
+    const impersonateCompany = c.req.header("X-Impersonate-Company");
+    if (impersonateCompany) {
+      c.set("companyId", impersonateCompany);
+    }
+    await next();
+    return;
+  }
+
   if (!user?.companyId) {
     return c.json(
       {
