@@ -29,18 +29,18 @@
         reverse_proxy kong.internal:8000
     }
 
-    # Hub app (Vite PWA - Coletivos brand)
-    handle /hub/* {
-        reverse_proxy {$HUB_HOST}:{$HUB_PORT}
+    # Central app (Vite PWA)
+    handle /central/* {
+        reverse_proxy {$CENTRAL_HOST}:{$CENTRAL_PORT}
     }
 
-    # Portal app (Vite PWA - Processa brand)
-    handle /portal/* {
-        reverse_proxy {$PORTAL_HOST}:{$PORTAL_PORT}
+    # Lojista app (Vite PWA)
+    handle /lojista/* {
+        reverse_proxy {$LOJISTA_HOST}:{$LOJISTA_PORT}
     }
 
-    # Landing pages (Next.js) — tudo mais inclui / e /landing/*
-    handle {
-        reverse_proxy {$LANDING_HOST}:{$LANDING_PORT}
+    # Motoboy app (Vite PWA)
+    handle /motoboy/* {
+        reverse_proxy {$MOTOBOY_HOST}:{$MOTOBOY_PORT}
     }
 }

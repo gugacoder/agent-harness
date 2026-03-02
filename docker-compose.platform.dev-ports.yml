@@ -9,10 +9,6 @@ name: chegala-platform-${ENVIRONMENT}
 
 services:
 
-  studio:
-    ports:
-      - "${STUDIO_PORT}:3000"
-
   postgres:
     ports:
       - "${POSTGRES_PORT}:5432"
@@ -21,6 +17,10 @@ services:
     ports:
       - "${KONG_HTTP_PORT}:8000"
       - "${KONG_HTTPS_PORT}:8443"
+
+  studio:
+    ports:
+      - "${STUDIO_PORT}:3000"
 
   # --- removidos (ver docker-compose.platform.opt-out) ---
   # redis:

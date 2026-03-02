@@ -32,14 +32,12 @@ services:
       PUBLIC_PORT: ${PUBLIC_PORT}
       BACKBONE_HOST: ${BACKBONE_HOST}
       BACKBONE_PORT: ${BACKBONE_PORT}
-      LANDING_HOST: ${LANDING_HOST}
-      LANDING_PORT: ${LANDING_PORT}
-      HUB_HOST: ${HUB_HOST}
-      HUB_PORT: ${HUB_PORT}
-      ROTA_HOST: ${ROTA_HOST}
-      ROTA_PORT: ${ROTA_PORT}
-      PORTAL_HOST: ${PORTAL_HOST}
-      PORTAL_PORT: ${PORTAL_PORT}
+      CENTRAL_HOST: ${CENTRAL_HOST}
+      CENTRAL_PORT: ${CENTRAL_PORT}
+      LOJISTA_HOST: ${LOJISTA_HOST}
+      LOJISTA_PORT: ${LOJISTA_PORT}
+      MOTOBOY_HOST: ${MOTOBOY_HOST}
+      MOTOBOY_PORT: ${MOTOBOY_PORT}
     volumes:
       - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
     networks:
