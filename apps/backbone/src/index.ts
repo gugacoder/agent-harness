@@ -22,6 +22,7 @@ import { analyticsRouter } from "./routes/analytics.js";
 import { eventsRouter } from "./routes/events.js";
 import { profilesRouter } from "./routes/profiles.js";
 import { usersRouter } from "./routes/users.js";
+import { adminRouter } from "./routes/admin.js";
 
 // Re-export for convenience
 export type { AppType };
@@ -55,7 +56,7 @@ app.use(
   cors({
     origin: "*",
     allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["Content-Type", "Authorization", "X-Impersonate-Company"],
   })
 );
 
@@ -97,6 +98,7 @@ app.route("/", invoicesRouter);
 app.route("/", analyticsRouter);
 app.route("/", profilesRouter);
 app.route("/", usersRouter);
+app.route("/", adminRouter);
 
 const port = parseInt(process.env.BACKBONE_PORT!, 10);
 

@@ -99,3 +99,12 @@ export {
   type ListUsersQuery,
   type UpdateUserRequest,
 } from "./user-management.js";
+
+export {
+  ListCompaniesQuerySchema,
+  CreateCompanySchema,
+  UpdateCompanySchema,
+  type ListCompaniesQuery,
+  type CreateCompanyRequest,
+  type UpdateCompanyRequest,
+} from "./admin.js";
