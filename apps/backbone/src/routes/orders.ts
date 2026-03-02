@@ -18,6 +18,9 @@ import {
   pricingTables,
   pricingRules,
   shopPricingOverrides,
+  deliveries,
+  deliveryEvents,
+  profiles,
 } from "../../db/schema/index.js";
 import { sseManager } from "../sse/manager.js";
 import { companyChannel, orderChannel } from "../sse/channels.js";
@@ -327,6 +330,135 @@ ordersRouter.openapi(estimateRoute, async (c) => {
     },
     200
   );
+});
+
+// --- GET /api/orders/:id/timeline ---
+
+const TimelineEventSchema = z.object({
+  event_type: z.string(),
+  old_status: z.string().nullable(),
+  new_status: z.string().nullable(),
+  description: z.string(),
+  actor_name: z.string(),
+  created_at: z.string(),
+});
+
+const getOrderTimelineRoute = createRoute({
+  method: "get",
+  path: "/orders/{id}/timeline",
+  tags: ["Orders"],
+  summary: "Get order timeline",
+  description:
+    "Get the timeline of events for an order. Returns delivery events joined with actor names, or a synthetic creation event if no delivery exists.",
+  request: {
+    params: z.object({
+      id: z.string().uuid(),
+    }),
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": { schema: z.array(TimelineEventSchema) },
+      },
+      description: "Order timeline events",
+    },
+    404: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Order not found",
+    },
+    401: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Missing or invalid authentication",
+    },
+  },
+});
+
+ordersRouter.openapi(getOrderTimelineRoute, async (c) => {
+  const companyId = c.get("companyId");
+  const { id } = c.req.valid("param");
+
+  // Verify order exists and belongs to company
+  const order = await getOrderById(id, companyId);
+
+  if (!order) {
+    return c.json(
+      { error: "Not Found", message: "Order not found", statusCode: 404 },
+      404
+    );
+  }
+
+  // Find delivery for this order
+  const [delivery] = await db
+    .select()
+    .from(deliveries)
+    .where(
+      and(eq(deliveries.order_id, id), eq(deliveries.company_id, companyId))
+    );
+
+  if (!delivery) {
+    // No delivery yet — return synthetic creation event
+    // Get the creator's name
+    const [creator] = await db
+      .select({ full_name: profiles.full_name })
+      .from(profiles)
+      .where(eq(profiles.id, order.created_by));
+
+    return c.json(
+      [
+        {
+          event_type: "status_change",
+          old_status: null,
+          new_status: "pending",
+          description: "Pedido criado",
+          actor_name: creator?.full_name ?? "Sistema",
+          created_at: order.created_at,
+        },
+      ],
+      200
+    );
+  }
+
+  // Get delivery events with actor names via JOIN
+  const events = await db
+    .select({
+      event_type: deliveryEvents.event_type,
+      old_status: deliveryEvents.old_status,
+      new_status: deliveryEvents.new_status,
+      description: deliveryEvents.description,
+      actor_name: profiles.full_name,
+      created_at: deliveryEvents.created_at,
+    })
+    .from(deliveryEvents)
+    .leftJoin(profiles, eq(deliveryEvents.actor_id, profiles.id))
+    .where(eq(deliveryEvents.delivery_id, delivery.id))
+    .orderBy(asc(deliveryEvents.created_at));
+
+  // Prepend synthetic creation event
+  const [creator] = await db
+    .select({ full_name: profiles.full_name })
+    .from(profiles)
+    .where(eq(profiles.id, order.created_by));
+
+  const timeline = [
+    {
+      event_type: "status_change" as const,
+      old_status: null,
+      new_status: "pending",
+      description: "Pedido criado",
+      actor_name: creator?.full_name ?? "Sistema",
+      created_at: order.created_at,
+    },
+    ...events.map((e) => ({
+      event_type: e.event_type,
+      old_status: e.old_status,
+      new_status: e.new_status,
+      description: e.description,
+      actor_name: e.actor_name ?? "Sistema",
+      created_at: e.created_at,
+    })),
+  ];
+
+  return c.json(timeline, 200);
 });
 
 // --- GET /api/orders/:id ---
