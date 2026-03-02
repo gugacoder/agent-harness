@@ -55,10 +55,16 @@ function MetricCard({
 
 // --- Main Dashboard ---
 
+function getCssColor(varName: string, fallback: string): string {
+  if (typeof document === "undefined") return fallback;
+  const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  return value || fallback;
+}
+
 const MARKER_COLORS: Record<CourierStatus, string> = {
-  available: "#1dace7",
-  busy: "#fca322",
-  offline: "#9ca3af",
+  available: getCssColor("--cs-success", "#1dace7"),
+  busy: getCssColor("--cs-warning", "#fca322"),
+  offline: getCssColor("--cs-muted", "#9ca3af"),
 };
 
 export function DashboardPage() {
@@ -172,7 +178,7 @@ export function DashboardPage() {
             title="Concluídos"
             value={metrics.completed}
             icon={CheckCircle2}
-            color="bg-green-100 text-green-700"
+            color="bg-cs-success/10 text-cs-success"
           />
         </div>
       )}
@@ -234,7 +240,7 @@ export function DashboardPage() {
               )}
               <span title={connected ? "SSE conectado" : "SSE desconectado"}>
                 {connected ? (
-                  <Wifi className="h-3.5 w-3.5 text-green-500" />
+                  <Wifi className="h-3.5 w-3.5 text-cs-success" />
                 ) : (
                   <WifiOff className="h-3.5 w-3.5 text-muted-foreground" />
                 )}
@@ -275,7 +281,7 @@ export function DashboardPage() {
                 </MapContainer>
                 {activeCourierCount === 0 && (
                   <div className="pointer-events-none absolute inset-0 z-[1000] flex items-center justify-center">
-                    <div className="rounded-lg bg-white/90 px-4 py-3 text-center shadow-sm">
+                    <div className="rounded-lg bg-card/90 px-4 py-3 text-center shadow-sm">
                       <MapPin className="mx-auto mb-1 h-6 w-6 text-muted-foreground/50" />
                       <p className="text-sm text-muted-foreground">
                         Nenhum motoboy disponível

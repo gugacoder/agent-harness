@@ -38,7 +38,7 @@ export function AppShell() {
               : "mx-auto max-w-[480px]"
         }
       >
-        <Header userName={user?.fullName || user?.email || "Lojista"} onLogout={logout} />
+        <Header userName={user?.fullName || user?.email || "Lojista"} userEmail={user?.email} onLogout={logout} />
         <main className="p-4 pb-20 md:p-6 md:pb-6">
           <Outlet />
         </main>

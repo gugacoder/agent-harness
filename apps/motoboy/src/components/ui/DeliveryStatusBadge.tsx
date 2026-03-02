@@ -11,7 +11,7 @@ const STATUS_LABELS: Record<DeliveryStatus, string> = {
 
 const STATUS_COLORS: Record<DeliveryStatus, string> = {
   assigned: "bg-secondary text-secondary-foreground",
-  accepted: "bg-blue-500 text-white",
+  accepted: "bg-cs-info text-white",
   picked_up: "bg-accent text-accent-foreground",
   in_transit: "bg-secondary text-secondary-foreground",
   delivered: "bg-primary text-primary-foreground",

@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Settings, Loader2, CheckCircle2, Circle, Camera } from "lucide-react";
+import { Settings, Loader2, CheckCircle2, Circle, Camera, AlertTriangle, RefreshCw } from "lucide-react";
 import { useCompanyConfig, useUpdateCompanyConfig } from "@/hooks/useCompanyConfig";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 export function ConfiguracaoPage() {
-  const { data: config, isLoading, error } = useCompanyConfig();
+  const { data: config, isLoading, error, refetch } = useCompanyConfig();
   const updateConfig = useUpdateCompanyConfig();
   const [toggling, setToggling] = useState(false);
 
@@ -47,9 +47,24 @@ export function ConfiguracaoPage() {
               <Skeleton className="h-5 w-64" />
             </div>
           ) : error ? (
-            <p className="text-sm text-destructive">
-              Erro ao carregar configurações: {error instanceof Error ? error.message : "Erro desconhecido"}
-            </p>
+            <div className="flex items-center gap-3 rounded-md bg-destructive/10 p-4">
+              <AlertTriangle className="h-5 w-5 shrink-0 text-destructive" />
+              <div className="flex-1 space-y-1">
+                <p className="text-sm font-medium text-destructive">
+                  Não foi possível carregar as configurações
+                </p>
+                <p className="text-xs text-destructive/80">
+                  {error instanceof Error ? error.message : "Erro desconhecido"}
+                </p>
+              </div>
+              <button
+                onClick={() => refetch()}
+                className="flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                Tentar novamente
+              </button>
+            </div>
           ) : (
             <div className="flex items-center justify-between">
               <div className="space-y-1">
@@ -68,11 +83,11 @@ export function ConfiguracaoPage() {
                 {toggling ? (
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 ) : config?.pod_required ? (
-                  <CheckCircle2 className="h-6 w-6 text-green-600" />
+                  <CheckCircle2 className="h-6 w-6 text-cs-success" />
                 ) : (
                   <Circle className="h-6 w-6 text-muted-foreground" />
                 )}
-                <span className={config?.pod_required ? "text-green-600" : "text-muted-foreground"}>
+                <span className={config?.pod_required ? "text-cs-success" : "text-muted-foreground"}>
                   {config?.pod_required ? "Ativado" : "Desativado"}
                 </span>
               </button>

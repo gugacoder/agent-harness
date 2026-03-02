@@ -32,19 +32,19 @@ export function MetricCards({ overview, revenue, isLoading }: MetricCardsProps) 
       label: "Total Entregas",
       value: overview?.total_deliveries ?? 0,
       icon: Package,
-      color: "text-blue-600",
+      color: "text-cs-info",
     },
     {
       label: "Concluídas",
       value: overview?.completed ?? 0,
       icon: CheckCircle2,
-      color: "text-green-600",
+      color: "text-cs-success",
     },
     {
       label: "Canceladas",
       value: overview?.cancelled ?? 0,
       icon: XCircle,
-      color: "text-red-600",
+      color: "text-destructive",
     },
     {
       label: "Taxa de Conclusão",
@@ -56,19 +56,19 @@ export function MetricCards({ overview, revenue, isLoading }: MetricCardsProps) 
       label: "Tempo Médio",
       value: formatMinutes(overview?.avg_delivery_time_minutes ?? 0),
       icon: Clock,
-      color: "text-amber-600",
+      color: "text-cs-warning",
     },
     {
       label: "Receita Total",
       value: revenue ? formatCurrency(revenue.total_revenue) : "R$ 0,00",
       icon: DollarSign,
-      color: "text-green-600",
+      color: "text-cs-success",
     },
     {
       label: "Receita Média/Entrega",
       value: revenue ? formatCurrency(revenue.avg_per_delivery) : "R$ 0,00",
       icon: TrendingUp,
-      color: "text-blue-600",
+      color: "text-cs-info",
     },
   ];
 

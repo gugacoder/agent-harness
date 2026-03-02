@@ -25,9 +25,9 @@ const COURIER_STATUS_LABELS: Record<CourierStatus, string> = {
 };
 
 const COURIER_STATUS_COLORS: Record<CourierStatus, string> = {
-  available: "bg-green-100 text-green-800",
-  busy: "bg-amber-100 text-amber-800",
-  offline: "bg-gray-100 text-gray-600",
+  available: "bg-cs-success/10 text-cs-success",
+  busy: "bg-cs-warning/10 text-cs-warning",
+  offline: "bg-muted text-muted-foreground",
 };
 
 export function OrderStatusBadge({ status }: { status: OrderStatus }) {
@@ -57,9 +57,9 @@ const CLOSING_STATUS_LABELS: Record<ClosingStatus, string> = {
 };
 
 const CLOSING_STATUS_COLORS: Record<ClosingStatus, string> = {
-  draft: "bg-amber-100 text-amber-800",
-  confirmed: "bg-blue-100 text-blue-800",
-  paid: "bg-green-100 text-green-800",
+  draft: "bg-cs-warning/10 text-cs-warning",
+  confirmed: "bg-cs-info/10 text-cs-info",
+  paid: "bg-cs-success/10 text-cs-success",
 };
 
 export function ClosingStatusBadge({ status }: { status: ClosingStatus }) {
@@ -79,9 +79,9 @@ const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
 };
 
 const INVOICE_STATUS_COLORS: Record<InvoiceStatus, string> = {
-  draft: "bg-amber-100 text-amber-800",
-  sent: "bg-blue-100 text-blue-800",
-  paid: "bg-green-100 text-green-800",
+  draft: "bg-cs-warning/10 text-cs-warning",
+  sent: "bg-cs-info/10 text-cs-info",
+  paid: "bg-cs-success/10 text-cs-success",
 };
 
 export function InvoiceStatusBadge({ status }: { status: InvoiceStatus }) {

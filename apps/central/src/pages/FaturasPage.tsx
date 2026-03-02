@@ -88,13 +88,13 @@ export function FaturasPage() {
       <div className="grid grid-cols-2 gap-4">
         <div className="rounded-lg border bg-card p-4">
           <p className="text-sm text-muted-foreground">Total Pendente</p>
-          <p className="mt-1 text-2xl font-bold text-amber-600">
+          <p className="mt-1 text-2xl font-bold text-cs-warning">
             {formatCurrency(summary.pending)}
           </p>
         </div>
         <div className="rounded-lg border bg-card p-4">
           <p className="text-sm text-muted-foreground">Total Pago</p>
-          <p className="mt-1 text-2xl font-bold text-green-600">
+          <p className="mt-1 text-2xl font-bold text-cs-success">
             {formatCurrency(summary.paid)}
           </p>
         </div>

@@ -321,8 +321,8 @@ function ShopDetail({ shop, orders, onBack }: ShopDetailProps) {
                   <span
                     className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                       shop.active
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
+                        ? "bg-cs-success/10 text-cs-success"
+                        : "bg-cs-error/10 text-cs-error"
                     }`}
                   >
                     {shop.active ? "Ativo" : "Inativo"}
@@ -558,9 +558,9 @@ export function LojistasPage() {
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               statusFilter === key
                 ? key === "active"
-                  ? "bg-green-100 text-green-800"
+                  ? "bg-cs-success/10 text-cs-success"
                   : key === "inactive"
-                    ? "bg-red-100 text-red-800"
+                    ? "bg-cs-error/10 text-cs-error"
                     : "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground hover:bg-muted/80"
             }`}
@@ -625,8 +625,8 @@ export function LojistasPage() {
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                           shop.active
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
+                            ? "bg-cs-success/10 text-cs-success"
+                            : "bg-cs-error/10 text-cs-error"
                         }`}
                       >
                         {shop.active ? "Ativo" : "Inativo"}
@@ -661,8 +661,8 @@ export function LojistasPage() {
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                         shop.active
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
+                          ? "bg-cs-success/10 text-cs-success"
+                          : "bg-cs-error/10 text-cs-error"
                       }`}
                     >
                       {shop.active ? "Ativo" : "Inativo"}

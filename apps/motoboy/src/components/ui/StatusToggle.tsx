@@ -29,7 +29,7 @@ export function StatusToggle({
           isBusy
             ? "cursor-not-allowed bg-accent text-accent-foreground opacity-70"
             : isAvailable
-              ? "bg-green-500 text-white active:bg-green-600"
+              ? "bg-cs-success text-white active:bg-cs-success/80"
               : "bg-muted text-muted-foreground active:bg-muted/80"
         }
         ${isToggling ? "animate-pulse" : ""}

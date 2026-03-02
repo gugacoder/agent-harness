@@ -145,7 +145,7 @@ export function PricingTableDetail({
                 {savingName ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Check className="h-4 w-4 text-green-600" />
+                  <Check className="h-4 w-4 text-cs-success" />
                 )}
               </button>
               <button
@@ -162,7 +162,7 @@ export function PricingTableDetail({
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-bold">{table.name}</h2>
               {table.active && (
-                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                <span className="inline-flex items-center rounded-full bg-cs-success/10 px-2 py-0.5 text-xs font-medium text-cs-success">
                   Ativa
                 </span>
               )}

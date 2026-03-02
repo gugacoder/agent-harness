@@ -131,7 +131,7 @@ export function NovaEntregaPage() {
             className="w-full rounded-md border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
           {errors.pickup_address && (
-            <p className="mt-1 text-xs text-red-600">
+            <p className="mt-1 text-xs text-destructive">
               {errors.pickup_address.message}
             </p>
           )}
@@ -150,7 +150,7 @@ export function NovaEntregaPage() {
             className="w-full rounded-md border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
           {errors.delivery_address && (
-            <p className="mt-1 text-xs text-red-600">
+            <p className="mt-1 text-xs text-destructive">
               {errors.delivery_address.message}
             </p>
           )}
@@ -169,7 +169,7 @@ export function NovaEntregaPage() {
             className="w-full rounded-md border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
           {errors.recipient_name && (
-            <p className="mt-1 text-xs text-red-600">
+            <p className="mt-1 text-xs text-destructive">
               {errors.recipient_name.message}
             </p>
           )}
@@ -188,7 +188,7 @@ export function NovaEntregaPage() {
             className="w-full rounded-md border bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
           {errors.recipient_phone && (
-            <p className="mt-1 text-xs text-red-600">
+            <p className="mt-1 text-xs text-destructive">
               {errors.recipient_phone.message}
             </p>
           )}

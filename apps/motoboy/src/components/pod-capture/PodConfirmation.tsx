@@ -102,7 +102,7 @@ export function PodConfirmation({
         <p className="mb-1 text-xs font-medium text-muted-foreground">
           Assinatura
         </p>
-        <div className="overflow-hidden rounded-lg border border-border bg-white p-2">
+        <div className="overflow-hidden rounded-lg border border-border bg-card p-2">
           <img
             src={signaturePreview}
             alt="Assinatura do recebedor"
@@ -119,13 +119,13 @@ export function PodConfirmation({
         </div>
       )}
       {gpsStatus === "success" && (
-        <div className="mb-3 flex items-center gap-2 text-sm text-green-600">
+        <div className="mb-3 flex items-center gap-2 text-sm text-cs-success">
           <CheckCircle className="h-4 w-4" />
           Localizacao capturada
         </div>
       )}
       {gpsError && (
-        <div className="mb-3 flex items-center gap-2 text-sm text-amber-600">
+        <div className="mb-3 flex items-center gap-2 text-sm text-cs-warning">
           <AlertCircle className="h-4 w-4" />
           {gpsError}
         </div>

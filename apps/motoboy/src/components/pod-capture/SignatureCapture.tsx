@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import SignatureCanvas from "react-signature-canvas";
 import { Eraser, Check, ArrowLeft } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface SignatureCaptureProps {
   onCapture: (signature: Blob, previewUrl: string) => void;
@@ -10,6 +11,7 @@ interface SignatureCaptureProps {
 export function SignatureCapture({ onCapture, onBack }: SignatureCaptureProps) {
   const sigRef = useRef<SignatureCanvas | null>(null);
   const [isEmpty, setIsEmpty] = useState(true);
+  const { resolved } = useTheme();
 
   const handleClear = () => {
     sigRef.current?.clear();
@@ -43,7 +45,7 @@ export function SignatureCapture({ onCapture, onBack }: SignatureCaptureProps) {
       </div>
 
       <div className="flex-1">
-        <div className="rounded-lg border-2 border-dashed border-border bg-white">
+        <div className="rounded-lg border-2 border-dashed border-border bg-background">
           <SignatureCanvas
             ref={sigRef}
             canvasProps={{
@@ -51,7 +53,7 @@ export function SignatureCapture({ onCapture, onBack }: SignatureCaptureProps) {
               style: { width: "100%", height: 250 },
             }}
             onBegin={() => setIsEmpty(false)}
-            penColor="#1a1a1a"
+            penColor={resolved === "dark" ? "#ffffff" : "#000000"}
             minWidth={1.5}
             maxWidth={3}
           />

@@ -7,10 +7,10 @@ interface ClosingStatusBadgeProps {
 function getStatusConfig(status: string | null) {
   switch (status) {
     case "paid":
-      return { label: "Pago", className: "bg-emerald-100 text-emerald-700" };
+      return { label: "Pago", className: "bg-cs-success/10 text-cs-success" };
     case "confirmed":
     case "draft":
-      return { label: "Pendente", className: "bg-amber-100 text-amber-700" };
+      return { label: "Pendente", className: "bg-cs-warning/10 text-cs-warning" };
     default:
       return null;
   }

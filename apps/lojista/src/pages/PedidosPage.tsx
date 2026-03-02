@@ -365,7 +365,7 @@ export function PedidosPage() {
     <div className="space-y-4">
       {/* Toast notification */}
       {toast && (
-        <div className="flex items-center gap-2 rounded-md bg-green-50 p-3 text-sm font-medium text-green-700">
+        <div className="flex items-center gap-2 rounded-md bg-cs-success/10 p-3 text-sm font-medium text-cs-success">
           <Check className="h-4 w-4 shrink-0" />
           {toast}
         </div>
@@ -375,7 +375,7 @@ export function PedidosPage() {
         <h1 className="text-xl font-bold">Pedidos Ativos</h1>
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           {connected ? (
-            <Wifi className="h-3.5 w-3.5 text-green-600" />
+            <Wifi className="h-3.5 w-3.5 text-cs-success" />
           ) : (
             <WifiOff className="h-3.5 w-3.5" />
           )}

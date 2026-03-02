@@ -562,9 +562,9 @@ export function MotoboysPage() {
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               statusFilter === key
                 ? key === "available"
-                  ? "bg-green-100 text-green-800"
+                  ? "bg-cs-success/10 text-cs-success"
                   : key === "busy"
-                    ? "bg-amber-100 text-amber-800"
+                    ? "bg-cs-warning/10 text-cs-warning"
                     : "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground hover:bg-muted/80"
             }`}
@@ -673,8 +673,8 @@ export function MotoboysPage() {
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                         courier.active
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
+                          ? "bg-cs-success/10 text-cs-success"
+                          : "bg-cs-error/10 text-cs-error"
                       }`}
                     >
                       {courier.active ? "Ativo" : "Inativo"}

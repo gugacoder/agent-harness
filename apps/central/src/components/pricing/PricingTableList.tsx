@@ -171,7 +171,7 @@ export function PricingTableList({
                   {togglingId === table.id ? (
                     <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                   ) : table.active ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                    <CheckCircle2 className="h-5 w-5 text-cs-success" />
                   ) : (
                     <Circle className="h-5 w-5 text-muted-foreground" />
                   )}
@@ -185,7 +185,7 @@ export function PricingTableList({
                   <div>
                     <span className="font-medium">{table.name}</span>
                     {table.active && (
-                      <span className="ml-2 inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                      <span className="ml-2 inline-flex items-center rounded-full bg-cs-success/10 px-2 py-0.5 text-xs font-medium text-cs-success">
                         Ativa
                       </span>
                     )}

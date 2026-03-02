@@ -106,7 +106,7 @@ export function DeliveryProofViewer({ proof }: DeliveryProofViewerProps) {
                   alt: "Assinatura digital",
                 })
               }
-              className="overflow-hidden rounded-md border bg-white transition-opacity hover:opacity-80"
+              className="overflow-hidden rounded-md border bg-card transition-opacity hover:opacity-80"
             >
               <img
                 src={proof.signature_url}

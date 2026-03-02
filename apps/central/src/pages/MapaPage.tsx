@@ -19,10 +19,16 @@ import type { Courier, CourierStatus } from "@/types/api";
 // available → secondary #1dace7 (blue)
 // busy → accent #fca322 (orange)
 
+function getCssColor(varName: string, fallback: string): string {
+  if (typeof document === "undefined") return fallback;
+  const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  return value || fallback;
+}
+
 const MARKER_COLORS: Record<CourierStatus, string> = {
-  available: "#1dace7",
-  busy: "#fca322",
-  offline: "#9ca3af",
+  available: getCssColor("--cs-success", "#1dace7"),
+  busy: getCssColor("--cs-warning", "#fca322"),
+  offline: getCssColor("--cs-muted", "#9ca3af"),
 };
 
 // --- FitBounds: auto-zoom to show all markers ---
@@ -66,7 +72,7 @@ function CourierMarkerItem({
             <Bike className="h-4 w-4" style={{ color }} />
             <span className="font-semibold">{courier.full_name}</span>
           </div>
-          <div className="mt-1 text-xs text-gray-600">
+          <div className="mt-1 text-xs text-muted-foreground">
             <span
               className="inline-block rounded-full px-2 py-0.5 text-white"
               style={{ backgroundColor: color }}
@@ -75,11 +81,11 @@ function CourierMarkerItem({
             </span>
           </div>
           {location.delivery_id && (
-            <div className="mt-1 text-xs text-gray-500">
+            <div className="mt-1 text-xs text-muted-foreground">
               Entrega em andamento
             </div>
           )}
-          <div className="mt-1 text-xs text-gray-400">
+          <div className="mt-1 text-xs text-muted-foreground">
             {new Date(location.timestamp).toLocaleTimeString("pt-BR", {
               hour: "2-digit",
               minute: "2-digit",
@@ -172,7 +178,7 @@ export function MapaPage() {
             title={connected ? "Conectado ao servidor" : "Desconectado"}
           >
             {connected ? (
-              <Wifi className="h-3.5 w-3.5 text-green-500" />
+              <Wifi className="h-3.5 w-3.5 text-cs-success" />
             ) : (
               <WifiOff className="h-3.5 w-3.5 text-muted-foreground" />
             )}
@@ -215,7 +221,7 @@ export function MapaPage() {
             {/* Empty state overlay */}
             {markers.length === 0 && (
               <div className="pointer-events-none absolute inset-0 z-[1000] flex items-center justify-center">
-                <div className="rounded-lg bg-white/90 px-6 py-4 text-center shadow-sm">
+                <div className="rounded-lg bg-card/90 px-6 py-4 text-center shadow-sm">
                   <Bike className="mx-auto mb-2 h-8 w-8 text-muted-foreground/50" />
                   <p className="text-sm font-medium text-muted-foreground">
                     Nenhum motoboy com localização

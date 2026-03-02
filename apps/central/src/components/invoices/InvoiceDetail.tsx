@@ -199,7 +199,7 @@ export function InvoiceDetail({
           <button
             onClick={handleSend}
             disabled={!!actionLoading}
-            className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-md bg-cs-info px-4 py-2 text-sm font-medium text-white hover:bg-cs-info/90 disabled:opacity-50"
           >
             {actionLoading === "send" ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -213,7 +213,7 @@ export function InvoiceDetail({
           <button
             onClick={handlePay}
             disabled={!!actionLoading}
-            className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-md bg-cs-success px-4 py-2 text-sm font-medium text-white hover:bg-cs-success/90 disabled:opacity-50"
           >
             {actionLoading === "pay" ? (
               <Loader2 className="h-4 w-4 animate-spin" />

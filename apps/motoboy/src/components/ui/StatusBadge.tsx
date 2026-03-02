@@ -7,17 +7,20 @@ const STATUS_LABELS: Record<CourierStatus, string> = {
 };
 
 const STATUS_COLORS: Record<CourierStatus, string> = {
-  available: "bg-green-500 text-white",
-  busy: "bg-accent text-accent-foreground",
-  offline: "bg-muted text-muted-foreground",
+  available: "bg-cs-success",
+  busy: "bg-accent",
+  offline: "bg-muted-foreground/40",
 };
 
 export function StatusBadge({ status }: { status: CourierStatus }) {
   return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[status]}`}
-    >
-      {STATUS_LABELS[status]}
+    <span className="relative inline-flex h-3 w-3" title={STATUS_LABELS[status]}>
+      {status === "available" && (
+        <span className="absolute inset-0 animate-ping rounded-full bg-cs-success/60" />
+      )}
+      <span
+        className={`relative inline-block h-3 w-3 rounded-full border-2 border-background ${STATUS_COLORS[status]}`}
+      />
     </span>
   );
 }

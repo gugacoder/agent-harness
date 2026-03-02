@@ -11,7 +11,7 @@ import { BottomNav } from "./BottomNav";
 import { LocationDeniedAlert } from "@/components/ui/LocationDeniedAlert";
 
 export function AppShell() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { courierId, status } = useCourierStatus();
   const { activeDelivery } = useActiveDeliveryContext();
   const { connected, toast, dismissToast } = useCourierEvents(courierId);
@@ -30,10 +30,10 @@ export function AppShell() {
 
   return (
     <div className="mx-auto min-h-screen max-w-[480px] bg-background">
-      <Header userName={user?.fullName || "Motoboy"} status={status}>
+      <Header userName={user?.fullName || "Motoboy"} userEmail={user?.email} status={status} onLogout={logout}>
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           {connected ? (
-            <Wifi className="h-3.5 w-3.5 text-green-600" />
+            <Wifi className="h-3.5 w-3.5 text-cs-success" />
           ) : (
             <WifiOff className="h-3.5 w-3.5" />
           )}
@@ -45,8 +45,8 @@ export function AppShell() {
           <div
             className={`mb-3 flex items-center justify-between rounded-md p-3 text-sm font-medium ${
               toast.variant === "success"
-                ? "bg-emerald-50 text-emerald-800"
-                : "bg-amber-50 text-amber-800"
+                ? "bg-cs-success/10 text-cs-success"
+                : "bg-cs-warning/10 text-cs-warning"
             }`}
           >
             <span>{toast.message}</span>

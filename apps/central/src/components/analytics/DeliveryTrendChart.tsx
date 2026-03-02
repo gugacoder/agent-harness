@@ -60,7 +60,7 @@ export function DeliveryTrendChart({
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
+                  backgroundColor: "var(--color-card)",
                   border: "1px solid hsl(var(--border))",
                   borderRadius: "0.5rem",
                   fontSize: "0.875rem",

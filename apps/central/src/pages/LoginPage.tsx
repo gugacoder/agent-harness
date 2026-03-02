@@ -44,11 +44,10 @@ export function LoginPage() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm space-y-6 rounded-lg border border-border bg-background p-8 shadow-sm"
       >
-        <div className="flex flex-col items-center gap-2">
-          <img src="/logo.svg" alt="Chega.la" className="h-12 w-12" />
-          <h1 className="text-xl font-bold text-primary">Chega.la Central</h1>
+        <div className="flex flex-col items-center gap-3">
+          <img src="/logo-brand.svg" alt="Chega.la" className="h-10" />
           <p className="text-sm text-muted-foreground">
-            Entre com suas credenciais
+            Área <strong>Central</strong>
           </p>
         </div>
 
