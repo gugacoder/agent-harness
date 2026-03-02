@@ -22,6 +22,7 @@ export const shops = pgTable("shops", {
   address: text("address").notNull(),
   lat: numeric("lat", { precision: 10, scale: 7 }).notNull(),
   lng: numeric("lng", { precision: 10, scale: 7 }).notNull(),
+  contact_name: text("contact_name"),
   active: boolean("active").notNull().default(true),
   created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
     .notNull()

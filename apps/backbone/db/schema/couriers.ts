@@ -23,6 +23,8 @@ export const couriers = pgTable("couriers", {
   photo_url: text("photo_url"),
   status: courierStatusEnum("status").notNull().default("offline"),
   total_deliveries: integer("total_deliveries").notNull().default(0),
+  vehicle_type: text("vehicle_type"),
+  plate_number: text("plate_number"),
   active: boolean("active").notNull().default(true),
   created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
     .notNull()
