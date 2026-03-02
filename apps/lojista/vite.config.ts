@@ -39,8 +39,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  envDir: path.resolve(__dirname, "../.."),
   server: {
-    port: Number(process.env.LOJISTA_PORT) || 3403,
+    port: Number(process.env.LOJISTA_PORT),
     strictPort: true,
   },
 });

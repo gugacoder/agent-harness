@@ -39,8 +39,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  envDir: path.resolve(__dirname, "../.."),
   server: {
-    port: Number(process.env.PORTAL_PORT) || 3504,
+    port: Number(process.env.MOTOBOY_PORT),
     strictPort: true,
   },
 });
