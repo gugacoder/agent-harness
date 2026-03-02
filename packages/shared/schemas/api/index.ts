@@ -80,3 +80,14 @@ export {
   UpdateCompanyConfigRequestSchema,
   type UpdateCompanyConfigRequest,
 } from "./company-config.js";
+
+export {
+  GeocodingCepResponseSchema,
+  GeocodingSearchResultSchema,
+  GeocodingSearchResponseSchema,
+  GeocodingReverseResponseSchema,
+  type GeocodingCepResponse,
+  type GeocodingSearchResult,
+  type GeocodingSearchResponse,
+  type GeocodingReverseResponse,
+} from "./geocoding.js";
