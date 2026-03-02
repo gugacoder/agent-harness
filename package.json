@@ -17,15 +17,19 @@
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
-    "dev:backbone": "npm -w apps/backbone run dev",
-    "dev:central": "npm -w apps/central run dev",
-    "dev:lojista": "npm -w apps/lojista run dev",
-    "dev:motoboy": "npm -w apps/motoboy run dev",
-    "db:generate": "npm -w apps/backbone run db:generate",
-    "db:migrate": "npm -w apps/backbone run db:migrate",
+    "dev:all": "dotenv -- concurrently -k --kill-signal SIGKILL -n backbone,central,lojista,motoboy -c blue,green,yellow,magenta \"npm -w apps/backbone run dev\" \"npm -w apps/central run dev\" \"npm -w apps/lojista run dev\" \"npm -w apps/motoboy run dev\"",
+    "dev:backbone": "dotenv -- npm -w apps/backbone run dev",
+    "dev:central": "dotenv -- npm -w apps/central run dev",
+    "dev:lojista": "dotenv -- npm -w apps/lojista run dev",
+    "dev:motoboy": "dotenv -- npm -w apps/motoboy run dev",
+    "db:generate": "dotenv -- npm -w apps/backbone run db:generate",
+    "db:migrate": "dotenv -- npm -w apps/backbone run db:migrate",
+    "db:seed:test": "dotenv -- npm -w apps/backbone run db:seed:test",
     "build": "npm -w packages/shared/schemas run build && npm -w apps/backbone run build && npm -w apps/central run build && npm -w apps/lojista run build && npm -w apps/motoboy run build"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
+    "dotenv-cli": "^11.0.0",
     "typescript": "^5.8.3"
   }
 }
