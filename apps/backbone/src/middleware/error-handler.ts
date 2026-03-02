@@ -46,11 +46,17 @@ export const errorHandler: ErrorHandler<AppType> = (err, c) => {
 
   // Unhandled errors → 500
   console.error("Unhandled error:", err);
+
+  const message =
+    err instanceof Error ? err.message : "An unexpected error occurred";
+  const path = c.req.path;
+
   return c.json(
     {
       error: "Internal Server Error",
-      message: "An unexpected error occurred",
+      message,
       statusCode: 500,
+      path,
     },
     500
   );

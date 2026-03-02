@@ -117,6 +117,10 @@ const listInvoicesRoute = createRoute({
       content: { "application/json": { schema: ErrorResponseSchema } },
       description: "Missing or invalid authentication",
     },
+    500: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Internal server error",
+    },
   },
 });
 
@@ -124,33 +128,43 @@ invoicesRouter.openapi(listInvoicesRoute, async (c) => {
   const query = c.req.valid("query");
   const companyId = c.get("companyId");
 
-  const invoiceList = await listInvoices({
-    companyId,
-    shopId: query.shop_id,
-    status: query.status,
-    periodStart: query.period_start,
-    periodEnd: query.period_end,
-  });
+  try {
+    const invoiceList = await listInvoices({
+      companyId,
+      shopId: query.shop_id,
+      status: query.status,
+      periodStart: query.period_start,
+      periodEnd: query.period_end,
+    });
 
-  return c.json(
-    invoiceList.map((inv) => ({
-      id: inv.id,
-      company_id: inv.company_id,
-      shop_id: inv.shop_id,
-      invoice_number: inv.invoice_number,
-      period_start: inv.period_start,
-      period_end: inv.period_end,
-      total_deliveries: inv.total_deliveries,
-      total_distance_km: inv.total_distance_km,
-      total_amount: inv.total_amount,
-      status: inv.status,
-      sent_at: inv.sent_at,
-      paid_at: inv.paid_at,
-      created_at: inv.created_at,
-      updated_at: inv.updated_at,
-    })),
-    200
-  );
+    return c.json(
+      invoiceList.map((inv) => ({
+        id: inv.id,
+        company_id: inv.company_id,
+        shop_id: inv.shop_id,
+        invoice_number: inv.invoice_number,
+        period_start: inv.period_start,
+        period_end: inv.period_end,
+        total_deliveries: inv.total_deliveries,
+        total_distance_km: inv.total_distance_km,
+        total_amount: inv.total_amount,
+        status: inv.status,
+        sent_at: inv.sent_at,
+        paid_at: inv.paid_at,
+        created_at: inv.created_at,
+        updated_at: inv.updated_at,
+      })),
+      200
+    );
+  } catch (err) {
+    console.error("Error listing invoices:", err);
+    const message =
+      err instanceof Error ? err.message : "Failed to list invoices";
+    return c.json(
+      { error: "Internal Server Error", message, statusCode: 500 },
+      500
+    );
+  }
 });
 
 // --- POST /api/invoices ---
@@ -287,6 +301,10 @@ const getInvoiceRoute = createRoute({
       content: { "application/json": { schema: ErrorResponseSchema } },
       description: "Missing or invalid authentication",
     },
+    500: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Internal server error",
+    },
   },
 });
 
@@ -294,49 +312,59 @@ invoicesRouter.openapi(getInvoiceRoute, async (c) => {
   const { id: invoiceId } = c.req.valid("param");
   const companyId = c.get("companyId");
 
-  const result = await getInvoiceById({ invoiceId, companyId });
+  try {
+    const result = await getInvoiceById({ invoiceId, companyId });
 
-  if (!result) {
+    if (!result) {
+      return c.json(
+        {
+          error: "Not Found",
+          message: "Invoice not found",
+          statusCode: 404,
+        },
+        404
+      );
+    }
+
     return c.json(
       {
-        error: "Not Found",
-        message: "Invoice not found",
-        statusCode: 404,
+        id: result.id,
+        company_id: result.company_id,
+        shop_id: result.shop_id,
+        invoice_number: result.invoice_number,
+        period_start: result.period_start,
+        period_end: result.period_end,
+        total_deliveries: result.total_deliveries,
+        total_distance_km: result.total_distance_km,
+        total_amount: result.total_amount,
+        status: result.status,
+        sent_at: result.sent_at,
+        paid_at: result.paid_at,
+        created_at: result.created_at,
+        updated_at: result.updated_at,
+        items: result.items.map((item) => ({
+          id: item.id,
+          invoice_id: item.invoice_id,
+          delivery_id: item.delivery_id,
+          order_number: item.order_number,
+          pickup_address: item.pickup_address,
+          delivery_address: item.delivery_address,
+          distance_km: item.distance_km,
+          price: item.price,
+          delivered_at: item.delivered_at,
+        })),
       },
-      404
+      200
+    );
+  } catch (err) {
+    console.error("Error fetching invoice:", err);
+    const message =
+      err instanceof Error ? err.message : "Failed to fetch invoice";
+    return c.json(
+      { error: "Internal Server Error", message, statusCode: 500 },
+      500
     );
   }
-
-  return c.json(
-    {
-      id: result.id,
-      company_id: result.company_id,
-      shop_id: result.shop_id,
-      invoice_number: result.invoice_number,
-      period_start: result.period_start,
-      period_end: result.period_end,
-      total_deliveries: result.total_deliveries,
-      total_distance_km: result.total_distance_km,
-      total_amount: result.total_amount,
-      status: result.status,
-      sent_at: result.sent_at,
-      paid_at: result.paid_at,
-      created_at: result.created_at,
-      updated_at: result.updated_at,
-      items: result.items.map((item) => ({
-        id: item.id,
-        invoice_id: item.invoice_id,
-        delivery_id: item.delivery_id,
-        order_number: item.order_number,
-        pickup_address: item.pickup_address,
-        delivery_address: item.delivery_address,
-        distance_km: item.distance_km,
-        price: item.price,
-        delivered_at: item.delivered_at,
-      })),
-    },
-    200
-  );
 });
 
 // --- PATCH /api/invoices/:id/send ---
@@ -609,6 +637,10 @@ const getMyInvoicesRoute = createRoute({
       content: { "application/json": { schema: ErrorResponseSchema } },
       description: "Missing or invalid authentication",
     },
+    500: {
+      content: { "application/json": { schema: ErrorResponseSchema } },
+      description: "Internal server error",
+    },
   },
 });
 
@@ -628,55 +660,65 @@ invoicesRouter.openapi(getMyInvoicesRoute, async (c) => {
     );
   }
 
-  // Find shop by profile_id (JWT sub) + company_id
-  const [shop] = await db
-    .select({ id: shops.id })
-    .from(shops)
-    .where(
-      and(
-        eq(shops.profile_id, user.id),
-        eq(shops.company_id, companyId)
-      )
-    );
+  try {
+    // Find shop by profile_id (JWT sub) + company_id
+    const [shop] = await db
+      .select({ id: shops.id })
+      .from(shops)
+      .where(
+        and(
+          eq(shops.profile_id, user.id),
+          eq(shops.company_id, companyId)
+        )
+      );
 
-  if (!shop) {
+    if (!shop) {
+      return c.json(
+        {
+          error: "Not Found",
+          message: "Shop profile not found",
+          statusCode: 404,
+        },
+        404
+      );
+    }
+
+    const invoiceList = await listInvoices({
+      companyId,
+      shopId: shop.id,
+      status: query.status,
+      periodStart: query.period_start,
+      periodEnd: query.period_end,
+    });
+
     return c.json(
-      {
-        error: "Not Found",
-        message: "Shop profile not found",
-        statusCode: 404,
-      },
-      404
+      invoiceList.map((inv) => ({
+        id: inv.id,
+        company_id: inv.company_id,
+        shop_id: inv.shop_id,
+        invoice_number: inv.invoice_number,
+        period_start: inv.period_start,
+        period_end: inv.period_end,
+        total_deliveries: inv.total_deliveries,
+        total_distance_km: inv.total_distance_km,
+        total_amount: inv.total_amount,
+        status: inv.status,
+        sent_at: inv.sent_at,
+        paid_at: inv.paid_at,
+        created_at: inv.created_at,
+        updated_at: inv.updated_at,
+      })),
+      200
+    );
+  } catch (err) {
+    console.error("Error fetching shop invoices:", err);
+    const message =
+      err instanceof Error ? err.message : "Failed to fetch invoices";
+    return c.json(
+      { error: "Internal Server Error", message, statusCode: 500 },
+      500
     );
   }
-
-  const invoiceList = await listInvoices({
-    companyId,
-    shopId: shop.id,
-    status: query.status,
-    periodStart: query.period_start,
-    periodEnd: query.period_end,
-  });
-
-  return c.json(
-    invoiceList.map((inv) => ({
-      id: inv.id,
-      company_id: inv.company_id,
-      shop_id: inv.shop_id,
-      invoice_number: inv.invoice_number,
-      period_start: inv.period_start,
-      period_end: inv.period_end,
-      total_deliveries: inv.total_deliveries,
-      total_distance_km: inv.total_distance_km,
-      total_amount: inv.total_amount,
-      status: inv.status,
-      sent_at: inv.sent_at,
-      paid_at: inv.paid_at,
-      created_at: inv.created_at,
-      updated_at: inv.updated_at,
-    })),
-    200
-  );
 });
 
 export { invoicesRouter };
